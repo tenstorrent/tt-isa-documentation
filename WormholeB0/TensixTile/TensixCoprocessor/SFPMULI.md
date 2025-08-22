@@ -1,6 +1,6 @@
 # `SFPMULI` (Vectorised floating-point multiply using BF16 immediate)
 
-**Summary:** Performs lanewise FP32 `VD *= BF16ToFP32(Imm16)`.
+**Summary:** Performs lanewise FP32 `VD = VD * BF16ToFP32(Imm16) + 0`. Note that the embedded `+ 0` causes negative zero to become positive zero.
 
 **Backend execution unit:** [Vector Unit (SFPU)](VectorUnit.md), MAD sub-unit
 
