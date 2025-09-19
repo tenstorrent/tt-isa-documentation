@@ -268,9 +268,8 @@ uint32_t fma_model_wh(uint32_t x, uint32_t y, uint32_t z) { // Compute x * y + z
   int32_t n = 5 - __builtin_clz(r_m);
   r_e += n;
   if (r_e >= 255) return nan_result ? nan_result : (r_sign | 0x7f800000); // Inf
-  if (r_e <= 0) { // Denorm or zero
-    n += 1;
-    r_e = 0;
+  if (r_e < 0) { // Flush blatant denormals (before rounding, discarding sign)
+    return nan_result;
   }
   if (n <= 0) r_m <<= -n; else r_m = (r_m >> n) | (r_m & 1);
 #undef semi_sticky_shift
@@ -278,11 +277,11 @@ uint32_t fma_model_wh(uint32_t x, uint32_t y, uint32_t z) { // Compute x * y + z
   // Start reassembling result
   uint32_t r = (r_e << 23) + ((r_m >> 3) & 0x7fffff);
 
-  // Flush denormals (before rounding, discarding sign)
-  if (!r_e) return nan_result;
-
   // Round to nearest even
   r += (((r_m & 7) + (r & 1)) > 4);
+
+  // Flush denormals (after rounding, discarding sign)
+  if (!(r >> 23)) return nan_result;
 
   return (nan_result ? nan_result : r_sign) | r;
 }

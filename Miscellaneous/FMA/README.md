@@ -27,7 +27,7 @@ The major differences between `fma_model_wh` and `fma_model_bh` are:
 * NaN outputs are _not_ the canonical bit pattern `0x7fc00000`. Instead, they will have _at least_ the bits `0x7f800001` set, and then the computation proceeds and can gain additional bits.
 * If `x * y` on its own is finite but would overflow to infinity, and `z` is the opposite sign infinity, the result is NaN rather than infinity.
 * If `r_m = (r_m >> n) | (r_m & 1)` ends up doing a shift right by two bits, the higher of those two gets dropped rather than contributing to the sticky bit (this is a hardware bug rather than anything intentional).
-* Denormals are flushed to zero before rounding rather than after rounding.
+* Rounding of denormals isn't quite correct: some intermediate results on the edge of denormal range should round up and become normal, but instead round down, stay denormal, and then get flushed to zero (the overall effect isn't _quite_ the same as flushing denormals to zero before rounding, but is similar).
 
 ## Correctness of `fma_model_ieee`
 
