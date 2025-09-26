@@ -159,7 +159,7 @@ This field contains some uncommonly set request flags:
 
 Software instructs the NIU to initiate a NoC request by writing details of the request to the _other_ fields of the initiator, and then writing to `NOC_CMD_CTRL` with the low bit set. This will immediately cause the NIU to:
 * Increment the `NIU_MST_REQS_OUTSTANDING_ID` and `NIU_MST_WRITE_REQS_OUTGOING_ID` [counters](Counters.md), if appropriate for the configured request.
-* If coordinate translation is enabled, apply coordinate translation to the X and Y coordinates in `NOC_TARG_ADDR_MID` and `NOC_RET_ADDR_MID`, writing the translated coordinates back to `NOC_TARG_ADDR_MID` and `NOC_RET_ADDR_MID`.
+* If coordinate translation is enabled, apply coordinate translation to the X and Y coordinates in `NOC_TARG_ADDR_HI` and `NOC_RET_ADDR_HI`, writing the translated coordinates back to `NOC_TARG_ADDR_HI` and `NOC_RET_ADDR_HI`.
 * Write values to some of the reserved fields within `NOC_CTRL`.
 * Append the initiator to an internal queue of initiators waiting to have a virtual channel number assigned to them.
 
