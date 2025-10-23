@@ -5,7 +5,7 @@
 **Backend execution unit:** [Vector Unit (SFPU)](VectorUnit.md), MAD sub-unit
 
 > [!TIP]
-> Compared to Wormhole, some of the major upgrades to `SFPMAD` in Blackhole are: `SFPMAD_MOD1_NEGATE_VB` and `SFPMAD_MOD1_NEGATE_VC` modifiers, improved edge-case handling of NaNs and of negative zero, and automatic instruction scheduling.
+> Compared to Wormhole, some of the major upgrades to `SFPMAD` in Blackhole are: `SFPMAD_MOD1_NEGATE_VA` and `SFPMAD_MOD1_NEGATE_VC` modifiers, improved edge-case handling of NaNs and of negative zero, and automatic instruction scheduling.
 
 ## Syntax
 
@@ -27,7 +27,7 @@ lanewise {
       float a = LReg[va].f32;
       float b = LReg[VB].f32;
       float c = LReg[VC].f32;
-      if (Mod1 & SFPMAD_MOD1_NEGATE_VB) b = -b;
+      if (Mod1 & SFPMAD_MOD1_NEGATE_VA) a = -a;
       if (Mod1 & SFPMAD_MOD1_NEGATE_VC) c = -c;
       float d = a * b + c;
       unsigned vd;
@@ -47,7 +47,7 @@ lanewise {
 Supporting definitions:
 
 ```c
-#define SFPMAD_MOD1_NEGATE_VB 1
+#define SFPMAD_MOD1_NEGATE_VA 1
 #define SFPMAD_MOD1_NEGATE_VC 2
 #define SFPMAD_MOD1_INDIRECT_VA 4
 #define SFPMAD_MOD1_INDIRECT_VD 8
