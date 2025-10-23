@@ -57,7 +57,7 @@ if (MultiContextMode) {
 
 // Determine initial input address(es) and input datum count:
 
-auto& ConfigDescriptor = ConfigState.THCON_SEC[WhichUnpacker].TileDescriptor;
+auto& ConfigDescriptor = ConfigState.THCON_SEC[WhichUnpacker].REG0_TileDescriptor;
 
 bool IsUncompressed;
 if (MultiContextMode) {
@@ -78,9 +78,9 @@ uint8_t WDim = ConfigDescriptor.WDim ? ConfigDescriptor.WDim : 1;
 
 uint4_t InDataFormat;
 uint4_t OutDataFormat;
-if (MultiContextMode && ConfigState.THCON_SEC[WhichUnpacker].Ovrd_data_format) {
-  InDataFormat  = ConfigState.THCON_SEC[WhichUnpacker].Unpack_data_format_cntx[WhichContext];
-  OutDataFormat = ConfigState.THCON_SEC[WhichUnpacker].Unpack_out_data_format_cntx[WhichContext];
+if (MultiContextMode && ConfigState.THCON_SEC[WhichUnpacker].REG2_Ovrd_data_format) {
+  InDataFormat  = ConfigState.THCON_SEC[WhichUnpacker].REG7_Unpack_data_format_cntx[WhichContext];
+  OutDataFormat = ConfigState.THCON_SEC[WhichUnpacker].REG7_Unpack_out_data_format_cntx[WhichContext];
 } else {
   InDataFormat  = ConfigDescriptor.InDataFormat;
   OutDataFormat = ConfigState.THCON_SEC[WhichUnpacker].REG2_Out_data_format;
@@ -97,11 +97,11 @@ case FP32: case TF32: case INT32: DatumSizeBytes = 4; break;
 
 unsigned InAddr;
 if (MultiContextMode && WhichContext != 0) {
-  InAddr = ConfigState.THCON_SEC[WhichUnpacker].Base_cntx[WhichContext].address
-         +(ConfigState.THCON_SEC[WhichUnpacker].Offset_cntx[WhichContext & 3].address & 0xffff);
+  InAddr = ConfigState.THCON_SEC[WhichUnpacker].REG3_Base_cntx[WhichContext].address
+         +(ConfigState.THCON_SEC[WhichUnpacker].REG7_Offset_cntx[WhichContext & 3].address & 0xffff);
 } else {
-  InAddr = ConfigState.THCON_SEC[WhichUnpacker].Base_address
-         +(ConfigState.THCON_SEC[WhichUnpacker].Offset_address & 0xffff);  
+  InAddr = ConfigState.THCON_SEC[WhichUnpacker].REG3_Base_address
+         +(ConfigState.THCON_SEC[WhichUnpacker].REG7_Offset_address & 0xffff);
 }
 InAddr = (InAddr + 1 + ConfigDescriptor.DigestSize) * 16;
 
@@ -201,11 +201,11 @@ InAddr_Exponents = WrapAddr(InAddr_Exponents);
 InAddr_Datums = WrapAddr(InAddr_Datums);
 InAddr_Deltas = WrapAddr(InAddr_Deltas);
 
-bool DiscontiguousInputRows = ConfigState.THCON_SEC[WhichUnpacker].Tileize_mode;
+bool DiscontiguousInputRows = ConfigState.THCON_SEC[WhichUnpacker].REG2_Tileize_mode;
 if (DiscontiguousInputRows) {
-  RowStride = (ConfigState.THCON_SEC[WhichUnpacker].Shift_amount_cntx[0] <<  4)
-            | (ConfigState.THCON_SEC[WhichUnpacker].Shift_amount_cntx[1] <<  8)
-            | (ConfigState.THCON_SEC[WhichUnpacker].Shift_amount_cntx[2] << 12);
+  RowStride = (ConfigState.THCON_SEC[WhichUnpacker].REG2_Shift_amount_cntx[0] <<  4)
+            | (ConfigState.THCON_SEC[WhichUnpacker].REG2_Shift_amount_cntx[1] <<  8)
+            | (ConfigState.THCON_SEC[WhichUnpacker].REG2_Shift_amount_cntx[2] << 12);
   // Note that each Shift_amount_cntx is a 4-bit field, so there's 12 bits of
   // precision here, and therefore the maximum RowStride is 65520 bytes.
 } else {
@@ -218,11 +218,11 @@ bool UnpackToDst;
 bool Transpose;
 if (WhichUnpacker == 0) {
   if (MultiContextMode) {
-    UnpackToDst = ConfigState.THCON_SEC[WhichUnpacker].Unpack_if_sel_cntx[WhichContext];
+    UnpackToDst = ConfigState.THCON_SEC[WhichUnpacker].REG2_Unpack_if_sel_cntx[WhichContext];
   } else {
-    UnpackToDst = ConfigState.THCON_SEC[WhichUnpacker].Unpack_If_Sel;
+    UnpackToDst = ConfigState.THCON_SEC[WhichUnpacker].REG2_Unpack_If_Sel;
   }
-  Transpose = ConfigState.THCON_SEC[WhichUnpacker].Haloize_mode;
+  Transpose = ConfigState.THCON_SEC[WhichUnpacker].REG2_Haloize_mode;
 } else {
   UnpackToDst = false;
   Transpose = false;
@@ -241,7 +241,7 @@ if (OutDataFormat in {FP32, TF32, INT32}) {
   OutAddr >>= 1;
 }
 if (MultiContextMode && WhichUnpacker == 0) {
-  unsigned CtxOutAddr = ConfigState.THCON_SEC[WhichUnpacker].Dest_cntx[WhichContext & 3].address;
+  unsigned CtxOutAddr = ConfigState.THCON_SEC[WhichUnpacker].REG5_Dest_cntx[WhichContext & 3].address;
   if (UnpackToDst || ConfigState.UNP[WhichUnpacker].ADD_DEST_ADDR_CNTR_add_dest_addr_cntr) {
     OutAddr += CtxOutAddr;
   } else {
@@ -255,7 +255,7 @@ uint4_t ColShift;
 if (DiscontiguousInputRows || WhichUnpacker == 1) {
   ColShift = 0;
 } else {
-  ColShift = ConfigState.THCON_SEC[WhichUnpacker].Shift_amount_cntx[WhichContext & 3];
+  ColShift = ConfigState.THCON_SEC[WhichUnpacker].REG2_Shift_amount_cntx[WhichContext & 3];
 }
 
 // Check that various settings are compatible with each other:
