@@ -61,14 +61,14 @@ auto& ConfigDescriptor = ConfigState.THCON_SEC[WhichUnpacker].TileDescriptor;
 
 bool IsUncompressed;
 if (MultiContextMode) {
-  IsUncompressed = ConfigState.THCON_SEC[WhichUnpacker].Disable_zero_compress_cntx[WhichContext];
+  IsUncompressed = ConfigState.THCON_SEC[WhichUnpacker].REG2_Disable_zero_compress_cntx[WhichContext];
 } else {
   IsUncompressed = ConfigDescriptor.IsUncompressed;
 }
 
 uint16_t XDim;
 if (MultiContextMode && WhichUnpacker == 0) {
-  XDim = ConfigState.THCON_SEC[WhichUnpacker].Tile_x_dim_cntx[WhichContext & 3];
+  XDim = ConfigState.THCON_SEC[WhichUnpacker].REG5_Tile_x_dim_cntx[WhichContext & 3];
 } else {
   XDim = ConfigDescriptor.XDim;
 }
