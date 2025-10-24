@@ -24,12 +24,12 @@ lanewise {
   if (VD < 12 || LaneConfig[Lane].DISABLE_BACKDOOR_LOAD) {
     if (LaneEnabled) {
       unsigned va = Mod1 & SFPMAD_MOD1_INDIRECT_VA ? LReg[7].u32 & 15 : VA;
-      float a = LReg[va].f32;
-      float b = LReg[VB].f32;
-      float c = LReg[VC].f32;
-      if (Mod1 & SFPMAD_MOD1_NEGATE_VA) a = -a;
-      if (Mod1 & SFPMAD_MOD1_NEGATE_VC) c = -c;
-      float d = a * b + c;
+      uint32_t a = LReg[va].u32;
+      uint32_t b = LReg[VB].u32;
+      uint32_t c = LReg[VC].u32;
+      if (Mod1 & SFPMAD_MOD1_NEGATE_VA) a ^= 0x80000000;
+      if (Mod1 & SFPMAD_MOD1_NEGATE_VC) c ^= 0x80000000;
+      uint32_t d = fma_model_bh(a, b, c); // Compute a * b + c
       unsigned vd;
       if ((Mod1 & SFPMAD_MOD1_INDIRECT_VD) && VD != 16) {
         vd = LReg[7].u32 & 15;
@@ -37,7 +37,7 @@ lanewise {
         vd = VD;
       }
       if (vd < 8 || vd == 16) {
-        LReg[vd].f32 = d;
+        LReg[vd].u32 = d;
       }
     }
   }
