@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: © 2025 Tenstorrent AI ULC
  *
  * SPDX-License-Identifier: Apache-2.0
- * 
+ *
  * Bit-perfect models of:
  * 1) IEEE754 fused FMA (with canonical NaNs, and rounding mode always nearest even)
  * 2) FMA as found in Blackhole Baby RISCVs and Blackhole Tensix Vector Unit (SFPU)
