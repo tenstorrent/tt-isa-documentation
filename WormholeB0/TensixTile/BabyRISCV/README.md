@@ -107,7 +107,7 @@ The "NoC" column indicates which parts of the address space are made available t
 ## Faults / exceptions
 
 The baby RISCV cores cannot fault. Scenarios which might be expected to cause a fault are instead handled in some way:
-* Unaligned memory accesses are silently rounded down to the nearest aligned address.
+* Unaligned memory accesses are silently rounded down to the nearest aligned address. This is a NonContractualBehavior.
 * Loads from unmapped memory will usually stall forever waiting for a read-response to come back from the memory subsystem.
 * Stores to unmapped memory might stall forever, or might be silently discarded.
 * RISCV `ecall` / `ebreak` instructions will pause the core, [as if a pause was requested via the GDB/Debug interface](DebugInterface.md#ebreak-and-ecall-instructions).
