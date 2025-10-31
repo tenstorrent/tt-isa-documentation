@@ -56,7 +56,7 @@ for (unsigned i = 0; i < 16; ++i) {
 }
 ```
 
-Due to a hardware bug, `SHIFTXA` cannot specify which aligned block of 16 rows to use as input. The call to `HardwareBug()` in the above description evaluates to whatever the most recent `MFCONV3S1`, `CONV3S1`, `MPOOL3S1`, `APOOL3S1`, `CONV3S2`, `MPOOL3S2`, `APOOL3S2`, `MVMUL`, `ELWSUB`, `ELWADD`, `ELWMUL`, `DOTPV`, `GMPOOL`, `GAPOOL`, `MOVA2D`, `MOVB2D`, `MOVD2A`, `MOVD2B`, or `MOVB2A` instruction computed as its (starting) `SrcA` row address.
+Due to a hardware bug, `SHIFTXA` cannot specify which aligned block of 16 rows to use as input. The call to `HardwareBug()` in the above description evaluates to whatever the most recent `MFCONV3S1`, `CONV3S1`, `MPOOL3S1`, `APOOL3S1`, `CONV3S2`, `MPOOL3S2`, `APOOL3S2`, `MVMUL`, `ELWSUB`, `ELWADD`, `ELWMUL`, `DOTPV`, `GMPOOL`, `GAPOOL`, `MOVA2D`, `MOVB2D`, `MOVD2A`, `MOVD2B`, or `MOVB2A` instruction computed as its (starting) `SrcA` row address. This is a NonContractualBehavior.
 
 Supporting definitions:
 ```c

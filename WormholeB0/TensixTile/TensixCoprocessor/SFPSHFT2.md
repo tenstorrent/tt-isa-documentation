@@ -149,7 +149,7 @@ case SFPSHFT2_MOD1_SHFT_IMM:
 }
 ```
 
-Note `HardwareBug()` in the above; it is meant to evaluate to `0`, but instead evaluates to `vc0[Lane + 7]`, where `vc0` is whatever the most recent `SFPSHFT2_MOD1_SUBVEC_SHFLROR1_AND_COPY4` or `SFPSHFT2_MOD1_SUBVEC_SHFLROR1` with `VD < 12` observed when executing its `auto vc = LReg[VC]`. Notably, executing `SFPSHFT2_MOD1_SUBVEC_SHFLROR1` with `VD` and `VC` both set to `9` will ensure that `vc0` is `0`.
+Note `HardwareBug()` in the above; it is meant to evaluate to `0`, but instead evaluates to `vc0[Lane + 7]`, where `vc0` is whatever the most recent `SFPSHFT2_MOD1_SUBVEC_SHFLROR1_AND_COPY4` or `SFPSHFT2_MOD1_SUBVEC_SHFLROR1` with `VD < 12` observed when executing its `auto vc = LReg[VC]`. Notably, executing `SFPSHFT2_MOD1_SUBVEC_SHFLROR1` with `VD` and `VC` both set to `9` will ensure that `vc0` is `0`. This is a NonContractualBehavior.
 
 Supporting definitions:
 ```c
