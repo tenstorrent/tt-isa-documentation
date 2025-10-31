@@ -20,6 +20,15 @@ TT_SFPSHFT(/* i12 */ (Imm12 & 0xfff), /* u4 */ VC, /* u4 */ VD, /* u4 */ Mod1)
 ## Functional model
 
 ```c
+if ((Mod1 > 7) || (Mod1 == 4) || (Mod1 == 6)) { // Reserved/unsupported instruction modifiers
+  NonContractualBehavior {
+    if ((Mod1 == 4) || (Mod1 == 6)) {
+      Mod1 &= ~4; // Current silicon behavior (not architecturally guaranteed)
+    } else {
+      Mod1 &= 7; // Current silicon behavior (not architecturally guaranteed)
+    }
+  }
+}
 unsigned VB = VD;
 if (VD < 8 || VD == 16) {
   lanewise {
