@@ -27,5 +27,5 @@ Tile counts for various product families are:
 |**Security tile**|1|1|1|
 
 > (†) All four L2CPU tiles are present and enabled on p100, but depending on which 4 GiB of GDDR6 is harvested, it could be the case that one (or two) L2CPU tile(s) have no directly attached GDDR6, which will negatively impact their performance.
-> 
+>
 > (‡) If no PCI Express tiles are in use, then 12 Ethernet tiles can be connected. Each PCI Express 5.0 x16 connection reduces the number of connectable Ethernet tiles by four (an x8 connection would instead reduce the number of connectable Ethernet tiles by two).
