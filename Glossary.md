@@ -20,6 +20,10 @@ if (register offset is invalid) {
 }
 ```
 
+**Architectural note:** NonContractualBehavior provides a contained and verifiable response to
+otherwise invalid inputs and is the preferred mechanism for replacing UndefinedBehavior and
+UnpredictableValue cases in future revisions.
+
 ## UndefinedBehavior
 
 Behavior for which the specification provides no guarantees of any kind. Once triggered, the
@@ -35,6 +39,10 @@ if (voltage > MAX_VOLTAGE) {
 }
 ```
 
+**Architectural note:** Occurrences of UndefinedBehavior indicate a failure of architectural
+definition or verification and should be eliminated or narrowed in future revisions wherever
+possible.
+
 ## UnpredictableValue
 
 A value whose bit pattern is architecturally unpredictable and may vary arbitrarily, including
@@ -48,3 +56,6 @@ if (unsupported mode of operation) {
     return UnpredictableValue(); // software must never depend on the value returned
 }
 ```
+
+**Architectural note:** UnpredictableValue represents residual architectural uncertainty and
+should be minimized in future revisions by converting such cases into defined, verifiable behavior.
