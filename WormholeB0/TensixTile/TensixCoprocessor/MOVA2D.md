@@ -74,7 +74,7 @@ for (; NumRows; --NumRows, ++DstRow, ++SrcRow) {
         LowMantissa |= Val16b;
       }
       // Dst holds TF32 as Sign,HiMan(7b),Exp(8b),LoMan(3b),Zeros(13b)
-      // This is compatible with Dst FP32, where Zeros extends LoMan. 
+      // This is compatible with Dst FP32, where Zeros extends LoMan.
       Dst32b[DstRow][Column] = (uint32_t(Val16b) << 16) | LowMantissa;
     } else if (UseDst32bLo) {
       // This is unlikely to be useful, unless software is deliberately

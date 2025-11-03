@@ -23,7 +23,7 @@ To enable efficient seeking to various points within the compressed stream, if c
    2. Padding consisting of `32 - N` datums.
    3. `N` four-bit counters, one per datum.
    4. Padding up to the next 128-bit (16-byte) boundary.
-  
+
 As augmented datums are stored in groups of 32, `RSI[i] >> 5` identifies a group, and `RSI[i] & 0x1f` identifies an augmented datum within that group. If the augmented datums are a BFP format, there will be one exponent for every 16 augmented datums, i.e. two exponents per group, one for the first half of the group, and one for the second half. Note that each exponent applies to 16 augmented datums, and those augmented datums could come from multiple different rows.
 
 ## Compressing during packing

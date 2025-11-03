@@ -120,7 +120,7 @@ float Lut16ToFp32(uint16_t x) {
   uint32_t Sign = x >> 15;
   uint32_t Exp  = (x >> 10) & 0x1f;
   uint32_t Man  = x & 0x3ff;
-  return std::bit_cast<float>((Sign << 31) | ((Exp == 0x1f ? 0 : 112 + Exp) << 23) | (Man << 13)); 
+  return std::bit_cast<float>((Sign << 31) | ((Exp == 0x1f ? 0 : 112 + Exp) << 23) | (Man << 13));
 }
 ```
 

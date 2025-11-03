@@ -115,7 +115,7 @@ for (unsigned i = 0; i < 8; ++i) {
         // Dst is BF16 (SrcAStyle is either BF16 or TF32).
         Result += ReadDstBF16(Dst16b[DstRow + i][j]);
         Dst16b[DstRow + i][j] = WriteDstBF16(RoundToBF16(Result));
-      } 
+      }
     }
   }
 }

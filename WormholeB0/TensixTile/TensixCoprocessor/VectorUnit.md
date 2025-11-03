@@ -65,7 +65,7 @@ The Vector Unit (SFPU) performs arithmetic and manipulation on 32-bit floating-p
 <thead><tr><th colspan="4" align="left">Data movement instructions</th></tr></thead>
 <thead><tr><th>Instruction</th><th>IPC</th><th>Latency</th><th>Approximate semantics (see instruction page for full details)</th></tr></thead>
 <tr><td><a href="SFPLOAD.md"><code>SFPLOAD</code></a></td><td>1</td><td>1 cycle</td><td><code>VD = Dst[R:R+4, 0:15:2]</code> or <code>VD = Dst[R:R+4, 1:16:2]</code></td></tr>
-<tr><td><a href="SFPSTORE.md"><code>SFPSTORE</code></a></td><td>1</td><td>1 cycle</td><td><code>Dst[R:R+4, 0:15:2] = VD</code> or <code>Dst[R:R+4, 1:16:2] = VD</code></td></tr>  
+<tr><td><a href="SFPSTORE.md"><code>SFPSTORE</code></a></td><td>1</td><td>1 cycle</td><td><code>Dst[R:R+4, 0:15:2] = VD</code> or <code>Dst[R:R+4, 1:16:2] = VD</code></td></tr>
 <tr><td><a href="SFPLOADMACRO.md"><code>SFPLOADMACRO</code></a></td><td>1</td><td>Complex</td><td>Like <code>SFPLOAD</code>, then schedule up to four additional vector instructions</td></tr>
 <tr><td><a href="SFPMOV.md"><code>SFPMOV</code></a>&nbsp;(†)</td><td>1</td><td>1 cycle</td><td><code>VD = VC</code></td></tr>
 <tr><td><a href="SFPCONFIG.md"><code>SFPCONFIG</code></a>&nbsp;(†)</td><td>1</td><td>1 cycle</td><td><code>VD = Broadcast(LReg[0][0:8])</code> (when 11 ≤ <code>VD</code> ≤ 14)</td></tr>

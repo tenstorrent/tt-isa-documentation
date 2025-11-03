@@ -158,7 +158,7 @@ for (unsigned j = 0; j < 16; ++j) {
     for (unsigned i = 1; i < 4; ++i) { // Zero to other three Dst rows.
       Dst16b[DstRow + i][j] = 0;
     }
-  }  
+  }
 }
 
 // Possibly flip source banks.

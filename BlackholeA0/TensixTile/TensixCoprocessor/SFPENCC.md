@@ -39,7 +39,7 @@ lanewise {
 Supporting definitions:
 ```c
 #define SFPENCC_MOD1_EC 1 // Invert UseLaneFlagsForLaneEnable
-#define SFPENCC_MOD1_EI 2 // Set UseLaneFlagsForLaneEnable from SFPENCC_IMM2_E 
+#define SFPENCC_MOD1_EI 2 // Set UseLaneFlagsForLaneEnable from SFPENCC_IMM2_E
 #define SFPENCC_MOD1_RI 8 // Set LaneFlags from SFPENCC_IMM2_R
 
 #define SFPENCC_IMM2_E 1 // Immediate bit for UseLaneFlagsForLaneEnable

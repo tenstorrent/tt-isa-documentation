@@ -26,7 +26,7 @@ Some modes of this instruction involve cross-lane data movement. Assuming all 32
 
 ### `SFPSHFT2_MOD1_COPY4`
 
-This mode does not actually involve any cross-lane data movement (merely lanewise movement between registers), but the diagram is included here for reference. 
+This mode does not actually involve any cross-lane data movement (merely lanewise movement between registers), but the diagram is included here for reference.
 
 ![](../../../Diagrams/Out/CrossLane_COPY4.svg)
 

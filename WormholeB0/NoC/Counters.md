@@ -126,7 +126,7 @@ At the initiating NIU, as the virtual channel number for the first hop from the 
 * Increment `NIU_MST_CMD_ACCEPTED`.
 * If `NOC_CMD_RESP_MARKED` is set, increment `NIU_MST_NONPOSTED_WR_REQ_STARTED`. Otherwise increment `NIU_MST_POSTED_WR_REQ_STARTED`.
 * Revert the relevant `NOC_CMD_CTRL` back to `0` (or, if `!NOC_CMD_WR_BE && NOC_AT_LEN_BE > 8192`, leave `NOC_CMD_CTRL` as `1` but decrement `NOC_AT_LEN_BE` by 8192 and increment both of `NOC_TARG_ADDR_LO` and `NOC_RET_ADDR_LO` by 8192 - see [automatic request splitting](#automatic-request-splitting)).
-  
+
 At the initiating NIU, before the data reads from L1 or register space are complete:
 * If `NOC_CMD_RESP_MARKED` is set, increment `NIU_MST_NONPOSTED_WR_REQ_SENT` by one and `NIU_MST_NONPOSTED_WR_DATA_WORD_SENT` by the number of data flits. Otherwise increment `NIU_MST_POSTED_WR_REQ_SENT` by one and `NIU_MST_POSTED_WR_DATA_WORD_SENT` by the number of data flits.
 

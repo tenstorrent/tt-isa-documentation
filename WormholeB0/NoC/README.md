@@ -53,7 +53,7 @@ When a packet traverses between two routers (or between a router and an NIU), it
 
 ## Ordering
 
-NoC transactions are fairly weakly ordered by default, but can be made stronger - see [NoC Ordering](Ordering.md) for details. If a NoC transaction is initiated by RISCV code (using the [MMIO interface](MemoryMap.md)), then the transaction proceeds asynchronously to RISCV execution; RISCV code can inspect [counters](Counters.md) to determine when the transaction has completed. 
+NoC transactions are fairly weakly ordered by default, but can be made stronger - see [NoC Ordering](Ordering.md) for details. If a NoC transaction is initiated by RISCV code (using the [MMIO interface](MemoryMap.md)), then the transaction proceeds asynchronously to RISCV execution; RISCV code can inspect [counters](Counters.md) to determine when the transaction has completed.
 
 ## Performance
 

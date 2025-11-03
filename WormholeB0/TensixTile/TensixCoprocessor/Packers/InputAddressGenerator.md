@@ -34,7 +34,7 @@ for (unsigned i = 0; i < 4; ++i) {
   }
 
   if (CurrentInstruction.Flush) {
-    PackerI.InputNumDatums = 0;  
+    PackerI.InputNumDatums = 0;
   } else {
     PackerI.InputNumDatums = ADCs[WhichADC].Packers.Channel[1].X - ADC.X + 1;
   }

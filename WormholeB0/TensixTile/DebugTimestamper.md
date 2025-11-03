@@ -109,7 +109,7 @@ These functions are referenced by the memory map:
 #define APPEND_96b 4
 #define APPEND_128b 0
 #define FLUSH_64b 3
-#define FLUSH_96b 7 
+#define FLUSH_96b 7
 
 void CmdWrite(uint32_t new_val) {
   switch (new_val & 7) {

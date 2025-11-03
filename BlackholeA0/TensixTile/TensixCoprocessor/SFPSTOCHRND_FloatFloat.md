@@ -21,7 +21,7 @@ This flavour of `SFPSTOCHRND` is intended to be used prior to an [`SFPSTORE`](SF
 **Backend execution unit:** [Vector Unit (SFPU)](VectorUnit.md), round sub-unit
 
 > [!TIP]
-> The round to zero mode is new in Blackhole, though a hardware bug means it sometimes incorrectly rounds away from zero. 
+> The round to zero mode is new in Blackhole, though a hardware bug means it sometimes incorrectly rounds away from zero.
 
 ## Syntax
 

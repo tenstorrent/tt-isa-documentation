@@ -40,7 +40,7 @@ union FIFOControl {
   };
 };
 uint32_t IncrementBy = !NoIncr << IncrLog2;
-uint32_t IntMask = (1u << IntWidth) - 1; 
+uint32_t IntMask = (1u << IntWidth) - 1;
 uint32_t OriginalValue;
 
 retry:

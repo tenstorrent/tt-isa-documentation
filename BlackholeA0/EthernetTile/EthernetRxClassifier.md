@@ -738,7 +738,7 @@ Otherwise, the frame will be dropped if any of:
 |2|1|Whether to keep TCP frames with `data_offset != 5`|
 |3|29|Reserved|
 
-By default, all bits in `HEADER_ERROR_CONTROL` are cleared, meaning that these problematic cases will be dropped. 
+By default, all bits in `HEADER_ERROR_CONTROL` are cleared, meaning that these problematic cases will be dropped.
 
 ### `OVERRIDE_DECISION`
 

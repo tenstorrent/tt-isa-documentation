@@ -128,7 +128,7 @@ uint32_t Load32(uint32_t Addr) {
     if (no_swizzle || Value < 0x80000000) {
       // Value is Integer "32".
     } else {
-      // Convert from sign-magnitude to two's complement (-0 becomes +0).      
+      // Convert from sign-magnitude to two's complement (-0 becomes +0).
       Value = -(Value & 0x7fffffff);
     }
     break;

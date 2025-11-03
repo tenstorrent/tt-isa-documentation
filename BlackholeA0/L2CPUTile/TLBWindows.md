@@ -4,7 +4,7 @@ There are 256 configurable TLB windows, which exist at particular places in the 
 * **Uncached semantics:** Every memory load or store against the window becomes a NoC request.
 * **Cached semantics:** A memory load or store against the window becomes a 64-byte NoC read request to populate the cache line (if not already present in the [cache hierarchy](Caches.md)), and then at some later point in time (in response to cache pressure or an explicit flush request), a 64-byte NoC write request is used to write back the data. The L2 prefetcher can also speculatively fetch other cache lines within the same aligned 4 KiB region.
 
-The relevant physical addresses are: 
+The relevant physical addresses are:
 
 |Address range (x280 physical)|Size|Contents|
 |---|--:|---|
