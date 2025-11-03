@@ -51,6 +51,8 @@ The `MFCONV3S1`, `CONV3S1`, `CONV3S2`, `APOOL3S1`, and `APOOL3S2` instructions t
 
 A similar remark applies to `MPOOL3S1` and `MPOOL3S2`, albeit instead of computing `Dst += 0` they do something similar to what `GMPOOL` would do if `SrcA` was entirely zero. In any case, they are not useful instructions.
 
+All of these behaviors are NonContractualBehaviors and these opcode values are likely to be repurposed in future implementations.
+
 ## Performance
 
 Theoretical maximum performance per Matrix Unit (FPU), running at Wormhole's standard 1 GHz clock rate:
