@@ -1015,7 +1015,7 @@ static void configure_ethernet(bh_pcie_device_t* device, ethdump_context_t* ctx)
   // Configure RX queue.
   uint32_t rxq_idx = 2;
   uint32_t rxq_addr = RXQ_ADDR(rxq_idx);
-  
+
   tlb_write_u32(device, rxq_addr + ETH_RXQ_CTRL_OFFSET, 0); // Raw RX mode, buffer not wrapping
   tlb_write_u32(device, rxq_addr + ETH_RXQ_BUF_START_WORD_ADDR_OFFSET, 0);
   tlb_write_u32(device, rxq_addr + ETH_RXQ_BUF_SIZE_WORDS_OFFSET, ctx->e_ring_size >> 4);
@@ -1350,7 +1350,7 @@ int main(int argc, const char** argv) {
   memset(&args, 0, sizeof(args));
   args.ethernet_x = 25;
   args.device_ring_size = 256 << 10;
-  args.host_ring_size = 2 << 20; 
+  args.host_ring_size = 2 << 20;
   parse_args(&args, argc, argv);
   bool capturing_traffic = !args.to_print || args.output || args.generate_traffic;
 
