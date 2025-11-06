@@ -6,11 +6,24 @@ The `Dst` register can be viewed as either having 1024 rows and 16 columns of 16
 uint16_t DstBits[1024][16];
 ```
 
+In addition, each of the 1024 rows has 1 valid bit associated with it:
+
+```c
+bool DstRowValid[1024];
+```
+
 Most of the time, `Dst16b[Row][Col]` is simple syntactic sugar for `DstBits[Row][Col]`.
 
-The same region of memory can instead be viewed as a 512x16 matrix of 32-bit data; reads from `Dst32b[Row][Col]` give `(DstBits[AdjRow][Col] << 16) | DstBits[AdjRow + 8][Col]` where `AdjRow = ((Row & 0x1f8) << 1) | (Row & 0x207)`, and writes to `Dst32b[Row][Col]` perform the inverse unpacking and write to `DstBits[AdjRow][Col]` and `DstBits[AdjRow + 8][Col]`. At any given time, software is expected to be exclusively using `Dst16b` or exclusively using `Dst32b`; mixing and matching `Dst16b` and `Dst32b` is _possible_, but tends to require great care. When using `Dst32b`, `Row` remains a 10-bit index, though the mapping down to `AdjRow` can only yield 512 distinct values.
+The same region of memory can instead be viewed as a 512x16 matrix of 32-bit data; reads from `Dst32b[Row][Col]` give `(DstBits[AdjRow][Col] << 16) | DstBits[AdjRow + 8][Col]` where `AdjRow = Adj32(Row)`, and writes to `Dst32b[Row][Col]` perform the inverse unpacking and write to `DstBits[AdjRow][Col]` and `DstBits[AdjRow + 8][Col]`. At any given time, software is expected to be exclusively using `Dst16b` or exclusively using `Dst32b`; mixing and matching `Dst16b` and `Dst32b` is _possible_, but tends to require great care. When using `Dst32b`, `Row` remains a 10-bit index, though the mapping down to `AdjRow` can only yield 512 distinct values.
 
 If bit 11 of `RISCV_DEBUG_REG_DBG_FEATURE_DISABLE` is set, then `Dst16b[Row][Col]` stops being syntactic sugar for `DstBits[Row][Col]`, and instead reads from `Dst16b[Row][Col]` give the high 16 bits of `Dst32b[Row][Col]`, and writes to `Dst16b[Row][Col]` write to the high 16 bits of `Dst32b[Row][Col]` (and also write an `UnpredictableValue()` to the low 16 bits).
+
+The `Adj32` function is:
+```c
+uint10_t Adj32(uint10_t Row) {
+  return ((Row & 0x1f8) << 1) | (Row & 0x207);
+}
+```
 
 ## Data types
 

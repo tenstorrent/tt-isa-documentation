@@ -6,6 +6,12 @@ The `Dst` register can be viewed as either having 1024 rows and 16 columns of 16
 uint16_t DstBits[1024][16];
 ```
 
+In addition, each of the 1024 rows has 1 valid bit associated with it:
+
+```c
+bool DstRowValid[1024];
+```
+
 Most of the time, `Dst16b[Row][Col]` is simple syntactic sugar for `DstBits[Adj16(Row)][Col]`.
 
 The same region of memory can instead be viewed as a 512x16 matrix of 32-bit data; reads from `Dst32b[Row][Col]` give `(DstBits[Adj32(Row)][Col] << 16) | DstBits[Adj32(Row) + 8][Col]`, and writes to `Dst32b[Row][Col]` perform the inverse unpacking and write to `DstBits[Adj32(Row)][Col]` and `DstBits[Adj32(Row) + 8][Col]`. At any given time, software is expected to be exclusively using `Dst16b` or exclusively using `Dst32b`; mixing and matching `Dst16b` and `Dst32b` is _possible_, but tends to require great care. When using `Dst32b`, `Row` remains a 10-bit index, though the mapping down to `Adj32(Row)` can only yield 512 distinct values.
