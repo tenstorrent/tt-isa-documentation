@@ -215,17 +215,20 @@ if (DiscontiguousInputRows) {
 // Determine initial output address:
 
 bool UnpackToDst;
-bool Transpose;
+bool Transpose = ConfigState.THCON_SEC[WhichUnpacker].REG2_Haloize_mode;
 if (WhichUnpacker == 0) {
   if (MultiContextMode) {
     UnpackToDst = ConfigState.THCON_SEC[WhichUnpacker].REG2_Unpack_if_sel_cntx[WhichContext];
   } else {
     UnpackToDst = ConfigState.THCON_SEC[WhichUnpacker].REG2_Unpack_If_Sel;
   }
-  Transpose = ConfigState.THCON_SEC[WhichUnpacker].REG2_Haloize_mode;
 } else {
   UnpackToDst = false;
-  Transpose = false;
+  if (Transpose) {
+    NonContractualBehavior {
+      Transpose = false; // Current silicon ignores Transpose on unpacker 1 (not architecturally guaranteed)
+    }
+  }
 }
 
 auto& ADC_Out = ADCs[CurrentThread].Unpacker[WhichUnpacker].Channel[1];
