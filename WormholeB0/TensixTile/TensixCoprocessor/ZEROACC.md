@@ -26,48 +26,57 @@ There is no syntax to specify `/* bool */ Revert`; if a non-zero value is desire
 ## Functional model
 
 ```c
+if (Revert) {
+  // If this branch is taken, then in the below, the assignments of DstRowValid set it
+  // to true instead of to false. Don't use this unless you really know what you're doing.
+  UndefinedBehavior();
+}
 if (Mode == ZEROACC_MODE_ONE_ROW) {
   uint1_t StateID = ThreadConfig[CurrentThread].CFG_STATE_ID_StateID;
   auto& ConfigState = Config[StateID];
   uint10_t Row = Imm10;
   Row += ThreadConfig[CurrentThread].DEST_TARGET_REG_CFG_MATH_Offset;
   Row += RWCs[CurrentThread].Dst + ConfigState.DEST_REGW_BASE_Base;
-  if (ConfigState.ALU_ACC_CTRL_Fp32_enabled || ConfigState.ALU_ACC_CTRL_INT8_math_enabled) {
-    Dst32b[Row][:] = Undefined;
+  if (ConfigState.ALU_ACC_CTRL_Fp32_enabled || ConfigState.ALU_ACC_CTRL_INT8_math_enabled ||
+      RISCV_DEBUG_REG_DBG_FEATURE_DISABLE[11]) {
+    DstRowValid[Adj32(Row)] = false;
   } else {
-    Dst16b[Row][:] = Undefined;
+    DstRowValid[Row] = false;
   }
 } else {
-  if (Revert) {
-    // If this branch is taken, then in the below, all assignments of Undefined
-    // are instead un-assigning Undefined. Don't use this unless you really know
-    // what you're doing.
-    UndefinedBehaviour();
-  }
   if (Mode == ZEROACC_MODE_16_ROWS) {
-    Imm10 &= 0xff;
+    if (Imm10 > 0xFF) {
+      NonContractualBehavior {
+        Imm10 &= 0xFF; // Current silicon only uses the low 8 bits (not architecturally guaranteed)
+      }
+    }
     if (UseDst32b) {
       if (Imm10 < 32) {
-        for (unsigned i = 0; i < 16; ++i) Dst32b[Imm10 * 16 + i][:] = Undefined;
+        for (unsigned i = 0; i < 16; i++) DstRowValid[Imm10*32 + (i & 8)*2 + (i & 7)] = false;
+      } else {
+        NonContractualBehavior {
+          // Out of bounds values are a nop in current silicon (not architecturally guaranteed)
+        }
       }
     } else {
       if (Imm10 < 64) {
-        for (unsigned i = 0; i < 16; ++i) Dst16b[Imm10 * 16 + i][:] = Undefined;
+        for (unsigned i = 0; i < 16; i++) DstRowValid[Imm10*16 + i] = false;
+      } else {
+        NonContractualBehavior {
+          // Out of bounds values are a nop in current silicon (not architecturally guaranteed)
+        }
       }
     }
   } else if (Mode == ZEROACC_MODE_HALF_OF_DST) {
     if (Imm10 & 1) {
       // High half
-      for (unsigned i = 512; i < 1024; ++i) Dst16b[i][:] = Undefined;
-      for (unsigned i = 256; i <  512; ++i) Dst32b[i][:] = Undefined;
+      for (unsigned i = 512; i < 1024; i++) DstRowValid[i] = false;
     } else {
       // Low half
-      for (unsigned i = 0; i < 512; ++i) Dst16b[i][:] = Undefined;
-      for (unsigned i = 0; i < 256; ++i) Dst32b[i][:] = Undefined;
+      for (unsigned i = 0; i < 512; i++) DstRowValid[i] = false;
     }
   } else /* Mode == ZEROACC_MODE_ALL_OF_DST */ {
-    for (unsigned i = 0; i < 1024; ++i) Dst16b[i][:] = Undefined;
-    for (unsigned i = 0; i <  512; ++i) Dst32b[i][:] = Undefined;
+    for (unsigned i = 0; i < 1024; i++) DstRowValid[i] = false;
   }
 }
 
