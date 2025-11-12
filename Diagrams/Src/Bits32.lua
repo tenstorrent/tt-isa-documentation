@@ -81,7 +81,7 @@ local function Bits32(fields)
   end
 
   out:putf"</svg>"
-  
+
   return tostring(out)
 end
 

@@ -240,7 +240,7 @@ local function NoC(noc_id, args)
   local noc_inactive_color = noc_color
   if next(active_hops) then
     noc_inactive_color = noc_color .. '" fill-opacity="20%'
-  end  
+  end
 
   if noc_id == 0 then
     out:putf('<g transform="translate(%g %g)">\n', 20 + 0.5, 20 + 0.5)
@@ -455,7 +455,7 @@ local function NoC_Coords(args)
 
   local out = buffer.new()
   local cell_dims = {w = 60, h = 60}
-  
+
   local dims = {w = cell_dims.w * noc_size.w + 1 + margin.left + margin.right, h = cell_dims.h * noc_size.h + 1 + margin.top + margin.bottom}
   out:putf([[<svg version="1.1" width="%u" height="%u" xmlns="http://www.w3.org/2000/svg">]], dims.w, dims.h)
   out:putf([[<rect width="%u" height="%u" rx="15" stroke="transparent" fill="white"/>]], dims.w, dims.h)

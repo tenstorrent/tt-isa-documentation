@@ -44,7 +44,7 @@ local function TensixFrontend(opts)
     Drawing.ThickArrow(out, mop_expander.right - 15, y, "<-", mop_cfg.x + 10, y, "black", 1.5)
     y = mop_expander.y + mop_expander.h * 0.7
     Drawing.ThickArrow(out, mop_expander.right - 15, y, "<-", mop_cfg.x + 10, y, insn_color, 1.5)
-    
+
     local text_y = (auto_ttsync or fifo1).y - y_spacing
     for j, box in ipairs{auto_ttsync or fifo1, mop_cfg} do
       for k, text in ipairs{'<tspan font-family="monospace">'.. (box ~= mop_cfg and "INSTRN_BUF_BASE" or "TENSIX_MOP_CFG_BASE").. "</tspan>", "RISCV T".. (i - 1)} do
@@ -57,7 +57,7 @@ local function TensixFrontend(opts)
     local dbg_text_x = b_text_x * 2 - mop_expander.x_middle
 
     local b_mux = Drawing.Mux(out, {x = mop_expander.x_middle - 20, right = dbg_text_x + 20, y = mop_expander.bottom + 75, h = 10}, "v")
-    
+
     local b_text_y = b_mux.y - y_spacing + 12
     for k, text in ipairs{'<tspan font-family="monospace">INSTRN'.. (i == 1 and "" or (i - 1)) .."_BUF_BASE</tspan>", "RISCV B"} do
       out:putf([[<text x="%d" y="%d" text-anchor="middle" dominant-baseline="auto">%s</text>]], b_text_x, b_text_y - 5 - (k - 1) * line_spacing, text)

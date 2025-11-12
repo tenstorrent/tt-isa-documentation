@@ -78,7 +78,7 @@ local function PackerPipeline()
   out:putf([[<text x="%d" y="%d" text-anchor="start" dominant-baseline="middle">Yes</text>]],
     bfp_choice.x_middle + 6, (bfp_choice.bottom + bfp_buf.y) * 0.5 + 1)
 
-  local zero_choice = Drawing.RectText(out, {right = comp.x_middle - (bfp_choice.x - comp.x_middle), w = bfp_choice.w, y = bfp_choice.y, h = bfp_choice.h, h_text = ds.h_text, rhombus = true, color = fe_color}, {"Datum is", "Zero?"}) 
+  local zero_choice = Drawing.RectText(out, {right = comp.x_middle - (bfp_choice.x - comp.x_middle), w = bfp_choice.w, y = bfp_choice.y, h = bfp_choice.h, h_text = ds.h_text, rhombus = true, color = fe_color}, {"Datum is", "Zero?"})
   Drawing.MultiLine(out, {comp.x - 2, comp.y_middle, "<", zero_choice.x_middle, "v", zero_choice.y - 2})
   Drawing.MultiLine(out, {zero_choice.right + 2, zero_choice.y_middle, ">", bfp_choice.x - 2})
   for _, box in ipairs{comp, zero_choice, bfp_choice} do

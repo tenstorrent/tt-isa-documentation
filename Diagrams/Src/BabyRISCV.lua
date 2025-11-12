@@ -48,7 +48,7 @@ local function BabyRISC(args)
   Drawing.LineTextAbove(out, {frontend.right, frontend.y_middle}, {iram_ic_mux.x, frontend.y_middle}, "32b")
 
   local pc = Drawing.RectText(out, {right = frontend.x - 10, w = 35, bottom = frontend.bottom, h = (frontend.h - 10) * 0.5, color = data_color}, {[[<tspan font-family="monospace">pc</tspan>]], "32b"})
-  local gdb = Drawing.RectText(out, {x = 5.5, right = pc.x - 10, y = pc.y, bottom = pc.bottom, color = xu_color}, {"GDB/Debug","Interface"}) 
+  local gdb = Drawing.RectText(out, {x = 5.5, right = pc.x - 10, y = pc.y, bottom = pc.bottom, color = xu_color}, {"GDB/Debug","Interface"})
   local bp = Drawing.RectText(out, {x = 5.5, right = pc.right, y = frontend.y, bottom = pc.y - 10, color = xu_color}, {"Branch","Predictor"})
   MultiLine(out, {pc.right, pc.y_middle, ">", frontend.x, head = false})
   MultiLine(out, {pc.x_middle, pc.y, "^", bp.bottom, head = false})
@@ -78,7 +78,7 @@ local function BabyRISC(args)
   else
     local mop = Drawing.RectText(out, {x = mop_cfg.right + 20, y = mop_cfg.y, w = 108, h = mop_cfg.h, color = xu_color}, {"MOP Expander", "(T only)"})
     Drawing.LineTextAbove(out, {mop_cfg.right, mop.y_middle}, {mop.x, mop.y_middle})
-    
+
     local ls_mux_y = mop_cfg.bottom + y_spacing_mem + 12
     MultiLine(out, {mop.right - 20, mop.bottom + 2, "v", ls_mux_y - 2})
     MultiLine(out, {mop.right - 40, ls_mux_y - 2, "^", mop.bottom + 2})
@@ -168,7 +168,7 @@ local function BabyRISC_BH(args)
   Drawing.LineTextAbove(out, {frontend.right, frontend.y_middle}, {ic.x, frontend.y_middle}, "128b")
 
   local pc = Drawing.RectText(out, {right = frontend.x - 10, w = 35, bottom = frontend.bottom, h = (frontend.h - 10) * 0.5, color = data_color}, {[[<tspan font-family="monospace">pc</tspan>]], "32b"})
-  local gdb = Drawing.RectText(out, {x = 5.5, right = pc.x - 10, y = pc.y, bottom = pc.bottom, color = xu_color}, {"GDB/Debug","Interface"}) 
+  local gdb = Drawing.RectText(out, {x = 5.5, right = pc.x - 10, y = pc.y, bottom = pc.bottom, color = xu_color}, {"GDB/Debug","Interface"})
   local bp = Drawing.RectText(out, {x = 5.5, right = pc.right, y = frontend.y, bottom = pc.y - 10, color = xu_color}, {"Branch","Predictor"})
   MultiLine(out, {pc.right, pc.y_middle, ">", frontend.x, head = false})
   MultiLine(out, {pc.x_middle, pc.y, "^", bp.bottom, head = false})

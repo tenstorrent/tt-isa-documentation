@@ -74,7 +74,7 @@ local function NIUs(out, x, y, num, niu_rtr_arrow_dir, tile_label)
       local noc_inactive_color = noc_color .. '" fill-opacity="40%'
       niu_layer:putf([[<rect x="%g" y="%g" width="%g" height="%g" stroke="transparent" fill="%s" rx="5" ry="5"/>]], x, y, niu_w, niu_h, noc_color)
       niu_layer:putf([[<text x="%d" y="%d" text-anchor="middle" dominant-baseline="middle" fill="white">NoC #%u NIU</text>]], x + niu_w * 0.5 + 1, y + niu_h * 0.5 + 2, i % 2)
-      
+
       local r1 = niu_h * 0.5 + 3
       local r2 = r1 / math.sqrt(2)
       local router_x, router_y, hop_dir
@@ -349,7 +349,7 @@ local function ARC(direction)
       end
     end
   end
-  
+
   local gtlb
   do
     local niu_y = (nius[1].y_middle + nius[2].y_middle) * 0.5
@@ -380,7 +380,7 @@ local function ARC(direction)
 
   local apb = Drawing.RectText(out, {right = xbar.right, y = xbar.bottom + 20, w = 55, h = 55, color = xu_color}, {"AXI /", "/ APB"})
   Drawing.ThickArrow(out, apb.x_middle, xbar.bottom + 0.5, "->", apb.x_middle, apb.y - 1, "black", 1)
-  
+
   local apb_mux = Drawing.Mux(out, {x = apb.x - 10, y = apb.bottom + 20, right = apb.right + 10, h = 10}, "^")
   local reset_unit = Drawing.RectText(out, {right = apb.x - 20, w = 100, h = apb.h, y = apb.y, color = xu_color}, {"Reset", "Unit"})
   Drawing.MultiLine(out, {apb.x_middle, apb.bottom + 1, "v", apb_mux.y - 2})
@@ -393,7 +393,7 @@ local function ARC(direction)
 
   local reset_scratch = Drawing.RectText(out, {right = xbar.x - 20, w = 60, h = 55, y = reset_unit.bottom + 20, color = data_color}, {"Scratch", "8x 32b"})
   Drawing.MultiLine(out, {(reset_unit.x + reset_scratch.right) * 0.5, reset_unit.bottom + 1, "v", reset_scratch.y - 2})
-  
+
   local csm = Drawing.RectText(out, {right = xbar.x - 20, w = 100, h = (xbar.h - 20) * 0.5, y = xbar.y, color = data_color}, {"ARC CSM", "512 KiB"})
   Drawing.ThickArrow(out, csm.right + 1, csm.y_middle, "<-", xbar.x - 0.5, csm.y_middle, "black", 1)
   local arc = Drawing.RectText(out, {right = xbar.x - 20, w = 100, h = (xbar.h - 20) * 0.5, bottom = xbar.bottom, color = xu_color}, {"ARC CPU", "(4 cores)"})
@@ -568,7 +568,7 @@ local function L2CPU(direction)
   end
   local main_mux = Drawing.Mux(out, {x = harts[1].l2.right + 20, w = 10, y = 36, bottom = harts[#harts].x280.bottom}, ">")
   for i = 0, 3 do
-    local x280 = harts[i].x280 
+    local x280 = harts[i].x280
     local mmu = harts[i].mmu
     local l2 = harts[i].l2
     Drawing.ThickArrow(out, mmu.right + 0.5, l2.y_middle, "--", l2.x - 0.5, l2.y_middle, tl_color, 1)

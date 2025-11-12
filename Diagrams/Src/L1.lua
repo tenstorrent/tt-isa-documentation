@@ -187,7 +187,7 @@ local function L1(args)
     elseif i == 4 or i == 5 then
       y = y + 8
     end
-    
+
     local wire
     y, wire = render_clients(client_x, y, client)
     ports[i] = Drawing.RectText(out, {right = client_x, y_middle = wire, w = 80, h = 30, color = xu_color}, "Port #".. client_id[i])
