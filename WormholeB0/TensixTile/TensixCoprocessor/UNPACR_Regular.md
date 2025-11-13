@@ -118,7 +118,7 @@ if (!IsUncompressed) {
 }
 
 double InAddr_Exponents = undefined;
-if (IsBFPFormat(InDataFormat) && !ConfigState.THCON_SEC[WhichUnpacker].Force_shared_exp) {
+if (IsBFPFormat(InDataFormat) && !ConfigState.THCON_SEC[WhichUnpacker].REG2_Force_shared_exp) {
   InAddr_Exponents = InAddr;
   if (InDataFormat == BFP8 || InDataFormat == BFP8a || !ConfigDescriptor.NoBFPExpSection) {
     auto NumElements = XDim * YDim * ZDim * WDim;
@@ -289,8 +289,8 @@ for (unsigned i = 0; i < InputNumDatums && DecompressNumDatums; ) {
   }
   uint8_t ExpBits = undefined;
   if (IsBFPFormat(InDataFormat)) {
-    if (ConfigState.THCON_SEC[WhichUnpacker].Force_shared_exp) {
-      ExpBits = ConfigState.UNP[WhichUnpacker].FORCE_SHARED_EXP_shared_exp;
+    if (ConfigState.THCON_SEC[WhichUnpacker].REG2_Force_shared_exp) {
+      ExpBits = ConfigState.UNP[WhichUnpacker].FORCED_SHARED_EXP_shared_exp;
     } else {
       ExpBits = ReadL1Bytes(floor(InAddr_Exponents), 1);
       InAddr_Exponents += 1 / 16.;
