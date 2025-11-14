@@ -8,15 +8,15 @@ Edge masking is performed on datums coming from `Dst`, which can selectively rep
 uint1_t StateID = ThreadConfig[CurrentThread].CFG_STATE_ID_StateID;
 auto& ConfigState = Config[StateID];
 
-Datum FetchFromDst(uint32_t addr) {
-  auto& TPG = CurrentPacker.TilePositionGenerator;
+Datum FetchFromDst(uint32_t PackerIndex, uint32_t addr) {
+  auto& TPG = Packers[PackerIndex].TilePositionGenerator;
   uint2_t b;
   if (ConfigState.PCK_EDGE_TILE_FACE_SET_SELECT_enable) {
-    unsigned Z = CurrentPacker.Config.DEST_TARGET_REG_CFG_PACK_ZOffset + TPG.Z;
-    uint2_t a = CurrentPacker.Config[StateID].PCK_EDGE_TILE_FACE_SET_SELECT_select;
+    unsigned Z = Config.DEST_TARGET_REG_CFG_PACK[PackerIndex].ZOffset + TPG.Z;
+    uint2_t a = (ConfigState.PCK_EDGE_TILE_FACE_SET_SELECT_select >> (2 * PackerIndex)) & 3;
     b = ConfigState.TILE_FACE_SET_MAPPING[a].face_set_mapping[Z & 0xf];
   } else {
-    b = CurrentPacker.Config[StateID].PCK_EDGE_TILE_ROW_SET_SELECT_select;
+    b = (ConfigState.PCK_EDGE_TILE_ROW_SET_SELECT_select >> (2 * PackerIndex)) & 3;
   }
   uint2_t c = ConfigState.TILE_ROW_SET_MAPPING[b].row_set_mapping[TPG.Y & 0xf];
   uint16_t EdgeMask = ConfigState.PCK_EDGE_OFFSET_SEC[c].mask;
