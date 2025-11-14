@@ -88,7 +88,7 @@ for (unsigned i = 0; i < 3; ++i) {
 
 The input address must be aligned to a complete datum. When fetching datums from L1, `ADC.X` is the only address component capable of addressing more precisely than 16 bytes. When fetching datums from `Dst`, `ADC.X` is again the only address component capable of particularly fine addressing, though in this case the exact definition of _fine_ depends on `In_data_format`.
 
-Note that `PCK0_ADDR_CTRL_XY_REG_0_[XYZW]stride` are used to determine the _starting_ address, but once the starting address has been determined, datums are fetched from the contiguous addresses `InputSourceAddr + i * InputSourceStride for i in range(InputNumDatums)`. For discontiguous input, either use the downsampling functionality, or issue multiple pack instructions.
+Note that `PCK0_ADDR_CTRL_[XY,ZW]_REG_0_[XYZW]stride` are used to determine the _starting_ address, but once the starting address has been determined, datums are fetched from the contiguous addresses `InputSourceAddr + i * InputSourceStride for i in range(InputNumDatums)`. For discontiguous input, either use the downsampling functionality, or issue multiple pack instructions.
 
 Though `PCK0_ADDR_CTRL_XY_REG_0_Xstride` can in theory take any value, the only _sane_ values for `PCK0_ADDR_CTRL_XY_REG_0_Xstride` are `PCK0_ADDR_CTRL_XY_REG_0_Xstride == 0` or `PCK0_ADDR_CTRL_XY_REG_0_Xstride == BytesPerDatum`.
 
