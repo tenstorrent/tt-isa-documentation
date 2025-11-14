@@ -11,7 +11,7 @@ uint1_t StateID = ThreadConfig[CurrentThread].CFG_STATE_ID_StateID;
 auto& ConfigState = Config[StateID];
 for (unsigned i = 0; i < 4; ++i) {
   auto& PackerI = Packers[i];
-  auto& PackerIConfig = PackerI.Config[StateID];
+  auto& PackerIConfig = ConfigState.Packers[i];
 
   uint32_t Addr = PackerIConfig.L1_Dest_addr + !PackerIConfig.Sub_l1_tile_header_size;
   if (i == 0) Packer0InitialAddr = Addr;

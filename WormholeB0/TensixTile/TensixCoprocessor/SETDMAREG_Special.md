@@ -59,20 +59,10 @@ case 2: case 3: case 4: case 5:
   TileHeader *ValuesTH = (TileHeader*)&Values;
   ValuesTH->TileSize = (Packers[i].LastThread == CurrentThread ? Packers[i].LastTileSize : 0) + 1;
   ValuesTH->DataFormat = Packers[i].Config[StateID].Out_data_format;
-  // Note:
-  // Packers[0].Config[x].Out_data_format is Config[x].THCON_SEC0_REG1_Out_data_format
-  // Packers[1].Config[x].Out_data_format is Config[x].THCON_SEC0_REG8_Out_data_format
-  // Packers[2].Config[x].Out_data_format is Config[x].THCON_SEC1_REG1_Out_data_format
-  // Packers[3].Config[x].Out_data_format is Config[x].THCON_SEC1_REG8_Out_data_format
   if (Config[StateID].THCON_SEC0_REG1_All_pack_disable_zero_compress_ovrd) {
     ValuesTH->DisableZeroCompression = Config[StateID].THCON_SEC0_REG1_All_pack_disable_zero_compress.Bit[i];
   } else {
-    ValuesTH->DisableZeroCompression = Packers[i].Config[StateID].Disable_zero_compress;
-    // Note:
-    // Packers[0].Config[x].Disable_zero_compress is Config[x].THCON_SEC0_REG1_Disable_zero_compress
-    // Packers[1].Config[x].Disable_zero_compress is Config[x].THCON_SEC0_REG8_Disable_zero_compress
-    // Packers[2].Config[x].Disable_zero_compress is Config[x].THCON_SEC1_REG1_Disable_zero_compress
-    // Packers[3].Config[x].Disable_zero_compress is Config[x].THCON_SEC1_REG8_Disable_zero_compress
+    ValuesTH->DisableZeroCompression = Config[StateID].Packers[i].Disable_zero_compress;
   }
   ValuesTH->AllZeroFlags = Packers[i].AllZeroFlags;
   break;

@@ -11,6 +11,12 @@ The `ThreadConfig` variable contains assorted thread-specific configuration fiel
 
 The `Config` variable contains assorted thread-agnostic configuration fields, with two banks (any Tensix thread can access any bank). In instruction descriptions, `Config[i].Field` is shorthand for `(Config[i][Field_ADDR32] & Field_MASK) >> Field_SHAMT`.
 
+Additionally:
+- `Config[i].Packers[0].Field` is `Config[i].THCON_SEC0_REG1_Field`
+- `Config[i].Packers[1].Field` is `Config[i].THCON_SEC0_REG8_Field`
+- `Config[i].Packers[2].Field` is `Config[i].THCON_SEC1_REG1_Field`
+- `Config[i].Packers[3].Field` is `Config[i].THCON_SEC1_REG8_Field`
+
 See [`cfg_defines.h`](https://github.com/tenstorrent/tt-metal/blob/bc8bf6c8d8533501480d9154777749abe1ed846a/tt_metal/hw/inc/wormhole/wormhole_b0_defines/cfg_defines.h) for all of the `Field_ADDR32`, `Field_MASK`, and `Field_SHAMT` values. Note that `cfg_defines.h` is divided up into multiple sections; the `// Registers for THREAD` section is for indexing into `ThreadConfig`, whereas all of the other sections are for indexing into `Config`.
 
 Different instructions are used to access these two variables:
