@@ -48,20 +48,20 @@ struct TilePositionGenerator {
 
   void Advance() {
     uint1_t StateID = ThreadConfig[CurrentThread].CFG_STATE_ID_StateID;
-    auto& CurrentPackerConfig = CurrentPacker.Config[StateID];
+    auto& ConfigState = Config[StateID];
 
     X += 1;
     if (X == 16) {
       X = 0;
-      if (CurrentPackerConfig.PACK_COUNTERS_pack_yz_transposed) {
+      if (ConfigState.PACK_COUNTERS_SEC[PackerIndex].pack_yz_transposed) {
         Z += 1;
-        if (Z == CurrentPackerConfig.PACK_COUNTERS_pack_reads_per_xy_plane) {
+        if (Z == ConfigState.PACK_COUNTERS_SEC[PackerIndex].pack_reads_per_xy_plane) {
           Z = 0;
           Y += 1;
         }
       } else {
         Y += 1;
-        if (Y == CurrentPackerConfig.PACK_COUNTERS_pack_reads_per_xy_plane) {
+        if (Y == ConfigState.PACK_COUNTERS_SEC[PackerIndex].pack_reads_per_xy_plane) {
           Y = 0;
           Z += 1;
         }
