@@ -146,6 +146,8 @@ case SFPSHFT2_MOD1_SHFT_IMM:
     }
   }
   break;
+default:
+  UndefinedBehavior();
 }
 ```
 
