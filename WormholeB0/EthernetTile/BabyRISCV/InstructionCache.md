@@ -20,4 +20,6 @@ Some configuration fields are available to constrain the instruction cache prefe
 
 ## Cache invalidation
 
-The baby RISCV cores do *not* implement the `Zifencei` extension, and thus the `fence.i` instruction is *not* available and cannot be used to flush the instruction cache (if executed, it'll be treated as if it were a `nop` instruction). The instruction cache is only cleared during [reset](../SoftReset.md#riscv-soft-reset), though it is also possible to trash the entire contents of the cache by executing 128 instructions from consecutive addresses in L1.
+The baby RISCV cores do *not* implement the `Zifencei` extension, and thus the `fence.i` instruction is *not* available and cannot be used to flush the instruction cache. If executed, it'll be treated as if it were a `nop` instruction; this is a NonContractualBehavior and should not be relied upon.
+
+The instruction cache is only cleared during [reset](../SoftReset.md#riscv-soft-reset), though it is also possible to trash the entire contents of the cache by executing 128 instructions from consecutive addresses in L1.

@@ -20,7 +20,9 @@ Some configuration fields are available to constrain the instruction cache prefe
 
 ## Cache invalidation
 
-The baby RISCV cores do *not* implement the `Zifencei` extension, and thus the `fence.i` instruction is *not* available and cannot be used to flush the instruction cache (if executed, it'll be treated as if it were a `nop` instruction). Instead, the instruction cache is cleared during [reset](../SoftReset.md#riscv-soft-reset), and can also be cleared by writing to the `RISCV_IC_INVALIDATE_InvalidateAll` field within [Tensix backend configuration](../TensixCoprocessor/BackendConfiguration.md). Note that this is _not_ accessible over the NoC, nor is it accessible to RISCV NC, so RISCV NC cannot clear its own instruction cache (nor anyone else's) by itself.
+The baby RISCV cores do *not* implement the `Zifencei` extension, and thus the `fence.i` instruction is *not* available and cannot be used to flush the instruction cache. If executed, it'll be treated as if it were a `nop` instruction; this is a NonContractualBehavior and should not be relied upon.
+
+Instead, the instruction cache is cleared during [reset](../SoftReset.md#riscv-soft-reset), and can also be cleared by writing to the `RISCV_IC_INVALIDATE_InvalidateAll` field within [Tensix backend configuration](../TensixCoprocessor/BackendConfiguration.md). Note that this is _not_ accessible over the NoC, nor is it accessible to RISCV NC, so RISCV NC cannot clear its own instruction cache (nor anyone else's) by itself.
 
 If writing new instructions to L1 and then writing to `RISCV_IC_INVALIDATE_InvalidateAll` to flush the instruction cache, [memory ordering](MemoryOrdering.md) rules should be consulted to ensure that the write-requests to L1 are processed _before_ the write-request to `RISCV_IC_INVALIDATE_InvalidateAll` is processed, otherwise the flush could happen before the new instructions are written, and speculative instruction fetches due to the hardware prefetcher and/or branch predictor could repopulate the cache with old instructions. One robust instruction sequence is:
 
