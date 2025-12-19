@@ -28,16 +28,16 @@ TT_SFPLUT(/* u4 */ VD, /* u4 */ Mod0, 0)
 lanewise {
   if (VD < 12 || LaneConfig[Lane].DISABLE_BACKDOOR_LOAD) {
     if (LaneEnabled) {
-      float l3 = LReg[3].f32;
-      float b = fabsf(l3);
-      uint32_t coeffs = b < 1.0 ? LReg[0].u32
-                      : b < 2.0 ? LReg[1].u32
-                      :           LReg[2].u32;
-      float a = Lut8ToFp32((coeffs >> 8) & 0xff);
-      float c = Lut8ToFp32( coeffs       & 0xff);
-      float d = a * b + c;
+      uint32_t l3 = LReg[3].u32;
+      uint32_t b = l3 & 0x7FFFFFFF; // absolute value
+      uint32_t coeffs = (b < 0x3F800000) ? LReg[0].u32 : // b < 1.0f
+                        (b < 0x40000000) ? LReg[1].u32 : // b < 2.0f
+                        LReg[2].u32;
+      uint32_t a = Lut8ToFp32((coeffs >> 8) & 0xFF);
+      uint32_t c = Lut8ToFp32( coeffs       & 0xFF);
+      uint32_t d = fma_model(a, b, c); // compute a * b + c
       if (Mod0 & SFPLUT_MOD0_SGN_RETAIN) {
-        d = copysignf(d, l3);
+        d = (d & 0x7FFFFFFF) | (l3 & 0x80000000); // copy sign bit from l3
       }
       unsigned vd;
       if ((Mod0 & SFPLUT_MOD0_INDIRECT_VD) && VD != 16) {
@@ -46,7 +46,7 @@ lanewise {
         vd = VD;
       }
       if (vd < 8 || vd == 16) {
-        LReg[vd].f32 = d;
+        LReg[vd].u32 = d;
       }
     }
   }
@@ -58,12 +58,12 @@ Supporting definitions:
 #define SFPLUT_MOD0_SGN_RETAIN  4
 #define SFPLUT_MOD0_INDIRECT_VD 8
 
-float Lut8ToFp32(uint8_t x) {
+uint32_t Lut8ToFp32(uint8_t x) {
   if (x == 0xff) return 0;
   uint32_t Sign = x >> 7;
   uint32_t Exp = (x >> 4) & 7;
   uint32_t Man = x & 0xf;
-  return std::bit_cast<float>((Sign << 31) | ((127 - Exp) << 23) | (Man << 19));
+  return (Sign << 31) | ((127 - Exp) << 23) | (Man << 19);
 }
 ```
 
@@ -82,7 +82,7 @@ Note that the 256 possible values of `Lut8ToFp32` are:
 
 ## IEEE754 conformance / divergence
 
-The evaluation of `float d = a * b + c;` is as per [`SFPMAD`](SFPMAD.md#ieee754-conformance--divergence).
+The evaluation of `a * b + c` is as per [`SFPMAD`](SFPMAD.md#ieee754-conformance--divergence).
 
 ## Instruction scheduling
 
