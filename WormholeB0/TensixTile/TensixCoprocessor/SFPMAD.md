@@ -24,7 +24,7 @@ lanewise {
       uint32_t a = LReg[va].u32;
       uint32_t b = LReg[VB].u32;
       uint32_t c = LReg[VC].u32;
-      uint32_t d = fma_model_wh(a, b, c); // Compute a * b + c
+      uint32_t d = fma_model(a, b, c); // compute a * b + c
       unsigned vd;
       if ((Mod1 & SFPMAD_MOD1_INDIRECT_VD) && VD != 16) {
         vd = LReg[7].u32 & 15;
