@@ -1,11 +1,11 @@
 # `SFPMUL24` (Vectorised multiply of 23-bit integers)
 
-**Summary:** Performs lanewise multiplication of two 23-bit integers, returning either the low 23 bits or high 23 bits of their product. In some modes, the `VA` and/or `VD` indices from the instruction bits are ignored, and instead come from the low four bits of `LReg[7]` (which allows these bits to potentially differ between lanes). Due to how the floating-point datapath is reused for `SFPMUL24`, an exotic shift/add-like operation is performed after the multiply, though software is strongly encouraged to turn this operation into a no-op by always setting `VC == 9` (which refers to the constant zero; see the definition of [`LReg[9]`](LReg.md)).
+**Summary:** Performs lanewise multiplication of two 23-bit integers, returning either the low 23 bits or high 23 bits of their product. In some modes, the `VA` and/or `VD` indices from the instruction bits are ignored, and instead come from the low four bits of `LReg[7]` (which allows these bits to potentially differ between lanes). Due to how the floating-point datapath is reused for `SFPMUL24`, an exotic shift/add-like operation is performed after the multiply. This is a NonContractualBehavior and software is strongly encouraged to turn this operation into a no-op by always setting `VC == 9` (which refers to the constant zero; see the definition of [`LReg[9]`](LReg.md)).
 
 **Backend execution unit:** [Vector Unit (SFPU)](VectorUnit.md), MAD sub-unit
 
 > [!TIP]
-> This instruction is new in Blackhole.
+> This instruction is new in Blackhole. Note that the multiply is 23b * 23b, even though the opcode name suggests a 24b multiply.
 
 ## Syntax
 
@@ -26,13 +26,18 @@ lanewise {
       unsigned va = Mod1 & SFPMUL24_MOD1_INDIRECT_VA ? LReg[7].u32 & 15 : VA;
       uint32_t a = LReg[va].u32;
       uint32_t b = LReg[VB].u32;
+      uint32_t c = LReg[VC].u32;
       uint32_t d;
       if (Mod1 & SFPMUL24_MOD1_UPPER) {
         d = ((a & 0x7fffffull) * (b & 0x7fffffull)) >> 23;
       } else {
         d = (a * b) & 0x7fffff;
       }
-      d = Mul24ShiftAdd(d, LReg[VC].u32);
+      if (c) {
+        NonContractualBehavior {
+          d = Mul24ShiftAdd(d, c); // Adjustment from reuse of floating-point datapath (not architecturally guaranteed)
+        }
+      }
       unsigned vd;
       if ((Mod1 & SFPMUL24_MOD1_INDIRECT_VD) && VD != 16) {
         vd = LReg[7].u32 & 15;
