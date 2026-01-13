@@ -20,7 +20,8 @@ The full RV32IM instruction set is implemented, with two caveats:
 
 Consult the RISCV specifications of "RV32I Base Integer Instruction Set" and "M Standard Extension for Integer Multiplication and Division" for full details of RV32IM, including instruction semantics and instruction encodings.
 
-Invalid / unsupported RISCV instructions are silently executed as if they were _some_ other instruction - usually as if they were a `nop` instruction, but not always.
+Invalid/unsupported RISCV instructions result in UndefinedBehavior. In practice, they are silently executed as if they were _some_ other
+instruction - usually, but not always, as if they were a `nop` instruction - but software must not depend on this behavior.
 
 ## Pipeline
 
