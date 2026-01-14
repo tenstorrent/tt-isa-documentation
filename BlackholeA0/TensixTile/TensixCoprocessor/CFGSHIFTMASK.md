@@ -26,11 +26,11 @@ if (CfgIndex >= (CFG_STATE_SIZE*4)) UndefinedBehaviour(); // Cannot index out of
 
 uint32_t ScratchValue = Config.SCRATCH_SEC[ScratchIndex < 3 ? ScratchIndex : CurrentThread].val;
 uint32_t MaskValue = (2u << MaskWidth) - 1u;
-ScratchValue = rotr(ScratchValue & MaskValue, RotateAmt);
+ScratchValue = std::rotr(ScratchValue & MaskValue, RotateAmt);
 
 uint1_t StateID = ThreadConfig[CurrentThread].CFG_STATE_ID_StateID;
 uint32_t CfgValue = Config[StateID][CfgIndex];
-if (MaskMode == 0) CfgValue &= ~rotr(MaskValue, RotateAmt);
+if (MaskMode == 0) CfgValue &= ~std::rotr(MaskValue, RotateAmt);
 switch (AluMode) {
 case 0: CfgValue |=  ScratchValue; break;
 case 1: CfgValue &=  ScratchValue; break;
@@ -42,14 +42,6 @@ case 6: CfgValue ^= ~ScratchValue; break;
 case 7: CfgValue -=  ScratchValue; break;
 }
 Config[StateID][CfgIndex] = CfgValue;
-```
-
-Supporting definitions:
-```c
-uint32_t rotr(uint32_t x, uint32_t amt) {
-  // Bitwise rotate x right by amt bits.
-  return (x << (32 - amt)) | (x >> amt);
-}
 ```
 
 Note that `CfgIndex` values line up exactly with the `Name_ADDR32` constants in `cfg_defines.h`, though be aware that the `// Registers for THREAD` section of `cfg_defines.h` is for indexing into `ThreadConfig` rather than `Config` (see [`SETC16`](SETC16.md) for that).
