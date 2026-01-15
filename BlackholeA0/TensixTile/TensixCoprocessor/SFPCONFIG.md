@@ -74,7 +74,7 @@ for (unsigned Lane = 0; Lane < 32; ++Lane) {
       // use a "default" value rather than trying to use Imm16.
       switch (VD) {
       case 11: Value = -1.f; break;
-      case 12: Value = 1/65536.f; break;
+      case 12: Value = 1/512.f; break;
       case 13: Value = -0.67487759f; break;
       case 14: Value = -0.34484843f; break;
       }
