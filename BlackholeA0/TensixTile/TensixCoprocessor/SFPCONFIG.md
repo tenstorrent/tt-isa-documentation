@@ -68,20 +68,20 @@ for (unsigned Lane = 0; Lane < 32; ++Lane) {
     break;
   case 11: case 12: case 13: case 14: {
     // Write to LReg[VD].
-    float Value;
+    uint32_t Value;
     if (Mod1 & MOD1_IMM16_IS_VALUE) {
       // Not enough Imm16 bits to specify a 32-bit float, so
       // use a "default" value rather than trying to use Imm16.
       switch (VD) {
-      case 11: Value = -1.f; break;
-      case 12: Value = 1/512.f; break;
-      case 13: Value = -0.67487759f; break;
-      case 14: Value = -0.34484843f; break;
+      case 11: Value = 0xBF800000; break; // -1.0f
+      case 12: Value = 0x3B000000; break; // 1.0f / 512.0f
+      case 13: Value = 0xBF2CC4C7; break; // -0.67487759f
+      case 14: Value = 0xBEB08FF9; break; // -0.34484843f
       }
     } else {
-      Value = LReg[0][Lane & 7].f32;
+      Value = LReg[0][Lane & 7].u32;
     }
-    LReg[VD][Lane].f32 = Value;
+    LReg[VD][Lane].u32 = Value;
     break; }
   case 15: {
     // Write or manipulate LaneConfig.
