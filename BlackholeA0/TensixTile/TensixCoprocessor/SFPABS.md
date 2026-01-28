@@ -46,5 +46,6 @@ if (VD < 8 || VD == 16) {
 
 Supporting definitions:
 ```c
+#define SFPABS_MOD1_INT 0
 #define SFPABS_MOD1_FLOAT 1
 ```
