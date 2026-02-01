@@ -87,7 +87,7 @@ for (auto [i, SubUnit] in enumerate({SimpleSubUnit, MADSubUnit, RoundSubUnit, St
   }
   if (!SubUnit.CanExecuteOpcode(Insn.Opcode)) { // Consult the table at the top of this page.
     Insn.Opcode = SFPNOP;
-    if (!SubUnit.CanExecuteOpcode(Insn.Opcode)) {
+    if (i == 3) {
       // This branch applies to StoreSubUnit, which should not be fed SFPNOP.
       UndefinedBehaviour();
     }
