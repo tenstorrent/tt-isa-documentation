@@ -156,7 +156,7 @@ Crucially, both values now use the same exponent. Some additional facts are know
 
 > In the above table and below prose, "exact" is shorthand for "is even, or has an error term equal to zero".
 
-The rows of the above table are mutally exclusive and cover all possibilities, and ditto for the columns. As such, regardless of the particular case, it can be seen that some things are always true:
+The rows of the above table are mutually exclusive and cover all possibilities, and ditto for the columns. As such, regardless of the particular case, it can be seen that some things are always true:
 * At least one of <code>p<sub>3</sub>_m</code> and <code>z<sub>3</sub>_m</code> is exact.
 * If only one of <code>p<sub>3</sub>_m</code> and <code>z<sub>3</sub>_m</code> is exact, <code>2<sup>48</sup> ≤ max(p<sub>3</sub>_m,z<sub>3</sub>_m) - min(p<sub>3</sub>_m,z<sub>3</sub>_m) ≤ max(p<sub>3</sub>_m,z<sub>3</sub>_m) + min(p<sub>3</sub>_m,z<sub>3</sub>_m)</code>.
 

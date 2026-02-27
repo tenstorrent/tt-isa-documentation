@@ -20,7 +20,7 @@ As pushing Tensix instructions is extremely common, the Tenstorrent RISCV assemb
 
 The encoding of `.ttinsn IMM32` is very simple: it is just `IMM32` rotated left by two bits. Due to the `0xC0000000u` constraint, after rotation, the low two bits will be `0b00` or `0b01` or `0b10` (never `0b11`). This lands in encoding space that many _other_ RISCV designs use for the RISCV "C"(ompressed) instruction set extension, but the baby RISCV cores do not implement the "C"(ompressed) instruction set extension; they instead treat this space as containing 32-bit `.ttinsn` instructions: the 32 bits of the instruction will be rotated right by two bits and then treated as a _value_ to be stored to `INSTRN_BUF_BASE` (`0xFFE40000`).
 
-For the purposes of [RISCV memory ordering](MemoryOrdering.md), a `.ttinsn` instruction is _exactly_ identical to an `sw` instruction. If fusion is performed, a fused sequence of up to four `.ttinsn` instructions still behaves likes a single store instruction for ordering purposes, albeit storing up to 128 bits rather than just 32 bits (similar to the vector stores performable by RISCV T2, and also similar to coalesced stores to L1).
+For the purposes of [RISCV memory ordering](MemoryOrdering.md), a `.ttinsn` instruction is _exactly_ identical to an `sw` instruction. If fusion is performed, a fused sequence of up to four `.ttinsn` instructions still behaves like a single store instruction for ordering purposes, albeit storing up to 128 bits rather than just 32 bits (similar to the vector stores performable by RISCV T2, and also similar to coalesced stores to L1).
 
 ## Memory ordering
 
