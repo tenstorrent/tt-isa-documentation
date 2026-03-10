@@ -185,7 +185,7 @@ LateFromFormat is CurrentPacker.Config[StateID].In_data_format;
 LateToFormat   is CurrentPacker.Config[StateID].Out_data_format;
 ```
 
-It is usually the case that `IntermediateFormat` and `LateToFormat` should be set to the same value. All three of `IntermediateFormat` and `LateFromFormat` and `LateToFormat` are 4-bit fields, with the encoding of data type names being:
+It is usually the case that `IntermediateFormat` and `LateFromFormat` should be set to the same value. All three of `IntermediateFormat` and `LateFromFormat` and `LateToFormat` are 4-bit fields, with the encoding of data type names being:
 
 ||`0b??11`|`0b??10`|`0b??01`|`0b??00`|
 |---|---|---|---|---|
