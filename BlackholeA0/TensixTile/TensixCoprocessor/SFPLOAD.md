@@ -27,7 +27,7 @@ TT_SFPLOAD(/* u4 */ VD, /* u4 */ Mod0, /* u3 */ AddrMod, /* u10 */ Imm10)
 
 One of the following data type conversions is specified using the `Mod0` field:
 
-|`SFPLOAD` Mode|Expected [`Dst` data type](Dst.md#data-types)|→|Resultant [`LReg` data type](LReg.md#data-type)|
+|`SFPLOAD` Mode|Expected [`Dst` data type](Dst.md#data-types)|→|Resultant [`LReg` data type](LReg.md#data-types)|
 |---|---|---|---|
 |`MOD0_FMT_FP16`|FP16 (configurable handling of infinity)|→|FP32|
 |`MOD0_FMT_BF16`|BF16|→|FP32|

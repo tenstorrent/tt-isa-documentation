@@ -59,7 +59,7 @@ To push a message:
     1. Increment both `STREAM_MSG_INFO_PTR_REG_INDEX` and `STREAM_MSG_INFO_WR_PTR_REG_INDEX` by one (message header array tracking). As the two registers remain equal, hardware will not use their values for anything.
     2. Increment `STREAM_WR_PTR_REG_INDEX` by the specified length (the receive buffer FIFO write pointer, which will wrap around if necessary).
     3. Append an entry to the message metadata FIFO.
-5. Once hardware finishes transmitting the message, it'll increment `STREAM_RD_PTR_REG_INDEX` by the specified length (the receive buffer FIFO read pointer, which will wrap around if necessary). In this setup, the read and write pointers do not affect the _location_ of the message contents, but they are still used to track the amount of in-flight data. Software can inspect either `STREAM_RD_PTR_REG_INDEX` or `STREAM_BUF_SPACE_AVAILABLE_REG_INDEX` to determine when it is safe to modify or re-use the range of memory populated by step 1.
+5. Once hardware finishes transmitting the message, it'll increment `STREAM_RD_PTR_REG_INDEX` by the specified length (the receive buffer FIFO read pointer, which will wrap around if necessary). In this setup, the read and write pointers do not affect the _location_ of the message contents, but they are still used to track the amount of in-flight data. Software can inspect either `STREAM_RD_PTR_REG_INDEX` or `STREAM_BUF_SPACE_AVAILABLE_REG_INDEX` to determine when it is safe to modify or reuse the range of memory populated by step 1.
 
 ## Register reference
 

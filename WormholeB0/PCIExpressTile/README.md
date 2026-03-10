@@ -123,7 +123,7 @@ Bar 4 can be ignored when the full 512 MiB of bar 0 is available; usage of bar 4
 >
 > Host software also needs to be careful to avoid unnecessary memory copies - if it uses bounce buffers to work around pinning requirements, then this puts additional load on the host's memory subsystem.
 
-PCI Express 4.0 x16 has theoretical maximum bandwidth of 32 GB/s in each direction simultaneously, but various overheads eat into this. In practice, well-written software can expect to achieve somewhere between 70% and 85% of the theoretical maximum bandwidth.
+PCI Express 4.0 x16 has a theoretical maximum bandwidth of 32 GB/s in each direction simultaneously, but various overheads eat into this. In practice, well-written software can expect to achieve somewhere between 70% and 85% of the theoretical maximum bandwidth.
 
 ### Host-initiated reads and writes
 

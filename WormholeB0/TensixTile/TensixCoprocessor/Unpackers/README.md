@@ -30,7 +30,7 @@ If decompression is enabled, every datum is augmented with a four-bit counter sp
 
 See [packer compression](../Packers/Compression.md#in-memory--on-disk-format) for a description of the in-memory / on-disk format. Unpackers can consume this compressed format, perform decompression, and emit decompressed data to `Dst` / `SrcA` / `SrcB`.
 
-To perform decompression during unpacking, one of either `ConfigState.THCON_SEC[WhichUnpacker].Disable_zero_compress_cntx[WhichContext]` or  `ConfigDescriptor.IsUncompressed` needs to be set to `false` (which one depends on the value of `MultiContextMode`; see the [`UNPACR` functional model](../UNPACR_Regular.md#functional-model) for details).
+To perform decompression during unpacking, one of `ConfigState.THCON_SEC[WhichUnpacker].Disable_zero_compress_cntx[WhichContext]` or `ConfigDescriptor.IsUncompressed` needs to be set to `false` (which one depends on the value of `MultiContextMode`; see the [`UNPACR` functional model](../UNPACR_Regular.md#functional-model) for details).
 
 If decompressing, then an unpacker will consume both a datum stream and an RLE stream: the RLE stream specifies how many zeros to insert after every datum (which can be between 0 and 15). It expects these two streams to be interleaved in L1: 32 datums, then 32 RLE values, then 32 datums, then 32 RLE values, and so forth.
 

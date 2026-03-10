@@ -16,7 +16,7 @@ The baby RISCV core in every Ethernet tile is very similar to [the baby RISCV co
 
 The full RV32IM instruction set is implemented, with two caveats:
 * The `fence` instruction is executed as if it were `nop`, and hence cannot be used to enforce memory ordering.
-* The `ebreak` and `ecall` instructions [trigger a debug pause, in the same fashion as a hardware breakpoint](DebugInterface.md#ebreak-and-ecall-instructions).
+* The `ebreak` and `ecall` instructions [trigger a debug pause, in the same fashion as a hardware breakpoint](../../TensixTile/BabyRISCV/DebugInterface.md#ebreak-and-ecall-instructions).
 
 Consult the RISCV specifications of "RV32I Base Integer Instruction Set" and "M Standard Extension for Integer Multiplication and Division" for full details of RV32IM, including instruction semantics and instruction encodings.
 

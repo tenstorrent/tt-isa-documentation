@@ -18,7 +18,7 @@ TT_SFPSTORE(/* u4 */ VD, /* u4 */ Mod0, /* u2 */ AddrMod, /* u10 */ Imm10)
 
 One of the following data type conversions is specified using the `Mod0` field:
 
-|`SFPSTORE` Mode|Expected [`LReg` data type](LReg.md#data-type)|→|Resultant [`Dst` data type](Dst.md#data-types)|
+|`SFPSTORE` Mode|Expected [`LReg` data type](LReg.md#data-types)|→|Resultant [`Dst` data type](Dst.md#data-types)|
 |---|---|---|---|
 |`MOD0_FMT_FP16`|FP32 (not containing NaN)|→|FP16 (†)|
 |`MOD0_FMT_BF16`|FP32 (not containing NaN)|→|BF16 (†)|

@@ -112,7 +112,7 @@ RISCV T0 / T1 / T2 have `Dst` mapped into their address space, starting at addre
 
 RISCV T0 and T1 can only access a single array element at a time, e.g. when viewing a 16-bit type, 16-bit `sh` / `lhu` instructions need to be used (32-bit `sw` / `lw` instructions will generally misbehave in these cases). RISCV T2 can access multiple array elements at once, using either scalar load/store instructions or vector load/store instructions, though the load or store still needs to be aligned to the overall size of the load or store.
 
-For RISCV T0 and T1, the following functions describe the behaviour of accessing a single element via a scalar load/store instruction. For RISCV T2, the behaviour is similar, just splitting the the load/store into an appropriate number of separate scalars based on `fmt`.
+For RISCV T0 and T1, the following functions describe the behaviour of accessing a single element via a scalar load/store instruction. For RISCV T2, the behaviour is similar, just splitting the load/store into an appropriate number of separate scalars based on `fmt`.
 
 ```c
 uint32_t Load32(uint32_t Addr) {

@@ -18,7 +18,7 @@ TT_SFPCAST(/* u4 */ VC, /* u4 */ VD, /* u4 */ Mod1)
 
 One of the following data type conversions is performed. Software does not need to explicitly indicate which of the two it desires, as their implementations are identical.
 
-|Input [`LReg` data type](LReg.md#data-type)|→|Output [`LReg` data type](LReg.md#data-type)|Notes|
+|Input [`LReg` data type](LReg.md#data-types)|→|Output [`LReg` data type](LReg.md#data-types)|Notes|
 |---|---|---|---|
 |Sign-magnitude integer|→|Two's complement integer|`-0` becomes <code>-2<sup>31</sup></code>|
 |Two's complement integer|→|Sign-magnitude integer|<code>-2<sup>31</sup></code> becomes `-0`|
