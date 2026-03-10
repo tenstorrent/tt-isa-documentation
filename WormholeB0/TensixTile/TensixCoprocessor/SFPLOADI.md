@@ -20,7 +20,7 @@ TT_SFPLOADI(/* u4 */ VD, /* u4 */ Mod0, /* u16 */ Imm16)
 
 One of the following data type conversions is specified using the `Mod0` field:
 
-|`SFPLOADI` Mode|Interpretation of `Imm16`|→|Resultant [`LReg` data type](LReg.md#data-type)|
+|`SFPLOADI` Mode|Interpretation of `Imm16`|→|Resultant [`LReg` data type](LReg.md#data-types)|
 |---|---|---|---|
 |`SFPLOADI_MOD0_FLOATB`|BF16|→|FP32|
 |`SFPLOADI_MOD0_FLOATA`|FP16 ([ish](FloatBitPatterns.md#fp16))|→|FP32|

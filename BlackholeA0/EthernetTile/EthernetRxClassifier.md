@@ -717,7 +717,7 @@ The bit layout of this register is the same as [`NO_MATCH_SW_METADATA`](#no_matc
 
 ## 6. Based on the contents of the flow table row, either ...
 
-If the [header extraction phase](#extract-some-headers-from-the-frame-and-augment-them-slightly) encountered an unsupported kind of IPv4 or IPv6 or TCP header, `HEADER_ERROR_CONTROL` is used to make the keep/drop decision. In this case, if keeping the frame, some of flow table `ACTIONS` is ignored: removal of VLAN tags and IP/UDP headers is never done, nor is prepending of metadata ever done.
+If the [header extraction phase](#3-extract-some-headers-from-the-frame-and-augment-them-slightly) encountered an unsupported kind of IPv4 or IPv6 or TCP header, `HEADER_ERROR_CONTROL` is used to make the keep/drop decision. In this case, if keeping the frame, some of flow table `ACTIONS` is ignored: removal of VLAN tags and IP/UDP headers is never done, nor is prepending of metadata ever done.
 
 Otherwise, if `OVERRIDE_DECISION == 0`, the frame will be kept.
 
