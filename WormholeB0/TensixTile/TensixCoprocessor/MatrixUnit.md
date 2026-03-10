@@ -68,7 +68,7 @@ Theoretical maximum performance per Matrix Unit (FPU), running at Wormhole's sta
 |`ELWADD` / `ELWSUB`, `AddDst==true`|0.256 TFLOP/s|0.256 TFLOP/s|0.256 TFLOP/s|0.256 TFLOP/s|
 |`ELWADD` / `ELWSUB`, `AddDst==false`|0.128 TFLOP/s|0.128 TFLOP/s|0.128 TFLOP/s|0.128 TFLOP/s|
 
-Note that `GMPOOL` / `ELWADD` / `ELWSUB` do not need multiple fidelity phases, so the same number is quoted for all fidelity phase columns. Other instructions require a variable number of [fidelity phases](SrcASrcB.md#fidelity-phases-floating-point), depending on the data types in use and the desired precision. As a point of comparison, the Vector Unit (SFPU) instruction `SFPMAD` has theoretical maximum performance of 0.064 TFLOP/s (per Vector Unit) at FP32 precision.
+Note that `GMPOOL` / `ELWADD` / `ELWSUB` do not need multiple fidelity phases, so the same number is quoted for all fidelity phase columns. Other instructions require a variable number of [fidelity phases](SrcASrcB.md#fidelity-phases-floating-point), depending on the data types in use and the desired precision. As a point of comparison, the Vector Unit (SFPU) instruction `SFPMAD` has a theoretical maximum performance of 0.064 TFLOP/s (per Vector Unit) at FP32 precision.
 
 For integer types, the performance numbers are the same (just replace "TFLOP/s" with "TOP/s"), though [fidelity phases for integer types](SrcASrcB.md#fidelity-phases-integer) relate to the maximum magnitude of the inputs, so arbitrary 8-bit inputs require 4 fidelity phases. For integer inputs in the range -127 through +127, it is also possible to massage the data into floating-point form, and then just 2 fidelity phases are required (plus an occasional step to flush FP32 accumulators to INT32).
 

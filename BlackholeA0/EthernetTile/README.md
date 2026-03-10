@@ -3,7 +3,7 @@
 Each Ethernet tile contains:
   * [512 KiB of RAM called L1](L1.md)
   * [2x "Baby" RISCV core](BabyRISCV/README.md)
-  * [2x NoC connections](../NoC/README.md) allowing the local RISCV core to access data in other tiles, and allowing other tiles to access data from this tile
+  * [2x NoC connections](../NoC/README.md) allowing the local RISCV cores to access data in other tiles, and allowing other tiles to access data from this tile
   * [1x NoC overlay](../NoC/Overlay/README.md) - a little coprocessor that can assist with NoC transactions
   * 1x 400 GbE Ethernet link, with Ethernet MAC / PCS / PHY, presented as [3x Ethernet TX queue](EthernetTxRx.md) and [3x Ethernet RX queue](EthernetTxRx.md)
 

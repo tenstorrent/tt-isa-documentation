@@ -42,7 +42,7 @@ Example contents of `telemetry_table` and `telemetry_data` is:
 |`TAG_TDC` (8)|`0x00000013`|Core current 19 A|
 |`TAG_TDC_LIMIT_MAX` (55)|`0x000000a0`|Upper limit on core current is 160 A|
 |`TAG_BOARD_TEMPERATURE` (13)|`0x002c0000`|Board outlet temperature 44 °C (format is s16.16)|
-|`TAG_ASIC_TEMPERATURE` (11)|`0x00358000`|Core temperature 53.5 °C  (format is s16.16)|
+|`TAG_ASIC_TEMPERATURE` (11)|`0x00358000`|Core temperature 53.5 °C (format is s16.16)|
 |`TAG_THM_LIMIT_THROTTLE` (56)|`0x0000004b`|Forced throttling if temperature exceeds 75 °C|
 |`TAG_THM_LIMIT_SHUTDOWN`&nbsp;(10)|`0x00000053`|Forced board shutdown if temperature exceeds 83 °C|
 |`TAG_FAN_SPEED` (31)|`0xffffffff`|Fans not present on board, or not under control of firmware|

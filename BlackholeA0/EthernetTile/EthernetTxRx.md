@@ -192,7 +192,7 @@ The final transmitted Ethernet frame on the wire will be the concatenation of:
 4. If `INSERT_CTL` specifies to insert two VLAN tags, `VLAN2`
 5. Either `ETHERTYPE` or length, depending on the value of `USE_ETHERTYPE`
 6. If `INSERT_CTL` specifies to insert an L3 header, bytes from `L3_HEADER` (possibly with length and checksum overwritten)
-7. If `INSERT_CTL` specifies to insert an L4 header, bytes from `L4_HEADER`  (possibly with length and checksum overwritten)
+7. If `INSERT_CTL` specifies to insert an L4 header, bytes from `L4_HEADER` (possibly with length and checksum overwritten)
 8. If transmitting a TT-link packet, the TT-link header
 9. If transmitting a raw packet, or a TT-link L1 write packet, the bytes referenced by `ETH_TXQ_TRANSFER_START_ADDR` and `ETH_TXQ_TRANSFER_SIZE_BYTES` (other types of TT-link packet also have their variable payload here)
 10. If `INSERT_CTL` specifies to insert an RoCE iCRC, the RoCE iCRC
