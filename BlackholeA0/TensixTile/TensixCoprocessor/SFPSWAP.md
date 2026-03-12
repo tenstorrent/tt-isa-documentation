@@ -28,7 +28,8 @@ case SFPSWAP_MOD1_SUBVEC_MIN0_MAX123: VDGetsMin = 0x000000ffu; break; // In firs
 case SFPSWAP_MOD1_SUBVEC_MIN1_MAX023: VDGetsMin = 0x0000ff00u; break;
 case SFPSWAP_MOD1_SUBVEC_MIN2_MAX013: VDGetsMin = 0x00ff0000u; break;
 case SFPSWAP_MOD1_SUBVEC_MIN3_MAX012: VDGetsMin = 0xff000000u; break;
-default:                              VDGetsMin = 0x00000000u; break; // In all lanes, VD = max and VC = min.
+case 9:                               VDGetsMin = 0x00000000u; break; // In all lanes, VD = max and VC = min; no enum currently defined for this mode
+default:     NonContractualBehavior { VDGetsMin = 0x00000000u; } break; // In all lanes, VD = max and VC = min; current silicon behavior (not architecturally guaranteed)
 }
 for (unsigned Lane = 0; Lane < 32; ++Lane) {
   // NB: All operations are lanewise; explicit Lane indexing is done
