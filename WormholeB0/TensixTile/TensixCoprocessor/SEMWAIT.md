@@ -23,9 +23,7 @@ if (ConditionMask) {
   WaitGate[CurrentThread].LatchedWaitInstruction.ConditionMask = ConditionMask;
   WaitGate[CurrentThread].LatchedWaitInstruction.SemaphoreMask = SemaphoreMask;
 } else {
-  WaitGate[CurrentThread].LatchedWaitInstruction.Opcode = STALLWAIT;
-  WaitGate[CurrentThread].LatchedWaitInstruction.ConditionMask = 0x7F;
-  WaitGate[CurrentThread].LatchedWaitInstruction.SemaphoreMask = 0;
+  UndefinedBehavior();
 }
 WaitGate[CurrentThread].LatchedWaitInstruction.BlockMask = BlockMask ? BlockMask : (1u << 6);
 ```
