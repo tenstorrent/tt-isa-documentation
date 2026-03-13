@@ -3,8 +3,8 @@
 **Summary:** Mark either 1, 16, 256, 512, or 1024 rows of `Dst` as undefined. Subsequent operations which read from `Dst` then interpret undefined:
 * Packers reading from `Dst` read undefined rows as zero.
 * Matrix Unit (FPU) instructions read undefined rows as the identity element for the instruction being executed, which is negative infinity for `GMPOOL` / `MPOOL3S1` / `MPOOL3S2`, and is zero for all other instructions. In any event, the write performed by these instructions will then cause the row contents to become well defined.
-* The Vector Unit (SFPU), exhibits undefined behaviour when reading (i.e. `SFPLOAD` / `SFPLOADMACRO`) an undefined row. It also exhibits undefined behaviour if `SFPSTORE` writes to _some_ columns of an undefined row but leaves other columns unwritten.
-* Unpackers exhibit undefined behaviour if an unpack to `Dst` writes to _some_ columns of an undefined row but leaves other columns unwritten.
+* The Vector Unit (SFPU) exhibits UndefinedBehavior when reading (i.e. `SFPLOAD` / `SFPLOADMACRO`) an undefined row. It also exhibits UndefinedBehavior if `SFPSTORE` writes to _some_ columns of an undefined row but leaves other columns unwritten.
+* Unpackers exhibit UndefinedBehavior if an unpack to `Dst` writes to _some_ columns of an undefined row but leaves other columns unwritten.
 
 **Backend execution unit:** [Matrix Unit (FPU)](MatrixUnit.md)
 
