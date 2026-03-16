@@ -23,7 +23,7 @@ When `Dst += SrcA * SrcB` is performed for integers, the computation is really `
 ```c
 TT_ELWMUL(((/* bool */ FlipSrcB) << 1) +
             /* bool */ FlipSrcA,
-            true,
+            false,
           ((/* bool */ BroadcastSrcBRow) << 1) +
             /* bool */ BroadcastSrcBCol0,
             /* u2 */ AddrMod,
