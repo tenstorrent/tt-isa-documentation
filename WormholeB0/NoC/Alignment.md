@@ -11,12 +11,12 @@ Violations of the alignment requirements result in UndefinedBehavior.
 
 This applies to all kinds of read request, and also to write requests which have both of `NOC_CMD_WR_BE=false` and `NOC_CMD_WR_INLINE=false`.
 
-||Data to<br/>MMIO address|Data to<br/>L1 address|Data to<br/>other address|Data to<br/>host PCIe read|
+||Data to<br/>MMIO address|Data to<br/>L1 address|Data to<br/>other address|Data to<br/>host via PCIe|
 |---|---|---|---|---|
 |**Data from MMIO address**|AL=4|AL≤4 and C4|AL≤4 and C4|AL≤4|
 |**Data from L1 address**|AL=4 and C16|C16|C16|Any|
 |**Data from other address**|AL=4 and C16|C32|C32|Any|
-|**Data from host PCIe write**|AL=4|Any|Any|N/A|
+|**Data from host via PCIe**|AL=4|Any|Any|N/A|
 
 Meaning of table cells:
 * **Any:** No restrictions (at least for x86 / x86-64 hosts).
