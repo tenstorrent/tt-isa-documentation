@@ -68,11 +68,10 @@ for (; NumRows; --NumRows, ++DstRow, ++SrcRow) {
     if (FlushDenormals && !(SrcAVal & 0xff)) SrcAVal = 0;
     uint16_t Val16b = Use8bExponent ? RemoveLowMantissa(SrcAVal) : RemoveHighExponent(SrcAVal);
     if (SrcAFmt == TF32) {
-      uint16_t LowMantissa = ((SrcAVal >> 8) & 7) << 13; // The bits removed by RemoveLowMantissa.
       if (UseDst32bLo) {
-        // This is unlikely to be useful.
-        LowMantissa |= Val16b;
+        UndefinedBehavior(); // Write data will be corrupted on Blackhole; Wormhole behavior is unlikely to be useful
       }
+      uint16_t LowMantissa = ((SrcAVal >> 8) & 7) << 13; // The bits removed by RemoveLowMantissa.
       // Dst holds TF32 as Sign,HiMan(7b),Exp(8b),LoMan(3b),Zeros(13b)
       // This is compatible with Dst FP32, where Zeros extends LoMan.
       Dst32b[DstRow][Column] = (uint32_t(Val16b) << 16) | LowMantissa;
