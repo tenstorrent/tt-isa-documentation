@@ -78,7 +78,7 @@ Every instruction spends exactly one cycle in the Retire Unit, which is where th
 The "NoC" column indicates which parts of the address space are made available to the NoC (and to the Tensix coprocessor) in addition to being available to RISCV cores.
 
 <table><thead><tr><th>Name and address range</th><th>RISCV&nbsp;B</th><th>RISCV&nbsp;T0</th><th>RISCV&nbsp;T1</th><th>RISCV&nbsp;T2</th><th>RISCV&nbsp;NC</th><th>NoC</th></tr></thead>
-<tr><td><code>MEM_L1_BASE</code><br/><code>0x0000_0000</code> to <code>0x0016_FFFF</code></td><td colspan="6"><a href="../L1.md">L1 scratchpad RAM (1464 KiB)</a></td></tr>
+<tr><td><code>MEM_L1_BASE</code><br/><code>0x0000_0000</code> to <code>0x0016_DFFF</code></td><td colspan="6"><a href="../L1.md">L1 scratchpad RAM (1464 KiB)</a></td></tr>
 <tr><td><code>MEM_LOCAL_BASE</code><br/><code>0xFFB0_0000</code> to <code>0xFFB0_07FF</code></td><td rowspan="2"><a href="README.md#local-data-ram">RISCV B local data RAM</a></td><td><a href="README.md#local-data-ram">RISCV T0 local data RAM</a></td><td><a href="README.md#local-data-ram">RISCV T1 local data RAM</a></td><td><a href="README.md#local-data-ram">RISCV T2 local data RAM</a></td><td rowspan="2"><a href="README.md#local-data-ram">RISCV NC local data RAM</a></td><td rowspan="2">Unmapped</td></tr>
 <tr><td><code>0xFFB0_0800</code> to <code>0xFFB0_0FFF</code></td><td colspan="3">Unmapped</td></tr>
 <tr><td><code>RISCV_TDMA_REGS_START_ADDR</code><br/><code>0xFFB1_1000</code> to <code>0xFFB1_1FFF</code></td><td colspan="6"><a href="../TDMA-RISC.md">TDMA-RISC configuration registers and command interface</a></td></tr>
