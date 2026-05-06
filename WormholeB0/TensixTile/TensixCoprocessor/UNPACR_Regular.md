@@ -341,7 +341,19 @@ for (unsigned i = 0; i < InputNumDatums && DecompressNumDatums; ) {
           Row -= 4;
           Col -= ColShift;
           if (ThreadConfig[CurrentThread].SRCA_SET_SetOvrdWithAddr) {
-            if (Row >= 64) UndefinedBehaviour();
+            // Row wraps modulo 64 within the active SrcA bank (mirroring the SrcB wrap above).
+            //
+            // Burst crossing the bank top edge: the hardware writes SrcA in bursts of up to 8
+            // contiguous rows. If a burst's start row N is itself in range (so the start
+            // address is not wrapped), but the burst would otherwise extend past row 63, the
+            // rows beyond row 63 are silently dropped -- they do NOT wrap back to row 0. (For
+            // example, an 8-row burst whose first row lands at row 60 writes rows 60, 61, 62,
+            // 63 and drops the would-be rows 64, 65, 66, 67; those four rows are not aliased
+            // to rows 0..3.) This functional model writes datum-by-datum, so each individual
+            // datum's destination is described correctly by the `& 0x3f` step below; the
+            // burst-truncation effect is only visible when considering a single 8-row write
+            // window in hardware.
+            Row = (Row + CurrentUnpacker.SrcRow[CurrentThread]) & 0x3f;
           } else {
             if (Row >= 16) UndefinedBehaviour();
             Row += CurrentUnpacker.SrcRow[CurrentThread];
