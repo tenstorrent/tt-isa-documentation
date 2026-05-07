@@ -493,10 +493,15 @@ uint32_t FormatConversion(uint4_t InDataFormat, uint4_t OutDataFormat, uint32_t 
   // All that's left is re-arranging bits to the format expected by Dst or by SrcA / SrcB.
   switch (InDataFormat) {
   case INT16: return UnpackToDst ? DatumBits : ((DatumBits & 0xff00) << 3) | (DatumBits & 0xff);
-  case INT32: return UnpackToDst ? WriteDstFP32(DatumBits) : UndefinedBehaviour();
-  case FP32:  return UnpackToDst ? WriteDstFP32(DatumBits) : UndefinedBehaviour();
   case BF16:  return UnpackToDst ? WriteDstBF16(DatumBits) : WriteSrcBF16(DatumBits);
   case FP16:  return UnpackToDst ? WriteDstFP16(DatumBits) : WriteSrcFP16(DatumBits);
+  // FP32/INT32 with !UnpackToDst is intentionally UndefinedBehaviour. SrcA/SrcB datum slots are 19 bits;
+  // storing a 32-bit datum requires lossy conversion to a 16-bit or 19-bit storage format (TF32, FP16,
+  // BF16, etc.). Software wanting full-precision FP32/INT32 should use UnpackToDst instead. Silicon
+  // behavior in this case is not merely an UnpredictableValue(); the exact behavior has not been
+  // validated and must not be relied upon by software.
+  case INT32: return UnpackToDst ? WriteDstFP32(DatumBits) : UndefinedBehaviour();
+  case FP32:  return UnpackToDst ? WriteDstFP32(DatumBits) : UndefinedBehaviour();
   }
 }
 
