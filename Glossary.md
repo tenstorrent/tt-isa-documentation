@@ -43,6 +43,18 @@ if (voltage > MAX_VOLTAGE) {
 definition or verification and should be eliminated or narrowed in future revisions wherever
 possible.
 
+**Note on redefinition:** Redefining a case from UndefinedBehavior to defined behavior — whether
+to UnpredictableValue, NonContractualBehavior, or a fully defined value — is a one-way,
+contract-binding change. It requires positive evidence: characterization of the input space,
+an architectural rationale for the proposed new contract, and an explicit verification commitment.
+The absence of observed failures in specific test workloads (e.g., "works on silicon under
+the cases we have run") is not equivalent to defined behavior. Silicon executes some behavior
+on every input, including UB inputs; that behavior may vary across format combinations, silicon
+revisions, surrounding instruction sequences, customer workloads, and test environments not
+covered by existing tests. Programs that exercise UB inputs are nonconforming with respect to
+this specification, and the specification's silence on those inputs is intentional rather than
+an oversight to be corrected.
+
 ## UnpredictableValue
 
 A value whose bit pattern is architecturally unpredictable and may vary arbitrarily, including
