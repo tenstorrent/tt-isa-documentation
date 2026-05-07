@@ -372,6 +372,7 @@ for (unsigned i = 0; i < InputNumDatums && DecompressNumDatums; ) {
           } else {
             Dst16b[Row][Col] = Datum;
           }
+          SrcA[Bank][:][:] = UnpredictableValue(); // UnpackToDst clobbers SrcA[Bank]; exact rows not characterized.
         }
       }
     }
