@@ -356,7 +356,7 @@ for (unsigned i = 0; i < InputNumDatums && DecompressNumDatums; ) {
           // Write to Dst:
           Row -= 4;
           if (ThreadConfig[CurrentThread].SRCA_SET_SetOvrdWithAddr) {
-            Row &= 15;
+            UndefinedBehavior(); // Silicon behavior is likely "Row &= 0x3CF", which is not useful; do not use this mode
           } else {
             Row &= 0x3ff;
           }
