@@ -321,6 +321,12 @@ for (unsigned i = 0; i < InputNumDatums && DecompressNumDatums; ) {
     if (DecompressDrop) {--DecompressDrop; continue;}
     for (unsigned k = 0; k <= UpsampleZeroes; ++k, Datum = 0, ++OutAddr) {
       if (UpsampleInterleave && k != 0) continue;
+      // Note: the destination mapping below is described per-datum, but the hardware writes these registers in bursts
+      // of multiple contiguous rows. Alignment requirements on OutAddr are not yet fully characterized; in particular,
+      // for SrcA, a burst that spans a 16-row set boundary may not commit all of its datums per the formula below.
+      // This spec marks the bank-edge boundary cases as UndefinedBehaviour() pending characterization, but software
+      // should additionally avoid OutAddr values that would cause a SrcA burst to span a 16-row set boundary until
+      // that case is pinned down.
       uint1_t Bank = CurrentUnpacker.SrcBank;
       unsigned Row = (OutAddr / 16);
       uint4_t Col = OutAddr & 15;
@@ -329,7 +335,8 @@ for (unsigned i = 0; i < InputNumDatums && DecompressNumDatums; ) {
         while (SrcB[Bank].AllowedClient != SrcClient::Unpackers) {
           wait;
         }
-        Row = (Row + CurrentUnpacker.SrcRow[CurrentThread]) & 0x3f;
+        Row += CurrentUnpacker.SrcRow[CurrentThread];
+        if (Row >= 64) UndefinedBehaviour(); // Strict pending OutAddr alignment requirement/burst-edge characterization
         SrcB[Bank][Row][Col] = Datum;
       } else {
         while (SrcA[Bank].AllowedClient != SrcClient::Unpackers) {
@@ -341,9 +348,9 @@ for (unsigned i = 0; i < InputNumDatums && DecompressNumDatums; ) {
           Row -= 4;
           Col -= ColShift;
           if (ThreadConfig[CurrentThread].SRCA_SET_SetOvrdWithAddr) {
-            if (Row >= 64) UndefinedBehaviour();
+            if (Row >= 64) UndefinedBehaviour(); // Strict pending OutAddr alignment requirement/burst-edge characterization
           } else {
-            if (Row >= 16) UndefinedBehaviour();
+            if (Row >= 16) UndefinedBehaviour(); // Strict pending OutAddr alignment requirement/burst-edge characterization
             Row += CurrentUnpacker.SrcRow[CurrentThread];
           }
           if (Transpose) {
