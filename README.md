@@ -16,6 +16,9 @@ At the moment, two architectures are covered in this repository:
 * [Wormhole B0](WormholeB0/README.md) - The version of Wormhole shipped to customers (n150s / n150d / n300s / n300d / Wormhole Galaxy).
 * [Blackhole A0](BlackholeA0/README.md) - The version of Blackhole shipped to customers (p100 / p150).
 
+> [!NOTE]
+> Wormhole B0 and Blackhole A0 share substantial implementation but are not identical. Behavioral assumptions from one architecture's documentation do not transfer automatically to the other.
+
 -----
 
 > [!NOTE]
