@@ -131,9 +131,9 @@ uint19_t ShuffleFP16(uint16_t x) {
 uint19_t ShuffleTF32(uint19_t x) {
   // Dst holds TF32 as Sign,HiMan(7b),Exp(8b),LoMan(3b)
   // Src holds TF32 as Sign,Man(10b),Exp(8b)
-  uint19_t SignHiMan = x & 0x3fc000;
-  uint19_t Exp       = x & 0x0007f8;
-  uint19_t LoMan     = x & 0x000007;
+  uint19_t SignHiMan = x & 0x7f800;
+  uint19_t Exp       = x & 0x007f8;
+  uint19_t LoMan     = x & 0x00007;
   return SignHiMan | (LoMan << 8) | (Exp >> 3);
 }
 ```
