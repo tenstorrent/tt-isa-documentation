@@ -66,6 +66,7 @@ if (ThreadConfig[CurrentThread].FP16A_FORCE_Enable) {
   }
   UseDst32b = ConfigState.ALU_ACC_CTRL_Fp32_enabled;
 }
+bool FlushDenormals = !ConfigState.ALU_ACC_CTRL_Zero_Flag_disabled_src; // Note: behavior has yet to be fully characterized
 
 // Determine the row range.
 uint6_t SrcARow = RWCs[CurrentThread].SrcA & 0x38;
@@ -85,8 +86,8 @@ for (unsigned i = 0; i < 8; ++i) {
     uint19_t SrcAVal = SrcA[MatrixUnit.SrcABank][SrcARow + i][j];
     uint19_t SrcBVal = SrcB[MatrixUnit.SrcBBank][SrcBRow + (BroadcastSrcBRow ? 0 : i)][BroadcastSrcBCol0 ? 0 : j];
     if (SrcAStyle == INT8) {
-      int32_t SrcAValInt = ReadSrcInt8(SrcAVal);
-      int32_t SrcBValInt = ReadSrcInt8(SrcBVal);
+      int32_t SrcAValInt = ReadSrcInt8(SrcAVal, true);
+      int32_t SrcBValInt = ReadSrcInt8(SrcBVal, FlushDenormals);
       int32_t Result = SrcAValInt + SrcBValInt;
       // Dst is INT32.
       if (AddDst) Result = SaturateAddInt32(Result, ReadDstInt32(Dst32b[DstRow + i][j]));

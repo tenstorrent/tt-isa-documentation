@@ -70,6 +70,7 @@ if (ThreadConfig[CurrentThread].FP16A_FORCE_Enable) {
   }
   UseDst32b = ConfigState.ALU_ACC_CTRL_Fp32_enabled;
 }
+bool FlushDenormals = !ConfigState.ALU_ACC_CTRL_Zero_Flag_disabled_src; // Note: behavior has yet to be fully characterized
 
 // Determine the row range.
 uint6_t SrcARow = RWCs[CurrentThread].SrcA & 0x38;
@@ -89,8 +90,8 @@ for (unsigned i = 0; i < 8; ++i) {
     uint19_t SrcAVal = SrcA[MatrixUnit.SrcABank][SrcARow + i][j];
     uint19_t SrcBVal = SrcB[MatrixUnit.SrcBBank][SrcBRow + (BroadcastSrcBRow ? 0 : i)][BroadcastSrcBCol0 ? 0 : j];
     if (SrcAStyle == INT8) {
-      int32_t SrcAValInt = ReadSrcInt8(SrcAVal & (FidelityPhase & 1 ? 0x41fff : 0x4e0ff));
-      int32_t SrcBValInt = ReadSrcInt8(SrcBVal & (FidelityPhase & 2 ? 0x40fff : 0x7f0ff));
+      int32_t SrcAValInt = ReadSrcInt8(SrcAVal & (FidelityPhase & 1 ? 0x41fff : 0x4e0ff), true);
+      int32_t SrcBValInt = ReadSrcInt8(SrcBVal & (FidelityPhase & 2 ? 0x40fff : 0x7f0ff), FlushDenormals);
       int32_t Result = SrcAValInt * SrcBValInt;
       // Dst is INT32.
       Result = SaturateAddInt32(Result, ReadDstInt32(Dst32b[DstRow + i][j]));
@@ -142,8 +143,9 @@ For floating-point computation, the functional model should be taken as a rough 
 
 Supporting definitions:
 ```c
-int32_t ReadSrcInt8(uint19_t x) {
-  // Src holds INT8 as Sign,Mag(10b),Zero(3b),Exp(5b)
+int32_t ReadSrcInt8(uint19_t x, bool FlushDenormals) {
+  // Src holds INT8 as Sign,Mag(10b),Exp(8b)
+  if (FlushDenormals && !(x & 0xFF)) return 0;
   uint1_t Sign = x >> 18;
   uint10_t Mag = (x >> 8) & 0x3ff;
   return Sign ? -(int32_t)Mag : (int32_t)Mag;

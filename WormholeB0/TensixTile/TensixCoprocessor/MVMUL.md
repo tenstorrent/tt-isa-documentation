@@ -70,6 +70,7 @@ if (ThreadConfig[CurrentThread].FP16A_FORCE_Enable) {
   }
   UseDst32b = ConfigState.ALU_ACC_CTRL_Fp32_enabled;
 }
+bool FlushDenormals = !ConfigState.ALU_ACC_CTRL_Zero_Flag_disabled_src; // Note: behavior has yet to be fully characterized
 
 // Determine the row range.
 unsigned NumRows = BroadcastSrcBRow ? 7 : 8;
@@ -91,7 +92,7 @@ for (unsigned i = 0; i < NumRows; ++i) {
   for (unsigned j = 0; j < 16; ++j) {
     uint19_t SrcBVal = SrcB[MatrixUnit.SrcBBank][SrcBRow + (BroadcastSrcBRow ? 0 : i)][j];
     switch (SrcAStyle) {
-    case INT8: SrcBMatrix[i][j].i = ReadSrcInt8(SrcBVal & (FidelityPhase & 2 ? 0x40fff : 0x7f0ff)); break;
+    case INT8: SrcBMatrix[i][j].i = ReadSrcInt8(SrcBVal & (FidelityPhase & 2 ? 0x40fff : 0x7f0ff), FlushDenormals); break;
     case BF16: SrcBMatrix[i][j].f = SrcBFidelityBits(ReadBF16(SrcBVal), FidelityPhase); break;
     case FP16: SrcBMatrix[i][j].f = SrcBFidelityBits(ReadFP16(SrcBVal), FidelityPhase); break;
     case TF32: SrcBMatrix[i][j].f = SrcBFidelityBits(ReadTF32(SrcBVal), FidelityPhase); break;
@@ -103,7 +104,7 @@ for (unsigned i = 0; i < 16; ++i) {
   for (unsigned j = 0; j < 16; ++j) {
     uint19_t SrcAVal = SrcA[MatrixUnit.SrcABank][SrcARow + i][j];
     switch (SrcAStyle) {
-    case INT8: SrcAMatrix[i][j].i = ReadSrcInt8(SrcAVal & (FidelityPhase & 1 ? 0x41fff : 0x4e0ff)); break;
+    case INT8: SrcAMatrix[i][j].i = ReadSrcInt8(SrcAVal & (FidelityPhase & 1 ? 0x41fff : 0x4e0ff), true); break;
     case BF16: SrcAMatrix[i][j].f = SrcAFidelityBits(ReadBF16(SrcAVal), FidelityPhase); break;
     case FP16: SrcAMatrix[i][j].f = SrcAFidelityBits(ReadFP16(SrcAVal), FidelityPhase); break;
     case TF32: SrcAMatrix[i][j].f = SrcAFidelityBits(ReadTF32(SrcAVal), FidelityPhase); break;
