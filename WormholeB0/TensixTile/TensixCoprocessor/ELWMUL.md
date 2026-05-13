@@ -151,6 +151,17 @@ int32_t ReadSrcInt8(uint19_t x, bool FlushDenormals) {
   return Sign ? -(int32_t)Mag : (int32_t)Mag;
 }
 
+int32_t SaturateAddInt32(int32_t x, int32_t y) {
+  int64_t Result64 = int64_t(x) + int64_t(y);
+  if (Result64 > 0x7FFFFFFFLL) {
+    return 0x7FFFFFFFLL;
+  } else if (Result64 < -0x7FFFFFFFLL) {
+    return -0x7FFFFFFFLL;
+  } else {
+    return int32_t(Result64);
+  }
+}
+
 float SrcAFidelityBits(float x, uint2_t FidelityPhase) {
   union {uint32_t u; float f;} bits;
   bits.f = x;
