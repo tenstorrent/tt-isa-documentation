@@ -146,11 +146,11 @@ for (unsigned i = 0; i < NumRows; i += BroadcastSrcBRow ? 2 : 1) {
       } else if (SrcAStyle == FP16) {
         // Dst is FP16, just like SrcAStyle.
         x += ReadDstFP16(Dst16b[DstRow + i][j]);
-        Dst16b[DstRow + i][j] = WriteDstFP16(RoundToFP16(x));
+        Dst16b[DstRow + i][j] = WriteDstFP16(x);
       } else {
         // Dst is BF16 (SrcAStyle is either BF16 or TF32).
         x += ReadDstBF16(Dst16b[DstRow + i][j]);
-        Dst16b[DstRow + i][j] = WriteDstBF16(RoundToBF16(x));
+        Dst16b[DstRow + i][j] = WriteDstBF16(x);
       }
     }
   }

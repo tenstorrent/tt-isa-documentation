@@ -109,11 +109,11 @@ for (unsigned i = 0; i < 8; ++i) {
       } else if (SrcAStyle == FP16) {
         // Dst is FP16, just like SrcAStyle.
         if (AddDst) Result += ReadDstFP16(Dst16b[DstRow + i][j]);
-        Dst16b[DstRow + i][j] = WriteDstFP16(RoundToFP16(Result));
+        Dst16b[DstRow + i][j] = WriteDstFP16(Result);
       } else {
         // Dst is BF16 (SrcAStyle is either BF16 or TF32).
         if (AddDst) Result += ReadDstBF16(Dst16b[DstRow + i][j]);
-        Dst16b[DstRow + i][j] = WriteDstBF16(RoundToBF16(Result));
+        Dst16b[DstRow + i][j] = WriteDstBF16(Result);
       }
     }
   }
