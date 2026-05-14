@@ -135,8 +135,8 @@ for (unsigned i = 0; i < NumRows; i += BroadcastSrcBRow ? 2 : 1) {
   for (unsigned j = 0; j < 16; ++j) {
     if (SrcAStyle == INT8) {
       int32_t x = Multiplied[i][j].i;
-      x = SaturateAddInt32(x, ReadDstInt32(Dst32b[DstRow + i][j]));
-      Dst32b[DstRow + i][j] = WriteDstInt32(x);
+      x = SaturateAddInt32(x, DstDecodeInt32(Dst32b[DstRow + i][j]));
+      Dst32b[DstRow + i][j] = DstEncodeInt32(x);
     } else {
       float x = Multiplied[i][j].f;
       if (UseDst32b) {

@@ -82,3 +82,42 @@ The Matrix Unit (FPU) can move from Dst to SrcA (`MOVD2A`) and from Dst to SrcB 
 ## Instruction scheduling
 
 After issuing an instruction which writes to `Dst`, then for the next four cycles, the aligned 8x16 block of `Dst` containing that write cannot be read. If a thread presents a Matrix Unit (FPU) or [`PACR`](PACR.md) instruction which wants to read from that block, then hardware will automatically stall the thread for an appropriate number of cycles. In particular, for instructions which accumulate onto `Dst` (such as [`MVMUL`](MVMUL.md), [`GAPOOL`](GAPOOL.md), [`DOTPV`](DOTPV.md), [`GMPOOL`](GMPOOL.md), [`ELWMUL`](ELWMUL.md)), software needs to be looping over at least five distinct 8x16 blocks of `Dst` to avoid being stalled. Additionally, if using multiple fidelity phases, with one loop over blocks of `Dst` and one loop over fidelity phases, then the fidelity loop should be the _outer_ loop to avoid being stalled.
+
+## Pseudocode helpers
+
+The following pseudocode routines are shared across the various units that access `Dst`.
+
+```c
+uint16_t DstDecodeBF16(uint16_t x) {
+  uint16_t e = x & 255;
+  uint16_t m = (x >> 8) & 127;
+  return (x & 0x8000) | (e << 7) | m;
+}
+
+uint16_t DstEncodeBF16(uint16_t x) {
+  uint16_t e = (x >> 7) & 255;
+  uint16_t m = x & 127;
+  return (x & 0x8000) | (m << 8) | e;
+}
+
+uint16_t DstDecodeFP16(uint16_t x) {
+  uint16_t e = x & 31;
+  uint16_t m = (x >> 5) & 1023;
+  return (x & 0x8000) | (e << 10) | m;
+}
+
+uint16_t DstEncodeFP16(uint16_t x) {
+  uint16_t e = (x >> 10) & 31;
+  uint16_t m = x & 1023;
+  return (x & 0x8000) | (m << 5) | e;
+}
+
+// Note that the "FP32" encoding is also used for INT32
+uint32_t DstDecodeFP32(uint32_t x) {
+  return (uint32_t(DstDecodeBF16(x >> 16)) << 16) | (x & 0xFFFF);
+}
+
+uint32_t DstEncodeFP32(uint32_t x) {
+  return (uint32_t(DstEncodeBF16(x >> 16)) << 16) | (x & 0xFFFF);
+}
+```

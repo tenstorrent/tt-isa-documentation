@@ -90,8 +90,8 @@ for (unsigned i = 0; i < 8; ++i) {
       int32_t SrcBValInt = ReadSrcInt8(SrcBVal, FlushDenormals);
       int32_t Result = SrcAValInt + SrcBValInt;
       // Dst is INT32.
-      if (AddDst) Result = SaturateAddInt32(Result, ReadDstInt32(Dst32b[DstRow + i][j]));
-      Dst32b[DstRow + i][j] = WriteDstInt32(Result);
+      if (AddDst) Result = SaturateAddInt32(Result, DstDecodeInt32(Dst32b[DstRow + i][j]));
+      Dst32b[DstRow + i][j] = DstEncodeInt32(Result);
     } else {
       float SrcAValFP, SrcBValFP;
       switch (SrcAStyle) {

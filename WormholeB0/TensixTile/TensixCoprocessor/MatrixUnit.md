@@ -87,6 +87,23 @@ int32_t ReadSrcInt8(uint19_t x, bool FlushDenormals) {
   return Sign ? -(int32_t)Mag : (int32_t)Mag;
 }
 
+int32_t DstDecodeInt32(uint32_t x) {
+  x = DstDecodeFP32(x);
+  int32_t result = x & 0x7FFFFFFF;
+  if (x & 0x80000000) {
+    result = -result;
+  }
+  return result;
+}
+
+// Caller must ensure x != INT32_MIN; the Dst INT32 range is +/-(2**31 - 1)
+uint32_t DstEncodeInt32(int32_t x) {
+  if (x & 0x80000000) {
+    x = 0x80000000 | -x; // two's complement to sign/magnitude
+  }
+  return DstEncodeFP32(x);
+}
+
 int32_t SaturateAddInt32(int32_t x, int32_t y) {
   int64_t Result64 = int64_t(x) + int64_t(y);
   if (Result64 > 0x7FFFFFFFLL) {

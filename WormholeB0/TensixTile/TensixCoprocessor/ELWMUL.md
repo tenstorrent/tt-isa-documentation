@@ -94,8 +94,8 @@ for (unsigned i = 0; i < 8; ++i) {
       int32_t SrcBValInt = ReadSrcInt8(SrcBVal & (FidelityPhase & 2 ? 0x40fff : 0x7f0ff), FlushDenormals);
       int32_t Result = SrcAValInt * SrcBValInt;
       // Dst is INT32.
-      Result = SaturateAddInt32(Result, ReadDstInt32(Dst32b[DstRow + i][j]));
-      Dst32b[DstRow + i][j] = WriteDstInt32(Result);
+      Result = SaturateAddInt32(Result, DstDecodeInt32(Dst32b[DstRow + i][j]));
+      Dst32b[DstRow + i][j] = DstEncodeInt32(Result);
     } else {
       float SrcAValFP, SrcBValFP;
       switch (SrcAStyle) {
