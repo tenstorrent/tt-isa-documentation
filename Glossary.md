@@ -71,3 +71,34 @@ if (unsupported mode of operation) {
 
 **Architectural note:** UnpredictableValue represents residual architectural uncertainty and
 should be minimized in future revisions by converting such cases into defined, verifiable behavior.
+
+## UnsupportedFunctionality
+
+A feature, mode, or behavior that the architecture describes for completeness but does **not**
+commit to supporting. Software should not rely on the documented behavior of an
+`UnsupportedFunctionality` feature for correctness, performance, or compatibility: future silicon
+revisions may change, remove, or invalidate it without notice; validation against current silicon
+may be limited or absent; and the documented description itself may be incomplete, imprecise, or
+missing entirely.
+
+`UnsupportedFunctionality` differs from `UndefinedBehavior`, `NonContractualBehavior`, and
+`UnpredictableValue` in being explicitly fuzzy and probabilistic. Those terms are sharp categorical
+claims about behavior; this one captures the architecture's lack of confidence or commitment in
+something which may appear to empirically work on silicon.
+
+Example:
+```c
+if (feature that is incompletely validated) {
+    UnsupportedFunctionality();
+    // best known model/description of the feature may optionally follow
+}
+```
+
+**Architectural note:** UnsupportedFunctionality captures a forward-looking architectural stance,
+not a claim about present-state correctness. The category is probabilistic at its core: for
+features unexercised by real workloads, the Bayesian estimate that further investigation would
+uncover incorrect behavior, undefined cases, or non-contractual divergence is high, and the
+architecture does not commit to defining those cases retroactively merely because the feature has
+not yet been observed to fail. Promotion of a feature from UnsupportedFunctionality to a
+supported status is a one-way, contract-binding change subject to the same evidence requirements
+articulated for UndefinedBehavior above.
