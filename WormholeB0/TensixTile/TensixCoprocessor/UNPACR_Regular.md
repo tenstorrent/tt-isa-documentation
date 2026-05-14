@@ -434,7 +434,7 @@ uint32_t FormatConversion(uint4_t InDataFormat, uint4_t OutDataFormat, uint32_t 
     case TF32:
       if (UnpackToDst) {
         // When unpacking to Dst, TF32 means FP32.
-        return WriteDstFP32(DatumBits);
+        return DstEncodeFP32(DatumBits);
       } else {
         return WriteSrcTF32(DatumBits >> 13);
       }
@@ -481,7 +481,7 @@ uint32_t FormatConversion(uint4_t InDataFormat, uint4_t OutDataFormat, uint32_t 
     case TF32:
       if (UnpackToDst) {
         // When unpacking to Dst, TF32 means FP32.
-        return WriteDstFP32(DatumBits);
+        return DstEncodeFP32(DatumBits);
       } else {
         // Otherwise, TF32 is not valid as InDataFormat (but software can instead
         // specify InDataFormat == FP32 and OutDataFormat == TF32).
@@ -493,15 +493,15 @@ uint32_t FormatConversion(uint4_t InDataFormat, uint4_t OutDataFormat, uint32_t 
   // All that's left is re-arranging bits to the format expected by Dst or by SrcA / SrcB.
   switch (InDataFormat) {
   case INT16: return UnpackToDst ? DatumBits : ((DatumBits & 0xff00) << 3) | (DatumBits & 0xff);
-  case BF16:  return UnpackToDst ? WriteDstBF16(DatumBits) : WriteSrcBF16(DatumBits);
-  case FP16:  return UnpackToDst ? WriteDstFP16(DatumBits) : WriteSrcFP16(DatumBits);
+  case BF16:  return UnpackToDst ? DstEncodeBF16(DatumBits) : WriteSrcBF16(DatumBits);
+  case FP16:  return UnpackToDst ? DstEncodeFP16(DatumBits) : WriteSrcFP16(DatumBits);
   // FP32/INT32 with !UnpackToDst is intentionally UndefinedBehaviour. SrcA/SrcB datum slots are 19 bits;
   // storing a 32-bit datum requires lossy conversion to a 16-bit or 19-bit storage format (TF32, FP16,
   // BF16, etc.). Software wanting full-precision FP32/INT32 should use UnpackToDst instead. Silicon
   // behavior in this case is not merely an UnpredictableValue(); the exact behavior has not been
   // validated and must not be relied upon by software.
-  case INT32: return UnpackToDst ? WriteDstFP32(DatumBits) : UndefinedBehaviour();
-  case FP32:  return UnpackToDst ? WriteDstFP32(DatumBits) : UndefinedBehaviour();
+  case INT32: return UnpackToDst ? DstEncodeFP32(DatumBits) : UndefinedBehaviour();
+  case FP32:  return UnpackToDst ? DstEncodeFP32(DatumBits) : UndefinedBehaviour();
   }
 }
 
@@ -530,34 +530,6 @@ uint16_t BFP8aToFP16(uint8_t DatumBits, uint8_t ExpBits) {
     if (ExpBits & 0xe0) UndefinedBehaviour();
     return (Sign << 15) | (ExpBits << 10) | ((Mag & 0x7e) << 3);
   }
-}
-
-uint16_t WriteDstFP16(uint16_t x) {
-  // Rearrange fields from Sign,Exp,Man to Sign,Man,Exp as Dst holds
-  // FP16 data in this rearranged form.
-  uint16_t Sign = x & 0x8000;
-  uint16_t Exp  = x & 0x7c00;
-  uint16_t Man  = x & 0x03ff;
-  return Sign | (Man << 5) | (Exp >> 10);
-}
-
-uint16_t WriteDstBF16(uint16_t x) {
-  // Rearrange fields from Sign,Exp,Man to Sign,Man,Exp as Dst holds
-  // BF16 data in this rearranged form.
-  uint16_t Sign = x & 0x8000;
-  uint16_t Exp  = x & 0x7f80;
-  uint16_t Man  = x & 0x007f;
-  return Sign | (Man << 8) | (Exp >> 7);
-}
-
-uint32_t WriteDstFP32(uint32_t x) {
-  // Rearrange fields from Sign,Exp,Man to Sign,ManHi,Exp,ManLo as
-  // Dst holds FP32 data in this rearranged form. This is equivalent
-  // to applying WriteDstBF16 to the high 16 bits.
-  uint16_t Hi = x >> 16;
-  uint16_t Lo = x & 0xffff;
-  Hi = WriteDstBF16(Hi);
-  return (uint32_t(Hi) << 16) | Lo;
 }
 
 uint19_t WriteSrcTF32(uint19_t x) {
