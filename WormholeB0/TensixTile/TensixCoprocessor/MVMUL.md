@@ -175,5 +175,3 @@ ApplyAddrMod(AddrMod);
 ```
 
 For floating-point computation, the functional model should be taken as a rough guide rather than an exact description: operations might be performed in a different order to that shown, various operations might be fused together, and precision could be either lower or higher than what is shown. Denormals will be flushed to zero, and handling of NaN/infinity does _not_ conform to IEEE754.
-
-The supporting definitions of `ReadSrcInt8`, `SrcAFidelityBits`, `SrcBFidelityBits`, `ReadBF16`, `ReadFP16`, `ReadTF32`, `SaturateAddInt32`, `ReadDstInt32`, `WriteDstInt32`, `ReadDstFP32`, `WriteDstFP32`, `ReadDstFP16`, `RoundToFP16`, `WriteDstFP16`, `ReadDstBF16`, `RoundToBF16`, and `WriteDstBF16` are the same as for [`ELWMUL`](ELWMUL.md#functional-model) and can be found there.

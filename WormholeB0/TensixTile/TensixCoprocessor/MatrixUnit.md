@@ -73,3 +73,52 @@ Note that `GMPOOL` / `ELWADD` / `ELWSUB` do not need multiple fidelity phases, s
 For integer types, the performance numbers are the same (just replace "TFLOP/s" with "TOP/s"), though [fidelity phases for integer types](SrcASrcB.md#fidelity-phases-integer) relate to the maximum magnitude of the inputs, so arbitrary 8-bit inputs require 4 fidelity phases. For integer inputs in the range -127 through +127, it is also possible to massage the data into floating-point form, and then just 2 fidelity phases are required (plus an occasional step to flush FP32 accumulators to INT32).
 
 To calculate the performance of an entire Wormhole ASIC, multiply the above numbers by the number of Tensix tiles on the Wormhole ASIC, which depending on the product will be either 64 or 72 or 80. To then calculate the performance of an entire product, multiply by the number of Wormhole ASICs in the product (an n150 board will have 1 ASIC with 72 tiles, an n300 board will have 2 ASICs with 64 tiles each, and a Galaxy server will have 32 ASICs with 80 tiles each).
+
+## Pseudocode helpers
+
+The following pseudocode routines are shared across the various opcodes in the matrix unit.
+
+```c
+int32_t ReadSrcInt8(uint19_t x, bool FlushDenormals) {
+  // Src holds INT8 as Sign,Mag(10b),Exp(8b)
+  if (FlushDenormals && !(x & 0xFF)) return 0;
+  uint1_t Sign = x >> 18;
+  uint10_t Mag = (x >> 8) & 0x3ff;
+  return Sign ? -(int32_t)Mag : (int32_t)Mag;
+}
+
+int32_t SaturateAddInt32(int32_t x, int32_t y) {
+  int64_t Result64 = int64_t(x) + int64_t(y);
+  if (Result64 > 0x7FFFFFFFLL) {
+    return 0x7FFFFFFFLL;
+  } else if (Result64 < -0x7FFFFFFFLL) {
+    return -0x7FFFFFFFLL;
+  } else {
+    return int32_t(Result64);
+  }
+}
+
+float SrcAFidelityBits(float x, uint2_t FidelityPhase) {
+  union {uint32_t u; float f;} bits;
+  bits.f = x;
+  if ((FidelityPhase & 1) == 0) {
+    bits.u &= 0xfff80000; // Sign, Exp, implicit 1 of Man, next four Man bits.
+    return bits.f;
+  } else {
+    bits.u &= 0xfff83fff; // Isolate the next five Man bits not consumed by prior branch.
+    return x - bits.f;
+  }
+}
+
+float SrcBFidelityBits(float x, uint2_t FidelityPhase) {
+  union {uint32_t u; float f;} bits;
+  bits.f = x;
+  if ((FidelityPhase & 2) == 0) {
+    bits.u &= 0xfffe0000; // Sign, Exp, implicit 1 of Man, next six Man bits.
+    return bits.f;
+  } else {
+    bits.u &= 0xfffe1fff; // Isolate the next four Man bits not consumed by prior branch.
+    return x - bits.f;
+  }
+}
+```
