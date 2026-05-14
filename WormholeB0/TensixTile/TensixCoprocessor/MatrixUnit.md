@@ -138,4 +138,49 @@ float SrcBFidelityBits(float x, uint2_t FidelityPhase) {
     return x - bits.f;
   }
 }
+
+// The following ReadDst*/WriteDst* helpers describe the conversion between floating-point Dst
+// storage and a `float` value in approximate terms only. Real hardware performs more complex
+// rounding in the narrowing cases, and handles infinities, NaNs, and denormals according to
+// chip-specific rules rather than strict IEEE 754.
+float ReadDstFP32(uint32_t x) {
+  // No precision change; only the storage bit layout differs from natural FP32.
+  return std::bit_cast<float>(DstDecodeFP32(x));
+}
+
+uint32_t WriteDstFP32(float f) {
+  // No precision change; only the storage bit layout differs from natural FP32.
+  return DstEncodeFP32(std::bit_cast<uint32_t>(f));
+}
+
+float ReadDstBF16(uint16_t x) {
+  // Widen BF16 to FP32 by shifting into the high 16 bits.
+  return std::bit_cast<float>(uint32_t(DstDecodeBF16(x)) << 16);
+}
+
+uint16_t WriteDstBF16(float f) {
+  // Narrow FP32 to BF16 by truncating the low 16 bits. Approximate; real hardware rounds.
+  return DstEncodeBF16(std::bit_cast<uint32_t>(f) >> 16);
+}
+
+float ReadDstFP16(uint16_t x) {
+  // Widen FP16 to FP32 by rebiasing the exponent and shifting the mantissa.
+  // Approximate; does not handle zero, denormals, infinities, or NaNs.
+  uint16_t bits = DstDecodeFP16(x);
+  uint32_t Sign = uint32_t(bits & 0x8000) << 16;
+  uint32_t Exp  = (uint32_t((bits >> 10) & 0x1f) + (127 - 15)) << 23;
+  uint32_t Man  = uint32_t(bits & 0x3ff) << 13;
+  return std::bit_cast<float>(Sign | Exp | Man);
+}
+
+uint16_t WriteDstFP16(float f) {
+  // Narrow FP32 to FP16 by rebiasing the exponent and truncating the mantissa.
+  // Approximate; real hardware rounds, and handles overflow/underflow/zero/
+  // denormals/infinities/NaNs differently.
+  uint32_t bits = std::bit_cast<uint32_t>(f);
+  uint16_t Sign = (bits >> 16) & 0x8000;
+  uint16_t Exp  = (((bits >> 23) & 0xff) - (127 - 15)) << 10;
+  uint16_t Man  = (bits >> 13) & 0x3ff;
+  return DstEncodeFP16(Sign | Exp | Man);
+}
 ```
