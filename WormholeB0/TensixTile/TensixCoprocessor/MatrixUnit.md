@@ -183,4 +183,29 @@ uint16_t WriteDstFP16(float f) {
   uint16_t Man  = (bits >> 13) & 0x3ff;
   return DstEncodeFP16(Sign | Exp | Man);
 }
+
+// The following SrcDecode* helpers describe the conversion from a Src datum to a `float` value in
+// approximate terms only. In hardware, infinities, NaNs, zeros, and denormals are handled per
+// chip-specific rules rather than strict IEEE 754.
+float SrcDecodeTF32(uint19_t x) {
+  // Src holds TF32 as Sign(1),Man(10),Exp(8) with bias 127.
+  uint32_t Sign = uint32_t(x >> 18) << 31;
+  uint32_t Exp  = uint32_t(x & 0xff) << 23;
+  uint32_t Man  = uint32_t((x >> 8) & 0x3ff) << 13;
+  return std::bit_cast<float>(Sign | Exp | Man);
+}
+
+float SrcDecodeBF16(uint19_t x) {
+  // BF16 in Src has the same layout as TF32 with the low 3 mantissa bits unused.
+  return SrcDecodeTF32(x & 0x7F8FF);
+}
+
+float SrcDecodeFP16(uint19_t x) {
+  // Src holds FP16 as Sign(1),Man(10),Zero(3),Exp(5) with bias 15.
+  // Approximate; does not handle zero, denormals, infinities, or NaNs.
+  uint32_t Sign = uint32_t(x >> 18) << 31;
+  uint32_t Exp  = (uint32_t(x & 0x1f) + (127 - 15)) << 23;
+  uint32_t Man  = uint32_t((x >> 8) & 0x3ff) << 13;
+  return std::bit_cast<float>(Sign | Exp | Man);
+}
 ```

@@ -93,9 +93,9 @@ for (unsigned i = 0; i < NumRows; ++i) {
     uint19_t SrcBVal = SrcB[MatrixUnit.SrcBBank][SrcBRow + (BroadcastSrcBRow ? 0 : i)][j];
     switch (SrcAStyle) {
     case INT8: SrcBMatrix[i][j].i = ReadSrcInt8(SrcBVal & (FidelityPhase & 2 ? 0x40fff : 0x7f0ff), FlushDenormals); break;
-    case BF16: SrcBMatrix[i][j].f = SrcBFidelityBits(ReadBF16(SrcBVal), FidelityPhase); break;
-    case FP16: SrcBMatrix[i][j].f = SrcBFidelityBits(ReadFP16(SrcBVal), FidelityPhase); break;
-    case TF32: SrcBMatrix[i][j].f = SrcBFidelityBits(ReadTF32(SrcBVal), FidelityPhase); break;
+    case BF16: SrcBMatrix[i][j].f = SrcBFidelityBits(SrcDecodeBF16(SrcBVal), FidelityPhase); break;
+    case FP16: SrcBMatrix[i][j].f = SrcBFidelityBits(SrcDecodeFP16(SrcBVal), FidelityPhase); break;
+    case TF32: SrcBMatrix[i][j].f = SrcBFidelityBits(SrcDecodeTF32(SrcBVal), FidelityPhase); break;
     }
   }
 }
@@ -105,9 +105,9 @@ for (unsigned i = 0; i < 16; ++i) {
     uint19_t SrcAVal = SrcA[MatrixUnit.SrcABank][SrcARow + i][j];
     switch (SrcAStyle) {
     case INT8: SrcAMatrix[i][j].i = ReadSrcInt8(SrcAVal & (FidelityPhase & 1 ? 0x41fff : 0x4e0ff), true); break;
-    case BF16: SrcAMatrix[i][j].f = SrcAFidelityBits(ReadBF16(SrcAVal), FidelityPhase); break;
-    case FP16: SrcAMatrix[i][j].f = SrcAFidelityBits(ReadFP16(SrcAVal), FidelityPhase); break;
-    case TF32: SrcAMatrix[i][j].f = SrcAFidelityBits(ReadTF32(SrcAVal), FidelityPhase); break;
+    case BF16: SrcAMatrix[i][j].f = SrcAFidelityBits(SrcDecodeBF16(SrcAVal), FidelityPhase); break;
+    case FP16: SrcAMatrix[i][j].f = SrcAFidelityBits(SrcDecodeFP16(SrcAVal), FidelityPhase); break;
+    case TF32: SrcAMatrix[i][j].f = SrcAFidelityBits(SrcDecodeTF32(SrcAVal), FidelityPhase); break;
     }
   }
 }

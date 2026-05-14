@@ -95,9 +95,9 @@ for (unsigned i = 0; i < 8; ++i) {
     } else {
       float SrcAValFP, SrcBValFP;
       switch (SrcAStyle) {
-      case BF16: SrcAValFP = ReadBF16(SrcAVal), SrcBValFP = ReadBF16(SrcBVal); break;
-      case FP16: SrcAValFP = ReadFP16(SrcAVal), SrcBValFP = ReadFP16(SrcBVal); break;
-      case TF32: SrcAValFP = ReadTF32(SrcAVal), SrcBValFP = ReadTF32(SrcBVal); break;
+      case BF16: SrcAValFP = SrcDecodeBF16(SrcAVal); SrcBValFP = SrcDecodeBF16(SrcBVal); break;
+      case FP16: SrcAValFP = SrcDecodeFP16(SrcAVal); SrcBValFP = SrcDecodeFP16(SrcBVal); break;
+      case TF32: SrcAValFP = SrcDecodeTF32(SrcAVal); SrcBValFP = SrcDecodeTF32(SrcBVal); break;
       }
       float Result = SrcAValFP + SrcBValFP;
       if (FidelityPhase & 1) Result /= 32.f;  // These divisions are rarely desirable, so software
