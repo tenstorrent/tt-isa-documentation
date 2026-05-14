@@ -89,11 +89,11 @@ if (VD < 8) {
       }
       switch (Mod0) {
       case MOD0_FMT_FP16:      Datum = ReadFP16(Dst16b[Row][Column], LaneConfig[Lane].ENABLE_FP16A_INF); break;
-      case MOD0_FMT_BF16:      Datum = UnshuffleBF16(Dst16b[Row][Column]) << 16; break;
-      case MOD0_FMT_FP32:      Datum = UnshuffleFP32(Dst32b[Row][Column]); break;
-      case MOD0_FMT_INT32:     Datum = UnshuffleFP32(Dst32b[Row][Column]); break;
-      case MOD0_FMT_INT32_ALL: Datum = UnshuffleFP32(Dst32b[Row][Column]); break;
-      case MOD0_FMT_INT32_SM:  Datum = SignMagToTwosComp(UnshuffleFP32(Dst32b[Row][Column])); break;
+      case MOD0_FMT_BF16:      Datum = uint32_t(DstDecodeBF16(Dst16b[Row][Column])) << 16; break;
+      case MOD0_FMT_FP32:      Datum = DstDecodeFP32(Dst32b[Row][Column]); break;
+      case MOD0_FMT_INT32:     Datum = DstDecodeFP32(Dst32b[Row][Column]); break;
+      case MOD0_FMT_INT32_ALL: Datum = DstDecodeFP32(Dst32b[Row][Column]); break;
+      case MOD0_FMT_INT32_SM:  Datum = SignMagToTwosComp(DstDecodeFP32(Dst32b[Row][Column])); break;
       case MOD0_FMT_INT8:      Datum = SignMag8ToSignMag32(Dst16b[Row][Column]); break;
       case MOD0_FMT_INT8_COMP: Datum = SignMagToTwosComp(SignMag11ToSignMag32(Dst16b[Row][Column])); break;
       case MOD0_FMT_LO16_ONLY: Datum = (LReg[VD][Lane].u32 & 0xffff0000) | Dst16b[Row][Column]; break;
@@ -179,25 +179,6 @@ uint32_t SignMagToTwosComp(uint32_t x) {
   uint32_t Sign = x & 0x80000000;
   uint32_t Mag  = x & 0x7fffffff;
   return Sign ? -Mag : Mag;
-}
-
-uint32_t UnshuffleFP32(uint32_t x) {
-  // Dst contained Sign,ManHi(7b),Exp(8b),ManLo(16b)
-  // Rearrange to Sign,Exp(8b),ManHi(7b),ManLo(16b)
-  // This is equivalent to applying UnshuffleBF16 to the high 16 bits.
-  uint16_t Hi = x >> 16;
-  uint16_t Lo = x & 0xffff;
-  Hi = UnshuffleBF16(Hi);
-  return (uint32_t(Hi) << 16) | Lo;
-}
-
-uint16_t UnshuffleBF16(uint16_t x) {
-  // Dst contained Sign,Man(7b),Exp(8b)
-  // Rearrange to Sign,Exp(8b),Man(7b)
-  uint32_t Sign = x & 0x8000;
-  uint32_t Exp  = x & 0x00ff;
-  uint32_t Man  = x & 0x7f00;
-  return Sign | (Exp << 7) | (Man >> 8);
 }
 ```
 
