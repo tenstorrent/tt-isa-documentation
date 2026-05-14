@@ -105,14 +105,14 @@ for (unsigned Lane = 0; Lane < 32; ++Lane) {
         Column += 1;
       }
       switch (Mod0) {
-      case MOD0_FMT_FP16:      Dst16b[Row][Column] = FP16Shuffle(ToFP16(Datum)); break;
-      case MOD0_FMT_BF16:      Dst16b[Row][Column] = BF16Shuffle(ToBF16(Datum)); break;
-      case MOD0_FMT_FP32:      Dst32b[Row][Column] = FP32Shuffle(ToFP32(Datum)); break;
-      case MOD0_FMT_INT32:     Dst32b[Row][Column] = FP32Shuffle(Datum); break;
-      case MOD0_FMT_INT32_ALL: Dst32b[Row][Column] = FP32Shuffle(Datum); break;
-      case MOD0_FMT_INT32_SM:  Dst32b[Row][Column] = FP32Shuffle(Datum); break;
-      case MOD0_FMT_INT8:      Dst16b[Row][Column] = FP16Shuffle(SignMag11ToFP16(Datum)); break;
-      case MOD0_FMT_INT8_COMP: Dst16b[Row][Column] = FP16Shuffle(SignMag11ToFP16(Datum)); break;
+      case MOD0_FMT_FP16:      Dst16b[Row][Column] = DstEncodeFP16(ToFP16(Datum)); break;
+      case MOD0_FMT_BF16:      Dst16b[Row][Column] = DstEncodeBF16(ToBF16(Datum)); break;
+      case MOD0_FMT_FP32:      Dst32b[Row][Column] = DstEncodeFP32(ToFP32(Datum)); break;
+      case MOD0_FMT_INT32:     Dst32b[Row][Column] = DstEncodeFP32(Datum); break;
+      case MOD0_FMT_INT32_ALL: Dst32b[Row][Column] = DstEncodeFP32(Datum); break;
+      case MOD0_FMT_INT32_SM:  Dst32b[Row][Column] = DstEncodeFP32(Datum); break;
+      case MOD0_FMT_INT8:      Dst16b[Row][Column] = DstEncodeFP16(SignMag11ToFP16(Datum)); break;
+      case MOD0_FMT_INT8_COMP: Dst16b[Row][Column] = DstEncodeFP16(SignMag11ToFP16(Datum)); break;
       case MOD0_FMT_LO16_ONLY: Dst16b[Row][Column] = Datum & 0xffff; break;
       case MOD0_FMT_HI16_ONLY: Dst16b[Row][Column] = Datum >> 16; break;
       case MOD0_FMT_INT16:     Dst16b[Row][Column] = ((Datum >> 31) << 15) | (Datum & 0x7fff); break;
@@ -189,34 +189,6 @@ uint32_t ToFP32(uint32_t x) {
     Man = 0;
   }
   return Sign | Exp | Man;
-}
-
-uint32_t FP32Shuffle(uint32_t x) {
-  // Rearrange fields from Sign,Exp,Man to Sign,ManHi,Exp,ManLo as
-  // Dst holds FP32 data in this rearranged form. This is equivalent
-  // to applying BF16Shuffle to the high 16 bits.
-  uint16_t Hi = x >> 16;
-  uint16_t Lo = x & 0xffff;
-  Hi = BF16Shuffle(Hi);
-  return (uint32_t(Hi) << 16) | Lo;
-}
-
-uint16_t BF16Shuffle(uint16_t x) {
-  // Rearrange fields from Sign,Exp,Man to Sign,Man,Exp as Dst holds
-  // BF16 data in this rearranged form.
-  uint16_t Sign = x & 0x8000;
-  uint16_t Exp  = x & 0x7f80;
-  uint16_t Man  = x & 0x007f;
-  return Sign | (Man << 8) | (Exp >> 7);
-}
-
-uint16_t FP16Shuffle(uint16_t x) {
-  // Rearrange fields from Sign,Exp,Man to Sign,Man,Exp as Dst holds
-  // FP16 data in this rearranged form.
-  uint16_t Sign = x & 0x8000;
-  uint16_t Exp  = x & 0x7c00;
-  uint16_t Man  = x & 0x03ff;
-  return Sign | (Man << 5) | (Exp >> 10);
 }
 
 uint16_t SignMag11ToFP16(uint32_t x) {

@@ -296,3 +296,42 @@ void Store8(uint32_t Addr, uint8_t Value) {
   Dst16b[Addr / 16][Addr % 16] = Value16;
 }
 ```
+
+## Pseudocode helpers
+
+The following pseudocode routines are shared across the various units that access `Dst`.
+
+```c
+uint16_t DstDecodeBF16(uint16_t x) {
+  uint16_t e = x & 255;
+  uint16_t m = (x >> 8) & 127;
+  return (x & 0x8000) | (e << 7) | m;
+}
+
+uint16_t DstEncodeBF16(uint16_t x) {
+  uint16_t e = (x >> 7) & 255;
+  uint16_t m = x & 127;
+  return (x & 0x8000) | (m << 8) | e;
+}
+
+uint16_t DstDecodeFP16(uint16_t x) {
+  uint16_t e = x & 31;
+  uint16_t m = (x >> 5) & 1023;
+  return (x & 0x8000) | (e << 10) | m;
+}
+
+uint16_t DstEncodeFP16(uint16_t x) {
+  uint16_t e = (x >> 10) & 31;
+  uint16_t m = x & 1023;
+  return (x & 0x8000) | (m << 5) | e;
+}
+
+// Note that the "FP32" encoding is also used for INT32
+uint32_t DstDecodeFP32(uint32_t x) {
+  return (uint32_t(DstDecodeBF16(x >> 16)) << 16) | (x & 0xFFFF);
+}
+
+uint32_t DstEncodeFP32(uint32_t x) {
+  return (uint32_t(DstEncodeBF16(x >> 16)) << 16) | (x & 0xFFFF);
+}
+```
