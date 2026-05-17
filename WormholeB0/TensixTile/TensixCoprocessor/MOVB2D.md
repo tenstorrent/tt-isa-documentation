@@ -76,7 +76,7 @@ for (; NumRows; --NumRows, ++DstRow, SrcRow += !Broadcast1RowTo8) {
     uint16_t Val16b = Use8bExponent ? RemoveLowMantissa(SrcBVal) : RemoveHighExponent(SrcBVal);
     if (SrcAFmt == TF32) {
       if (UseDst32bLo) {
-        UndefinedBehavior(); // Write data will be corrupted on Blackhole; Wormhole behavior is unlikely to be useful
+        UndefinedBehavior(); // Write data will be corrupted on Blackhole (HW erratum TEN-4245); Wormhole behavior is unlikely to be useful
       }
       uint16_t LowMantissa = ((SrcBVal >> 8) & 7) << 13; // The bits removed by RemoveLowMantissa.
       // Dst holds TF32 as Sign,HiMan(7b),Exp(8b),LoMan(3b),Zeros(13b)
