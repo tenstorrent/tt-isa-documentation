@@ -102,3 +102,8 @@ architecture does not commit to defining those cases retroactively merely becaus
 not yet been observed to fail. Promotion of a feature from UnsupportedFunctionality to a
 supported status is a one-way, contract-binding change subject to the same evidence requirements
 articulated for UndefinedBehavior above.
+
+## TTArchitecture
+
+`TTArchitecture` is a pseudocode primitive that evaluates to a constant identifying the current
+silicon architecture. The currently-defined values are `Wormhole` and `Blackhole`.

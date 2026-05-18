@@ -201,6 +201,13 @@ InAddr_Exponents = WrapAddr(InAddr_Exponents);
 InAddr_Datums = WrapAddr(InAddr_Datums);
 InAddr_Deltas = WrapAddr(InAddr_Deltas);
 
+uint32_t UnpackRowWidth; // Number of datums to read before advancing by RowStride
+if (TTArchitecture == Blackhole) {
+  UnpackRowWidth = (DatumSizeBytes <= 1) ? 16 : 32; // Note: behavior not yet characterized for BFP2/4 formats
+} else { // Wormhole
+  UnpackRowWidth = 16;
+}
+
 bool DiscontiguousInputRows = ConfigState.THCON_SEC[WhichUnpacker].REG2_Tileize_mode;
 if (DiscontiguousInputRows) {
   RowStride = (ConfigState.THCON_SEC[WhichUnpacker].REG2_Shift_amount_cntx[0] <<  4)
@@ -209,7 +216,7 @@ if (DiscontiguousInputRows) {
   // Note that each Shift_amount_cntx is a 4-bit field, so there's 12 bits of
   // precision here, and therefore the maximum RowStride is 65520 bytes.
 } else {
-  RowStride = DatumSizeBytes * 16;
+  RowStride = DatumSizeBytes * UnpackRowWidth;
 }
 
 // Determine initial output address:
@@ -282,8 +289,8 @@ for (unsigned i = 0; i < InputNumDatums && DecompressNumDatums; ) {
   // Read a datum from L1:
   auto DatumBits = ReadL1Bytes(InAddr_Datums, DatumSizeBytes);
   InAddr_Datums += DatumSizeBytes;
-  if ((++i % 16) == 0) {
-    InAddr_Datums -= DatumSizeBytes * 16;
+  if ((++i % UnpackRowWidth) == 0) {
+    InAddr_Datums -= DatumSizeBytes * UnpackRowWidth;
     InAddr_Datums += RowStride;
     InAddr_Datums = WrapAddr(InAddr_Datums);
   }
