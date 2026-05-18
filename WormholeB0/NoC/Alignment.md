@@ -5,7 +5,7 @@ NoC requests have various address alignment requirements, with the exact require
 * The kind of source address (or more generally, where the data comes from)
 * The kind of destination address (or more generally, where the data goes to)
 
-Violations of the alignment requirements result in UndefinedBehavior.
+Violations of the alignment requirements result in `UndefinedBehavior`.
 
 ## When `NOC_AT_LEN_BE` contains a length
 

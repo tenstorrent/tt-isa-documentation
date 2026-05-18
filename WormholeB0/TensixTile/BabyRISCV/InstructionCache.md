@@ -20,7 +20,7 @@ Some configuration fields are available to constrain the instruction cache prefe
 
 ## Cache invalidation
 
-The baby RISCV cores do *not* implement the `Zifencei` extension, and thus the `fence.i` instruction is *not* available and cannot be used to flush the instruction cache. If executed, it'll be treated as if it were a `nop` instruction; this is a NonContractualBehavior and should not be relied upon.
+The baby RISCV cores do *not* implement the `Zifencei` extension, and thus the `fence.i` instruction is *not* available and cannot be used to flush the instruction cache. If executed, it'll be treated as if it were a `nop` instruction; this is a `NonContractualBehavior` and should not be relied upon.
 
 Instead, the instruction cache is cleared during [reset](../SoftReset.md#riscv-soft-reset), and can also be cleared by writing to the `RISCV_IC_INVALIDATE_InvalidateAll` field within [Tensix backend configuration](../TensixCoprocessor/BackendConfiguration.md). Note that this is _not_ accessible over the NoC, nor is it accessible to RISCV NC, so RISCV NC cannot clear its own instruction cache (nor anyone else's) by itself.
 

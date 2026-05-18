@@ -96,7 +96,7 @@ def IsNop(Instruction):
 
 ## Configuration
 
-Each instance of `MopCfg` is mapped into the address space of one RISCV core as if it were `uint32_t[9]`, starting at address `TENSIX_MOP_CFG_BASE`, though the address range is **write-only**: attempting to read it from RISCV triggers UndefinedBehavior. RISCV T0 gets `MopCfg` for Tensix thread T0, RISCV T1 gets `MopCfg` for Tensix thread T1, and RISCV T2 gets `MopCfg` for Tensix thread T2. As per the above functional model, the meaning of each entry in `MopCfg` varies based on which template a `MOP` instruction requests:
+Each instance of `MopCfg` is mapped into the address space of one RISCV core as if it were `uint32_t[9]`, starting at address `TENSIX_MOP_CFG_BASE`, though the address range is **write-only**: attempting to read it from RISCV triggers `UndefinedBehavior`. RISCV T0 gets `MopCfg` for Tensix thread T0, RISCV T1 gets `MopCfg` for Tensix thread T1, and RISCV T2 gets `MopCfg` for Tensix thread T2. As per the above functional model, the meaning of each entry in `MopCfg` varies based on which template a `MOP` instruction requests:
 ||Template 0 usage|Template 1 usage|
 |---|---|---|
 |**`MopCfg[0]`**|Not used for anything|`OuterCount` (low seven bits only)|

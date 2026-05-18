@@ -8,7 +8,7 @@ The full RV32IM instruction set is implemented, plus all of "Zicsr" / "Zaamo" / 
 
 One entirely bespoke instruction set extension is implemented: [`.ttinsn`](PushTensixInstruction.md#ttinsn-instruction-set-extension).
 
-Invalid/unsupported RISCV instructions result in UndefinedBehavior.
+Invalid/unsupported RISCV instructions result in `UndefinedBehavior`.
 
 ## Pipeline
 

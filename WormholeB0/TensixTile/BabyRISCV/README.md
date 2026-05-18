@@ -22,7 +22,7 @@ Consult the RISCV specifications of "RV32I Base Integer Instruction Set" and "M 
 
 One bespoke instruction set extension is implemented: [`.ttinsn`](PushTensixInstruction.md#ttinsn-instruction-set-extension).
 
-Invalid/unsupported RISCV instructions result in UndefinedBehavior. In practice, they are silently executed as if they were _some_ other
+Invalid/unsupported RISCV instructions result in `UndefinedBehavior`. In practice, they are silently executed as if they were _some_ other
 instruction - usually, but not always, as if they were a `nop` instruction - but software must not depend on this behavior.
 
 ## Pipeline
@@ -108,11 +108,11 @@ The "NoC" column indicates which parts of the address space are made available t
 ## Faults / exceptions
 
 The baby RISCV cores cannot fault. Scenarios which might be expected to cause a fault are instead handled in some way:
-* Unaligned memory accesses are silently rounded down to the nearest aligned address. This is a NonContractualBehavior.
+* Unaligned memory accesses are silently rounded down to the nearest aligned address. This is a `NonContractualBehavior`.
 * Loads from unmapped memory will usually stall forever waiting for a read-response to come back from the memory subsystem.
 * Stores to unmapped memory might stall forever, or might be silently discarded.
 * RISCV `ecall` / `ebreak` instructions will pause the core, [as if a pause was requested via the GDB/Debug interface](DebugInterface.md#ebreak-and-ecall-instructions).
-* Invalid/unsupported RISCV instructions result in UndefinedBehavior.
+* Invalid/unsupported RISCV instructions result in `UndefinedBehavior`.
 
 ## Local data RAM
 
