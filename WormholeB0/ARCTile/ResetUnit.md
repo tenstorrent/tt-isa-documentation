@@ -13,7 +13,9 @@ The Reset Unit within the ARC tile is used to bring the ARC CPU out of reset, an
 |`0x006C` to `0x006F`|4 Bytes|`SCRATCH[3]`|Used as part of protocol for sending messages to the ARC CPU|
 |`0x0070` to `0x0073`|4 Bytes|`SCRATCH[4]`|Used as part of protocol for sending messages to the ARC CPU|
 |`0x0074` to `0x0077`|4 Bytes|`SCRATCH[5]`|Used as part of protocol for sending messages to the ARC CPU|
-|`0x0078` to `0x00DF`|104 Bytes|Reserved|Safe for customers to read, but undocumented|
+|`0x0078` to `0x007B`|4 Bytes|`SCRATCH[6]`|Used by the ARC CPU to issue DBI writes against the PCIe controller's configuration registers|
+|`0x007C` to `0x007F`|4 Bytes|`SCRATCH[7]`|Used by the ARC CPU to issue DBI writes against the PCIe controller's configuration registers|
+|`0x0080` to `0x00DF`|96 Bytes|Reserved|Safe for customers to read, but undocumented|
 |`0x00E0` to `0x00E7`|8 Bytes|`REFCLK_COUNTER_LOW`|64-bit counter running at 27 MHz|
 |`0x00E8` to `0x00FF`|24 Bytes|Reserved|Safe for customers to read, but undocumented|
 |`0x0100` to `0x0103`|4 Bytes|`ARC_MISC_CNTL`|One bit of this is used to trigger an IRQ on the ARC CPU|
