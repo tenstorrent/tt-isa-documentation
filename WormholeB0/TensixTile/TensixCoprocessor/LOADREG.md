@@ -22,7 +22,7 @@ The instruction is considered complete once the following happens:
 uint32_t* GPR = &GPRs[CurrentThread][ResultReg];
 uint32_t* Addr = 0xFFB00000 + (AddrLo << 2);
 if (uintptr_t(Addr) < 0xFFB11000) {
-  UndefinedBehaviour();
+  UndefinedBehavior();
 }
 ```
 

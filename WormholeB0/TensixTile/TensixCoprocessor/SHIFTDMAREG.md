@@ -26,7 +26,7 @@ uint32_t ResultVal;
 switch (Mode) {
 case SHIFTDMAREG_MODE_LEFT:  ResultVal = LeftVal << RightVal; break;
 case SHIFTDMAREG_MODE_RIGHT: ResultVal = LeftVal >> RightVal; break;
-default: UndefinedBehaviour(); break;
+default: UndefinedBehavior(); break;
 }
 GPRs[CurrentThread][ResultReg] = ResultVal;
 ```

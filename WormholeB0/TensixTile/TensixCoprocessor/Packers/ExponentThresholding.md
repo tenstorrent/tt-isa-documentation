@@ -27,7 +27,7 @@ Datum ApplyExponentThresholding(Datum d) {
       }
       break;
     case BFP2a:
-      UndefinedBehaviour(); // Hardware bug
+      UndefinedBehavior(); // Hardware bug
       break;
     }
   }

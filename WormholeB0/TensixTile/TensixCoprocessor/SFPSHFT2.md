@@ -1,6 +1,6 @@
 # `SFPSHFT2` (Vector shuffle or vector bitwise shift)
 
-**Summary:** Performs some kind of bitwise shift within vector lanes, or some kind of shuffle of vector lanes. The exact behaviour is determined by the `Mod1` field; see the functional model for descriptions of each mode.
+**Summary:** Performs some kind of bitwise shift within vector lanes, or some kind of shuffle of vector lanes. The exact behavior is determined by the `Mod1` field; see the functional model for descriptions of each mode.
 
 **Backend execution unit:** [Vector Unit (SFPU)](VectorUnit.md), round sub-unit
 

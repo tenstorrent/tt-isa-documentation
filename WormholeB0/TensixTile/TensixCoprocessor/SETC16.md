@@ -17,7 +17,7 @@ TT_SETC16(/* u8 */ CfgIndex, /* u16 */ NewValue)
 ## Functional model
 
 ```c
-if (CfgIndex >= THD_STATE_SIZE) UndefinedBehaviour(); // Cannot index out of bounds.
+if (CfgIndex >= THD_STATE_SIZE) UndefinedBehavior(); // Cannot index out of bounds.
 
 ThreadConfig[CurrentThread][CfgIndex].Value = NewValue;
 ```

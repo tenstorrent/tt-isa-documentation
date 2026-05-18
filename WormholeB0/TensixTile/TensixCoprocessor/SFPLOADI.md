@@ -44,7 +44,7 @@ if (VD < 8) {
       case SFPLOADI_MOD0_SHORT:  LReg[VD].u32 = SignExtend(Imm16); break;
       case SFPLOADI_MOD0_UPPER:  LReg[VD].u32 = (Imm16 << 16) | (LReg[VD].u32 & 0x0000ffff); break;
       case SFPLOADI_MOD0_LOWER:  LReg[VD].u32 = (LReg[VD].u32 & 0xffff0000) | Imm16; break;
-      default: UndefinedBehaviour(); break;
+      default: UndefinedBehavior(); break;
       }
     }
   }

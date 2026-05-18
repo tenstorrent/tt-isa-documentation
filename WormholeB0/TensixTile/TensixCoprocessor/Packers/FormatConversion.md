@@ -25,7 +25,7 @@ Where rounding is supported, it can either be deterministic round-to-nearest wit
 
 Handling of denormals and NaNs in the early format conversion depends on the nature of the early format conversion:
 * **Identity / bitcast:** Denormals preserved. NaN preserved.
-* **Rounding:** Denormals flushed to zero. Minus zero converted to positive zero. If the exponent is 8 bits wide, NaN becomes infinity (this is a potentially surprising behaviour).
+* **Rounding:** Denormals flushed to zero. Minus zero converted to positive zero. If the exponent is 8 bits wide, NaN becomes infinity (this is a potentially surprising behavior).
 * **Truncation:** Denormals can become zero, if that is the outcome of truncating mantissa bits. NaN can become infinity, if that is the outcome of truncating mantissa bits.
 
 -----

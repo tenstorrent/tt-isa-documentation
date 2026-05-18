@@ -38,9 +38,9 @@ If decompressing, then the input address generator is also modified: it will con
 
 ## Upsampling
 
-Upsampling functionality can be used to either insert a fixed number of zeroes after each datum, or skip a fixed number of output positions after each datum. As per the [`UNPACR` functional model](../UNPACR_Regular.md#functional-model), it is configured via `Upsample_rate` and `Upsample_and_interleave`, with the possible behaviours being:
+Upsampling functionality can be used to either insert a fixed number of zeroes after each datum, or skip a fixed number of output positions after each datum. As per the [`UNPACR` functional model](../UNPACR_Regular.md#functional-model), it is configured via `Upsample_rate` and `Upsample_and_interleave`, with the possible behaviors being:
 
-|`Upsample_rate`|`Upsample_and_interleave`|Behaviour|
+|`Upsample_rate`|`Upsample_and_interleave`|Behavior|
 |---|---|---|
 |`0`|Any|No upsampling|
 |`1`|`false`|Insert one zero datum after every datum|

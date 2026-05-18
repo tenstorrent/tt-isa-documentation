@@ -50,7 +50,7 @@ A few memory-mapped registers are present in the x280 physical address space for
 |`BASE + 0x0000`|`PL2CACHE0_CONFIG`|4x 8 bits|Read-only description of L2 cache topology|
 |`BASE + 0x0200`|`PL2CACHE0_CFLUSH64`|64 bits|Write-only to enqueue a flush command|
 |`BASE + 0x0208`|`PL2CACHE0_FLUSHCOUNT`|8 bits|Read-only number of enqueued flush commands still pending|
-|`BASE + 0x1008`|`PL2CACHE0_CONFIGBITS`|32x 1 bit|Various configurable behaviour bits|
+|`BASE + 0x1008`|`PL2CACHE0_CONFIGBITS`|32x 1 bit|Various configurable behavior bits|
 
 See [`sifive_pl2cache0.h`](https://github.com/sifive/freedom-metal/blob/fa026d2ee08e5ba49e8ae703fb4cbcbb710a6a69/metal/drivers/sifive_pl2cache0.h) and [`sifive_pl2cache0.c`](https://github.com/sifive/freedom-metal/blob/fa026d2ee08e5ba49e8ae703fb4cbcbb710a6a69/src/drivers/sifive_pl2cache0.c) for examples of using these registers.
 

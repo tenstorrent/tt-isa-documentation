@@ -22,7 +22,7 @@ Note that `/* u2 */ Index1` is specified as the digit at the end of the instruct
 ## Functional model
 
 ```c
-if (Index4 >= (CFG_STATE_SIZE*4)) UndefinedBehaviour(); // Cannot write to three-copy configuration
+if (Index4 >= (CFG_STATE_SIZE*4)) UndefinedBehavior(); // Cannot write to three-copy configuration
 
 uint1_t StateID = ThreadConfig[CurrentThread].CFG_STATE_ID_StateID;
 uint8_t* CfgAddress = (uint8_t*)&Config[StateID][Index4] + Index1;

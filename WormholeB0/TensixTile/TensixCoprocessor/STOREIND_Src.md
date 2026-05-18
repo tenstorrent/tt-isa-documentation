@@ -40,7 +40,7 @@ case 2: *Offset += 4; break;
 case 3: *Offset += 16; break;
 }
 if (Addr & 0xf0000) {
-  UndefinedBehaviour();
+  UndefinedBehavior();
 }
 
 unsigned Column0 = (Addr & 3) * 4;
@@ -51,7 +51,7 @@ if (StoreToSrcB) {
   }
   unsigned Row = Addr >> 2;
   if (Row >= 16) {
-    UndefinedBehaviour();
+    UndefinedBehavior();
   }
   Row += Unpackers[1].SrcRow[CurrentThread]; // Will add 0 / 16 / 32 / 48.
   for (unsigned i = 0; i < 4; ++i) {
@@ -66,11 +66,11 @@ if (StoreToSrcB) {
   if (Row >= 0) {
     if (ThreadConfig[CurrentThread].SRCA_SET_SetOvrdWithAddr) {
       if (Row >= 64) {
-        UndefinedBehaviour();
+        UndefinedBehavior();
       }
     } else {
       if (Row >= 16) {
-        UndefinedBehaviour();
+        UndefinedBehavior();
       }
       Row += Unpackers[0].SrcRow[CurrentThread]; // Will add 0 / 16 / 32 / 48.
     }

@@ -6,7 +6,7 @@ The MSI catcher is a small memory-mapped FIFO attached to the platform-level int
 
 ## Memory map
 
-<table><thead><tr><th>Address (x280 physical)</th><th>Write Behaviour</th><th>Read Behaviour</th></tr></thead>
+<table><thead><tr><th>Address (x280 physical)</th><th>Write Behavior</th><th>Read Behavior</th></tr></thead>
 <tr><td><code>0x0000_2006_0000</code></td><td><pre><code>if (queue.size() &lt; 16) {
   queue.push(write_value);
 } else {

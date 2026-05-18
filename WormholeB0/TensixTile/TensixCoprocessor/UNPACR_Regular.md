@@ -48,8 +48,8 @@ if (MultiContextMode) {
   }
   WhichContext += ThreadConfig[CurrentThread].UNPACK_MISC_CFG_CfgContextOffset[WhichUnpacker];
   WhichADC = ContextADC;
-  if (WhichUnpacker == 1 && WhichContext >= 2) UndefinedBehaviour();
-  if (WhichADC == 3) UndefinedBehaviour();
+  if (WhichUnpacker == 1 && WhichContext >= 2) UndefinedBehavior();
+  if (WhichADC == 3) UndefinedBehavior();
 } else {
   WhichContext = 0;
   WhichADC = CurrentThread;
@@ -244,10 +244,10 @@ unsigned OutAddr = ConfigState.UNP[WhichUnpacker].ADDR_BASE_REG_1_Base
      + ADC_Out.Z * ConfigState.UNP[WhichUnpacker].ADDR_CTRL_ZW_REG_1_Zstride
      + ADC_Out.W * ConfigState.UNP[WhichUnpacker].ADDR_CTRL_ZW_REG_1_Wstride;
 if (OutDataFormat in {FP32, TF32, INT32}) {
-  if (OutAddr & 3) UndefinedBehaviour();
+  if (OutAddr & 3) UndefinedBehavior();
   OutAddr >>= 2;
 } else if (OutDataFormat in {FP16, BF16, INT16}) {
-  if (OutAddr & 1) UndefinedBehaviour();
+  if (OutAddr & 1) UndefinedBehavior();
   OutAddr >>= 1;
 }
 if (MultiContextMode && WhichUnpacker == 0) {
@@ -273,14 +273,14 @@ if (DiscontiguousInputRows || WhichUnpacker == 1) {
 if (Transpose || DiscontiguousInputRows) {
   // These modes require that InAddr_Datums start at an aligned 16 byte boundary.
   if (InAddr_Datums != floor(InAddr_Datums / 16.) * 16.) {
-    UndefinedBehaviour();
+    UndefinedBehavior();
   }
 }
 if (DiscontiguousInputRows && (UpsampleZeroes > 0 || !IsUncompressed)) {
-  UndefinedBehaviour();
+  UndefinedBehavior();
 }
 if (UnpackToDst && (ColShift || Transpose)) {
-  UndefinedBehaviour();
+  UndefinedBehavior();
 }
 
 // Main unpack loop:
@@ -331,7 +331,7 @@ for (unsigned i = 0; i < InputNumDatums && DecompressNumDatums; ) {
       // Note: the destination mapping below is described per-datum, but the hardware writes these registers in bursts
       // of multiple contiguous rows. Alignment requirements on OutAddr are not yet fully characterized; in particular,
       // for SrcA, a burst that spans a 16-row set boundary may not commit all of its datums per the formula below.
-      // This spec marks the bank-edge boundary cases as UndefinedBehaviour() pending characterization, but software
+      // This spec marks the bank-edge boundary cases as UndefinedBehavior() pending characterization, but software
       // should additionally avoid OutAddr values that would cause a SrcA burst to span a 16-row set boundary until
       // that case is pinned down.
       uint1_t Bank = CurrentUnpacker.SrcBank;
@@ -343,7 +343,7 @@ for (unsigned i = 0; i < InputNumDatums && DecompressNumDatums; ) {
           wait;
         }
         Row += CurrentUnpacker.SrcRow[CurrentThread];
-        if (Row >= 64) UndefinedBehaviour(); // Strict pending OutAddr alignment requirement/burst-edge characterization
+        if (Row >= 64) UndefinedBehavior(); // Strict pending OutAddr alignment requirement/burst-edge characterization
         SrcB[Bank][Row][Col] = Datum;
       } else {
         while (SrcA[Bank].AllowedClient != SrcClient::Unpackers) {
@@ -355,9 +355,9 @@ for (unsigned i = 0; i < InputNumDatums && DecompressNumDatums; ) {
           Row -= 4;
           Col -= ColShift;
           if (ThreadConfig[CurrentThread].SRCA_SET_SetOvrdWithAddr) {
-            if (Row >= 64) UndefinedBehaviour(); // Strict pending OutAddr alignment requirement/burst-edge characterization
+            if (Row >= 64) UndefinedBehavior(); // Strict pending OutAddr alignment requirement/burst-edge characterization
           } else {
-            if (Row >= 16) UndefinedBehaviour(); // Strict pending OutAddr alignment requirement/burst-edge characterization
+            if (Row >= 16) UndefinedBehavior(); // Strict pending OutAddr alignment requirement/burst-edge characterization
             Row += CurrentUnpacker.SrcRow[CurrentThread];
           }
           if (Transpose) {
@@ -420,7 +420,7 @@ Supporting definitions:
 
 ```c
 uint32_t ReadL1Bytes(double Addr, double NumBytes) {
-  if (Addr < 0 || Addr >= (1464*1024)) UndefinedBehaviour(); // Address must be in L1
+  if (Addr < 0 || Addr >= (1464*1024)) UndefinedBehavior(); // Address must be in L1
   uint32_t BitAddr = Addr * 8.;
   uint32_t NumBits = NumBytes * 8.;
   uint32_t Result = 0;
@@ -455,12 +455,12 @@ uint32_t FormatConversion(uint4_t InDataFormat, uint4_t OutDataFormat, uint32_t 
       InDataFormat = FP16;
       break;
     default:
-      UndefinedBehaviour();
+      UndefinedBehavior();
     }
   } else {
     // Exactly one conversion is permitted for all other input types. In these
     // cases, OutDataFormat has no meaning, but must be equal to InDataFormat.
-    if (InDataFormat != OutDataFormat) UndefinedBehaviour();
+    if (InDataFormat != OutDataFormat) UndefinedBehavior();
 
     // Start by normalising to a format which is either 16 or 32 bits wide.
     switch (InDataFormat) {
@@ -492,7 +492,7 @@ uint32_t FormatConversion(uint4_t InDataFormat, uint4_t OutDataFormat, uint32_t 
       } else {
         // Otherwise, TF32 is not valid as InDataFormat (but software can instead
         // specify InDataFormat == FP32 and OutDataFormat == TF32).
-        UndefinedBehaviour();
+        UndefinedBehavior();
       }
     }
   }
@@ -502,13 +502,13 @@ uint32_t FormatConversion(uint4_t InDataFormat, uint4_t OutDataFormat, uint32_t 
   case INT16: return UnpackToDst ? DatumBits : ((DatumBits & 0xff00) << 3) | (DatumBits & 0xff);
   case BF16:  return UnpackToDst ? DstEncodeBF16(DatumBits) : WriteSrcBF16(DatumBits);
   case FP16:  return UnpackToDst ? DstEncodeFP16(DatumBits) : WriteSrcFP16(DatumBits);
-  // FP32/INT32 with !UnpackToDst is intentionally UndefinedBehaviour. SrcA/SrcB datum slots are 19 bits;
+  // FP32/INT32 with !UnpackToDst is intentionally UndefinedBehavior. SrcA/SrcB datum slots are 19 bits;
   // storing a 32-bit datum requires lossy conversion to a 16-bit or 19-bit storage format (TF32, FP16,
   // BF16, etc.). Software wanting full-precision FP32/INT32 should use UnpackToDst instead. Silicon
   // behavior in this case is not merely an UnpredictableValue(); the exact behavior has not been
   // validated and must not be relied upon by software.
-  case INT32: return UnpackToDst ? DstEncodeFP32(DatumBits) : UndefinedBehaviour();
-  case FP32:  return UnpackToDst ? DstEncodeFP32(DatumBits) : UndefinedBehaviour();
+  case INT32: return UnpackToDst ? DstEncodeFP32(DatumBits) : UndefinedBehavior();
+  case FP32:  return UnpackToDst ? DstEncodeFP32(DatumBits) : UndefinedBehavior();
   }
 }
 
@@ -534,7 +534,7 @@ uint16_t BFP8aToFP16(uint8_t DatumBits, uint8_t ExpBits) {
     unsigned LZ = stdc_leading_zeros_uc(Mag);
     Mag <<= LZ;
     ExpBits -= LZ;
-    if (ExpBits & 0xe0) UndefinedBehaviour();
+    if (ExpBits & 0xe0) UndefinedBehavior();
     return (Sign << 15) | (ExpBits << 10) | ((Mag & 0x7e) << 3);
   }
 }

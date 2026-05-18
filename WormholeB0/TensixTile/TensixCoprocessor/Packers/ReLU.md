@@ -38,11 +38,11 @@ float ReLUStage(float x) {
     return x <= 0 ? 0 : x;
   case 2: // MIN_THRESHOLD_RELU
     // ReLU with configurable threshold
-    if (signbit(Threshold)) UndefinedBehaviour(); // Threshold <= -0 is undefined
+    if (signbit(Threshold)) UndefinedBehavior(); // Threshold <= -0 is undefined
     return x <= Threshold ? 0 : x;
   case 3: // MAX_THRESHOLD_RELU
     // ReLU that clamps between 0 and Threshold
-    if (signbit(Threshold)) UndefinedBehaviour(); // Threshold <= -0 is undefined
+    if (signbit(Threshold)) UndefinedBehavior(); // Threshold <= -0 is undefined
     if (x <= 0) return 0;
     else if (x > Threshold) return Threshold;
     else return x;

@@ -21,7 +21,7 @@ lanewise {
   if (VD < 12 || LaneConfig.DISABLE_BACKDOOR_LOAD) {
     if (FlagStack.Size() >= 8) {
       // Software should avoid using SFPPUSHC when the stack is full.
-      UndefinedBehaviour();
+      UndefinedBehavior();
     }
     FlagStack.Push({LaneFlags, UseLaneFlagsForLaneEnable});
   }

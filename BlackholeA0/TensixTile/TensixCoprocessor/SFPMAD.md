@@ -63,7 +63,7 @@ The multiply and the add are _partially_ fused, but not _completely_ fused: the 
 
 If the output (after rounding) is denormal, it'll be flushed to sign-preserved zero.
 
-A [bit-perfect software model](../../../Miscellaneous/FMA/README.md) is provided for anyone either trying to exactly reproduce the hardware behaviour or trying to understand exactly where and how it diverges from IEEE754.
+A [bit-perfect software model](../../../Miscellaneous/FMA/README.md) is provided for anyone either trying to exactly reproduce the hardware behavior or trying to understand exactly where and how it diverges from IEEE754.
 
 ## Instruction scheduling
 

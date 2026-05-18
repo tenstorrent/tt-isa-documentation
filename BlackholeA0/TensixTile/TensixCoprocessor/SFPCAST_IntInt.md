@@ -28,7 +28,7 @@ One of the following data type conversions is performed. Software does not need 
 ```c
 if ((Mod1 & 3) != SFPCAST_MOD1_INT32_SM32) {
   // Is some other flavour of SFPCAST; see other pages for details.
-  UndefinedBehaviour();
+  UndefinedBehavior();
 }
 
 if (VD < 8 || VD == 16) {

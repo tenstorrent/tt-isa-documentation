@@ -25,7 +25,7 @@ uint32_t Addr = 0xFFB00000 + Packers.SetRegBase[AddrSel] + (AddrMid << 12);
 uint32_t ValueHi = Value10 * Packers.SetRegHiScaler[Packer0Config.Out_data_format & 3];
 uint32_t Value32 = Value10 + ((ValueHi & 0x1ffff) << 12);
 if (Addr < 0xFFB11000) {
-  UndefinedBehaviour();
+  UndefinedBehavior();
 } else if (Addr < 0xFFB80000) {
   *Addr = Value32;
 }

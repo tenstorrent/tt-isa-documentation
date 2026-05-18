@@ -33,7 +33,7 @@ TT_SFP_STOCH_RND(/* bool */ StochasticRounding,
 if (Mod1 != SFPSTOCHRND_MOD1_FP32_TO_FP16A
  && Mod1 != SFPSTOCHRND_MOD1_FP32_TO_FP16B) {
   // Is some other flavour of SFPSTOCHRND; see other pages for details.
-  UndefinedBehaviour();
+  UndefinedBehavior();
 }
 
 lanewise {

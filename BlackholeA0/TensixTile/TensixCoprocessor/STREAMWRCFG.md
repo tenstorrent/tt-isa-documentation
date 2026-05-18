@@ -17,7 +17,7 @@ TT_STREAMWRCFG(/* u2 */ StreamSelect, /* u10 */ RegIndex, /* u11 */ CfgIndex)
 ## Functional model
 
 ```c
-if (CfgIndex >= (CFG_STATE_SIZE*4)) UndefinedBehaviour(); // Cannot index out of bounds.
+if (CfgIndex >= (CFG_STATE_SIZE*4)) UndefinedBehavior(); // Cannot index out of bounds.
 
 uint6_t StreamIndex = ThreadConfig[CurrentThread].STREAM_ID_SYNC_SEC[StreamSelect].BankSel;
 uint1_t StateID = ThreadConfig[CurrentThread].CFG_STATE_ID_StateID;

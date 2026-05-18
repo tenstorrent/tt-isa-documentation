@@ -91,7 +91,7 @@ for (; NumRows; --NumRows, ++DstRow, ++SrcRow) {
       uint16_t DstVal = Dst16b[DstRow][Column];
       if (UseDst32bLo) {
         // DstVal isn't wide enough to contain 32-bit data.
-        UndefinedBehaviour();
+        UndefinedBehavior();
       }
       if (SrcAStyle == BF16) {
         // Treat DstVal as bf16.
@@ -102,7 +102,7 @@ for (; NumRows; --NumRows, ++DstRow, ++SrcRow) {
         SrcAVal = ShuffleFP16(DstVal);
       } else {
         // DstVal isn't wide enough to contain fp32 or tf32 data.
-        UndefinedBehaviour();
+        UndefinedBehavior();
       }
     }
     SrcA[MatrixUnit.SrcABank][SrcRow][Column] = SrcAVal;

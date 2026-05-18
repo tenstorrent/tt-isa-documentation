@@ -27,7 +27,7 @@ switch (Mode) {
 case BITWOPDMAREG_MODE_AND: ResultVal = LeftVal & RightVal; break;
 case BITWOPDMAREG_MODE_OR : ResultVal = LeftVal | RightVal; break;
 case BITWOPDMAREG_MODE_XOR: ResultVal = LeftVal ^ RightVal; break;
-default: UndefinedBehaviour(); break;
+default: UndefinedBehavior(); break;
 }
 GPRs[CurrentThread][ResultReg] = ResultVal;
 ```

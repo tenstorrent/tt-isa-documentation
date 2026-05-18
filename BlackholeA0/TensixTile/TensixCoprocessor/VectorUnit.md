@@ -160,7 +160,7 @@ The `FlagStack` is used by the [`SFPPUSHC`](SFPPUSHC.md), [`SFPPOPC`](SFPPOPC.md
 
 ## PRNG
 
-Some modes of the [`SFPMOV`](SFPMOV.md), [`SFPCAST`](SFPCAST_IntFloat.md), and [`SFPSTOCHRND`](SFPSTOCHRND.md) instructions make use of a hardware PRNG, the behaviour of which is:
+Some modes of the [`SFPMOV`](SFPMOV.md), [`SFPCAST`](SFPCAST_IntFloat.md), and [`SFPSTOCHRND`](SFPSTOCHRND.md) instructions make use of a hardware PRNG, the behavior of which is:
 
 ```c
 uint32_t AdvancePRNG(unsigned Lane) {

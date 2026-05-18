@@ -43,7 +43,7 @@ case SFPSTOCHRND_MOD1_FP32_TO_INT16 : KeepSign = true ; MaxMagnitude = 32767; br
 case SFPSTOCHRND_MOD1_FP32_TO_UINT16: KeepSign = false; MaxMagnitude = 65535; break;
 default:
   // Is some other flavour of SFPSTOCHRND; see other pages for details.
-  UndefinedBehaviour();
+  UndefinedBehavior();
 }
 
 lanewise {

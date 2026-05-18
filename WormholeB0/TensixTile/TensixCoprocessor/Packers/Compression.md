@@ -2,7 +2,7 @@
 
 If compression is enabled, every datum is augmented with a four-bit counter specifying how many zeroes appear _after_ that datum. Datums which are zero can then be compressed away by representing them purely via _previous_ datum's counter.
 
-To enable efficient seeking to various points within the compressed stream, if compression is enabled, pack instructions have a concept of "rows": the first and last datums in each row will _not_ be compressed away, and extra metadata is emitted to specify where each row starts and ends in the compressed stream. By default, each `PACR` instruction starts a new "row", but this behaviour can be changed: if the `Concat` bit is set on a `PACR` instruction, then the _next_ `PACR` is a continuation of the same row, rather than starting a new row.
+To enable efficient seeking to various points within the compressed stream, if compression is enabled, pack instructions have a concept of "rows": the first and last datums in each row will _not_ be compressed away, and extra metadata is emitted to specify where each row starts and ends in the compressed stream. By default, each `PACR` instruction starts a new "row", but this behavior can be changed: if the `Concat` bit is set on a `PACR` instruction, then the _next_ `PACR` is a continuation of the same row, rather than starting a new row.
 
 ## In-memory / on-disk format
 

@@ -27,7 +27,7 @@ If software is consuming multiple messages in parallel, it is allowed to perform
 * It performs steps 1-4 and step 5 an equal number of times.
 * It ensures that the L1 read complete FIFO does not overflow. The capacity of this FIFO differs between streams; see [stream capabilities](README.md#stream-capabilities). If software needs to check whether this FIFO is full, it can consult the low bit of `STREAM_DEBUG_STATUS_REG_INDEX+2`, which will contain `false` if the FIFO is full and `true` otherwise.
 
-To pop messages from the message metadata FIFO and the message contents FIFO at the same time, software can write `-2*N` to `STREAM_REMOTE_DEST_MSG_INFO_WR_PTR_REG_INDEX`, which will (eventually) pop `N` messages from both FIFOs. When transmitting to software (and `MSG_FWD_ONGOING` is `true`), the hardware behaviour around `STREAM_REMOTE_DEST_MSG_INFO_WR_PTR_REG_INDEX` is:
+To pop messages from the message metadata FIFO and the message contents FIFO at the same time, software can write `-2*N` to `STREAM_REMOTE_DEST_MSG_INFO_WR_PTR_REG_INDEX`, which will (eventually) pop `N` messages from both FIFOs. When transmitting to software (and `MSG_FWD_ONGOING` is `true`), the hardware behavior around `STREAM_REMOTE_DEST_MSG_INFO_WR_PTR_REG_INDEX` is:
 * If `STREAM_REMOTE_DEST_MSG_INFO_WR_PTR_REG_INDEX` contains a non-zero even value, wait until the message metadata FIFO is non-empty and the L1 read complete FIFO is not full, and then:
   1. Write `1` to `STREAM_MSG_INFO_CLEAR_REG_INDEX` (i.e. pop one entry from the message metadata FIFO and move its length to the L1 read complete FIFO).
   2. Increment `STREAM_REMOTE_DEST_MSG_INFO_WR_PTR_REG_INDEX` by one (this takes a clock cycle).
@@ -41,7 +41,7 @@ To pop messages from the message metadata FIFO and the message contents FIFO at 
 
 Read-only.
 
-If this is a stream for which the message metadata FIFO includes a copy of message header, the read behaviour for `STREAM_MSG_GROUP_COMPRESS_REG_INDEX` is:
+If this is a stream for which the message metadata FIFO includes a copy of message header, the read behavior for `STREAM_MSG_GROUP_COMPRESS_REG_INDEX` is:
 ```c
 uint32_t result = 0;
 for (unsigned i = 0; i < 4; ++i) {
@@ -56,7 +56,7 @@ If this is not a stream for which the message metadata FIFO includes a copy of m
 
 Read-only.
 
-If this is a stream for which the message metadata FIFO includes a copy of message header, the read behaviour for `STREAM_MSG_GROUP_ZERO_MASK_AND_INDEX` is:
+If this is a stream for which the message metadata FIFO includes a copy of message header, the read behavior for `STREAM_MSG_GROUP_ZERO_MASK_AND_INDEX` is:
 ```c
 uint32_t result = ~(uint32_t)0;
 for (unsigned i = 0; i < 4; ++i) {

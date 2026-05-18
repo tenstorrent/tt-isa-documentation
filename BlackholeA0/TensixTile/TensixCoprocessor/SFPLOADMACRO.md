@@ -77,7 +77,7 @@ for (auto [i, SubUnit] in enumerate({SimpleSubUnit, MADSubUnit, RoundSubUnit, St
   Instruction Insn;
   switch (SequenceBits & 7) {
   case 0: continue; // Do not schedule anything for this sub-unit.
-  case 1: UndefinedBehaviour(); break;
+  case 1: UndefinedBehavior(); break;
   case 2: Insn.Opcode = SFPNOP; break;
   case 3: Insn.Opcode = SFPSTORE; Insn.VD = 0; break;
   case 4: Insn = ParseInsn(LoadMacroConfig[Lane].InstructionTemplate[0]); break;
@@ -89,7 +89,7 @@ for (auto [i, SubUnit] in enumerate({SimpleSubUnit, MADSubUnit, RoundSubUnit, St
     Insn.Opcode = SFPNOP;
     if (!SubUnit.CanExecuteOpcode(Insn.Opcode)) {
       // This branch applies to StoreSubUnit, which should not be fed SFPNOP.
-      UndefinedBehaviour();
+      UndefinedBehavior();
     }
   }
 

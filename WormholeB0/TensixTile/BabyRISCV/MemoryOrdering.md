@@ -31,7 +31,7 @@ For reference, the pipeline diagram is:
 
 The consequences of the mechanical description can be worked through for various pairs of instructions:
 
-<table><thead><tr><th>Assembly code</th><th>Behavioural guarantees</th><th>Remaining dangers</th></tr></thead>
+<table><thead><tr><th>Assembly code</th><th>Behavioral guarantees</th><th>Remaining dangers</th></tr></thead>
 <tr><td>Load then load:<pre><code>lw t0, 0(t1)
 lw t2, 0(t3)</code></pre></td><td>The earlier load (from <code>0(t1)</code>) will emit a read-request <i>before</i> the later load (from <code>0(t3)</code>) emits a read-request.<br/><br/>If the two loads are from the same region of memory, the two requests will be processed in order.</td><td>The later load might emit a read-request <i>before</i> the earlier load's read-response has been obtained.<br/><br/>If the two loads are to different regions of memory, the later load might have its request processed <i>before</i> the earlier load has its processed.</td></tr>
 <tr><td>Load then store:<pre><code>lw t0, 0(t1)
@@ -44,7 +44,7 @@ lw t2, 0(t3)</code></pre></td><td>If the starting byte address of the store (<co
 
 ## Enforcing stronger ordering
 
-The RISCV `fence` instruction is treated as a no-op by the baby RISCV cores, so it **cannot** be used to enforce stronger ordering. Instead, the behaviours outlined in the mechanical description need to be exploited to obtain stronger ordering.
+The RISCV `fence` instruction is treated as a no-op by the baby RISCV cores, so it **cannot** be used to enforce stronger ordering. Instead, the behaviors outlined in the mechanical description need to be exploited to obtain stronger ordering.
 
 It is always the case that a load's read-request is emitted before a subsequent memory operation's request is emitted.
 
@@ -133,7 +133,7 @@ lw x0, 0(t2)     # Mailbox pop
 lw t3, 0x124(x0) # Random address in L1</code></pre></td></tr>
 </table>
 
-The memory ordering rules _do_ guarantee that RISCV B's first `sw` emits a write-request before RISCV B's second `sw` emits a write-request, and that RISCV T0's first `lw` emits a read-request before RISCV T0's second `lw` emits a read-request, and the semantics of mailboxes ensure that the write-request pushing to the mailbox is processed before the read-request popping from the mailbox is processed. However, the rules do _not_ guarantee that RISCV B's write-request to L1 is processed before RISCV T0's read-request from L1 is processed. To get the desired behaviour, a few extra instructions are required:
+The memory ordering rules _do_ guarantee that RISCV B's first `sw` emits a write-request before RISCV B's second `sw` emits a write-request, and that RISCV T0's first `lw` emits a read-request before RISCV T0's second `lw` emits a read-request, and the semantics of mailboxes ensure that the write-request pushing to the mailbox is processed before the read-request popping from the mailbox is processed. However, the rules do _not_ guarantee that RISCV B's write-request to L1 is processed before RISCV T0's read-request from L1 is processed. To get the desired behavior, a few extra instructions are required:
 
 <table><tr><th>RISCV B</th><th>RISCV T0</th></tr>
 <tr><td><pre><code>li t0, 0xFFEC1000 # B to T0 mailbox (B write side)

@@ -21,7 +21,7 @@ TT_STOREREG(/* u6 */ DataReg, /* u18 */ AddrLo)
 ```c
 uint32_t Addr = 0xFFB00000 + (AddrLo << 2);
 if (Addr < 0xFFB11000) {
-  UndefinedBehaviour();
+  UndefinedBehavior();
 }
 
 *(uint32_t*)Addr = GPRs[CurrentThread][DataReg];

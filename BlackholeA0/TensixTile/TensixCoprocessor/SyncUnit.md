@@ -48,7 +48,7 @@ The [`SEMINIT`](SEMINIT.md), [`SEMPOST`](SEMPOST.md), and [`SEMGET`](SEMGET.md) 
 The following exists in the RISCV T0 / T1 / T2 address space, starting at address `PC_BUF_BASE`:
 ```c
 uint32_t Padding[PC_BUF_SEMAPHORE_BASE];
-uint32_t SemaphoreAccess[8]; // Not a plain variable; has exotic read/write behaviours (see below).
+uint32_t SemaphoreAccess[8]; // Not a plain variable; has exotic read/write behaviors (see below).
 ```
 
 Reads from `SemaphoreAccess[i]` behave as:

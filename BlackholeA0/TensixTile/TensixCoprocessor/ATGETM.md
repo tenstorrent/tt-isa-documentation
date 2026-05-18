@@ -51,4 +51,4 @@ Once the wait is complete, if the current thread already holds the mutex, or is 
 Mutex[Index].HeldBy = CurrentThread;
 ```
 
-If multiple threads are trying to acquire a mutex not held by anyone, then one thread is chosen to acquire the mutex, and the other threads continue waiting. Once the acquirer subsequently uses [`ATRELM`](ATRELM.md) to release the mutex, the behaviour of `ATRELM` ensures fairness.
+If multiple threads are trying to acquire a mutex not held by anyone, then one thread is chosen to acquire the mutex, and the other threads continue waiting. Once the acquirer subsequently uses [`ATRELM`](ATRELM.md) to release the mutex, the behavior of `ATRELM` ensures fairness.

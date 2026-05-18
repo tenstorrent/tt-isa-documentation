@@ -136,4 +136,4 @@ See [`SFPLOADMACRO`](SFPLOADMACRO.md#functional-model) for a description of `Loa
 
 ## Instruction scheduling
 
-If `SFPCONFIG` is used to change the value of `LaneConfig.DISABLE_BACKDOOR_LOAD`, the next Vector Unit (SFPU) instruction might observe either the old value or the new value of `LaneConfig.DISABLE_BACKDOOR_LOAD`. If this would cause a difference in instruction behaviour, software should insert an [`SFPNOP`](SFPNOP.md) instruction immediately after `SFPCONFIG`.
+If `SFPCONFIG` is used to change the value of `LaneConfig.DISABLE_BACKDOOR_LOAD`, the next Vector Unit (SFPU) instruction might observe either the old value or the new value of `LaneConfig.DISABLE_BACKDOOR_LOAD`. If this would cause a difference in instruction behavior, software should insert an [`SFPNOP`](SFPNOP.md) instruction immediately after `SFPCONFIG`.

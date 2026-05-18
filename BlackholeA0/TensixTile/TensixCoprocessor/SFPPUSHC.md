@@ -5,7 +5,7 @@
 **Backend execution unit:** [Vector Unit (SFPU)](VectorUnit.md), simple sub-unit
 
 > [!TIP]
-> Compared to Wormhole, the major upgrade to `SFPPUSHC` in Blackhole is `Mod1`: the value of `0` (plain push) corresponds to the Wormhole behaviour, whereas all the non-zero values are new and perform replacements or modifications of the stack top rather than pushing.
+> Compared to Wormhole, the major upgrade to `SFPPUSHC` in Blackhole is `Mod1`: the value of `0` (plain push) corresponds to the Wormhole behavior, whereas all the non-zero values are new and perform replacements or modifications of the stack top rather than pushing.
 
 ## Syntax
 
@@ -26,14 +26,14 @@ lanewise {
       // Plain push to stack.
       if (FlagStack.Size() >= 8) {
         // Software should avoid using `Mod1 == 0` when the stack is full.
-        UndefinedBehaviour();
+        UndefinedBehavior();
       }
       FlagStack.Push({LaneFlags, UseLaneFlagsForLaneEnable});
     } else {
       // Replace or mutate top of stack.
       if (FlagStack.IsEmpty()) {
         // Software should avoid using `Mod1 != 0` when the stack is empty.
-        UndefinedBehaviour();
+        UndefinedBehavior();
       }
       FlagStackEntry Top = FlagStack.Top();
       if (Mod1 <= 12) {

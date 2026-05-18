@@ -153,7 +153,7 @@ uint16_t BFP8aToFP16(uint8_t DatumBits, uint8_t ExpBits) {
     unsigned LZ = stdc_leading_zeros_uc(Mag);
     Mag <<= LZ;
     ExpBits -= LZ;
-    if (ExpBits & 0xe0) UndefinedBehaviour();
+    if (ExpBits & 0xe0) UndefinedBehavior();
     return (Sign << 15) | (ExpBits << 10) | ((Mag & 0x7e) << 3);
   }
 }

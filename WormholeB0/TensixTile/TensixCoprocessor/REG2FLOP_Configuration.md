@@ -20,7 +20,7 @@ TT_REG2FLOP(/* u2 */ SizeSel, 0, 0, 0, /* u7 */ ThConCfgIndex, /* u6 */ InputReg
 if (ThConCfgIndex >= (GLOBAL_CFGREG_BASE_ADDR32 - THCON_CFGREG_BASE_ADDR32)) {
   // Can only write to backend configuration whose field name starts with THCON_.
   // See WRCFG for a similar instruction without this limitation.
-  UndefinedBehaviour();
+  UndefinedBehavior();
 }
 
 uint1_t StateID = ThreadConfig[CurrentThread].CFG_STATE_ID_StateID;

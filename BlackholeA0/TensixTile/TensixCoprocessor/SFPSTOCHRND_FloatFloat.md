@@ -16,7 +16,7 @@ This flavour of `SFPSTOCHRND` is intended to be used prior to an [`SFPSTORE`](SF
 * `SFPSTORE` with `MOD0_FMT_FP16`: If the mantissa precision is reduced to either 7 or 10 bits, a store with `MOD0_FMT_FP16` will suffer no loss of mantissa precision (though there will be loss of exponent range, with out of range values clamped to positive or negative infinity).
 * `SFPSTORE` with `MOD0_FMT_FP32`: If the mantissa precision is reduced to either 7 or 10 bits, a store with `MOD0_FMT_FP32` will be exact, and any subsequent conversion to TF32 will also be exact.
 
-> (†) Due to a hardware bug, stochastic rounding has a slight bias towards increasing the magnitude rather than being 50:50, and can even sometimes increase the magnitude of values which do not require rounding. Due to another hardware bug, rounding toward zero sometimes incorrectly rounds away from zero. The functional model faithfully describes all the buggy behaviours; the corrected logic would have `>` instead of `>=` when comparing `DiscardedBits` and `PRNGBits` (and thus also initialise `PRNGBits` with `0x3fffff` rather than `0x400000` for the `SFPSTOCHRND_RND_NEAREST` case).
+> (†) Due to a hardware bug, stochastic rounding has a slight bias towards increasing the magnitude rather than being 50:50, and can even sometimes increase the magnitude of values which do not require rounding. Due to another hardware bug, rounding toward zero sometimes incorrectly rounds away from zero. The functional model faithfully describes all the buggy behaviors; the corrected logic would have `>` instead of `>=` when comparing `DiscardedBits` and `PRNGBits` (and thus also initialise `PRNGBits` with `0x3fffff` rather than `0x400000` for the `SFPSTOCHRND_RND_NEAREST` case).
 
 **Backend execution unit:** [Vector Unit (SFPU)](VectorUnit.md), round sub-unit
 
@@ -43,7 +43,7 @@ TT_SFP_STOCH_RND(/* u2 */ RoundingMode, 0, /* u4 */ VC,
 if (Mod1 != SFPSTOCHRND_MOD1_FP32_TO_FP16A
  && Mod1 != SFPSTOCHRND_MOD1_FP32_TO_FP16B) {
   // Is some other flavour of SFPSTOCHRND; see other pages for details.
-  UndefinedBehaviour();
+  UndefinedBehavior();
 }
 
 lanewise {

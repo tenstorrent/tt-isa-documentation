@@ -20,7 +20,7 @@ TT_PACR(/* u2 */ AddrMod, /* bool */ ZeroWrite, /* u4 */ PackerMask,
 
 The `PackerMask` field determines which of the four packers are being instructed:
 
-|`PackerMask`|Behaviour|
+|`PackerMask`|Behavior|
 |---|---|
 |`0b0000`|Issue work to packer 0 (i.e. as a special case, `0b0000` is rewritten to `0b0001`)|
 |`0b0001`|Issue work to packer 0|

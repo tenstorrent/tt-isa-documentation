@@ -16,7 +16,7 @@ TT_REPLAY(/* u5 */ Index, /* u6 */ Count, /* u1 */ Exec, /* u1 */ Load)
 
 ## Functional model
 
-The Replay Expander sits in the frontend of the Tensix coprocessor, after the MOP Expander and before the Wait Gate. It is the sole place where `REPLAY` instructions are handled, and the only thing it handles is `REPLAY` instructions. The behaviour of the Replay Expander can be described as an asynchronous generator acting on the instruction stream:
+The Replay Expander sits in the frontend of the Tensix coprocessor, after the MOP Expander and before the Wait Gate. It is the sole place where `REPLAY` instructions are handled, and the only thing it handles is `REPLAY` instructions. The behavior of the Replay Expander can be described as an asynchronous generator acting on the instruction stream:
 
 ```py
 async def ReplayExpander():

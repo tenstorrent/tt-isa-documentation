@@ -4,7 +4,7 @@
 
 This flavour of `SFPSTOCHRND` is intended to be used prior to an [`SFPSTORE`](SFPSTORE.md) instruction with `MOD0_FMT_INT8`.
 
-> (†) Due to a hardware bug, stochastic rounding has a slight bias towards increasing the magnitude rather than being 50:50, and can even sometimes increase the magnitude of values which do not require rounding. The same bug also means that round to zero does not always round to zero. The functional model faithfully describes the buggy behaviour; the corrected logic would have `> PRNGBits` instead of `>= PRNGBits`.
+> (†) Due to a hardware bug, stochastic rounding has a slight bias towards increasing the magnitude rather than being 50:50, and can even sometimes increase the magnitude of values which do not require rounding. The same bug also means that round to zero does not always round to zero. The functional model faithfully describes the buggy behavior; the corrected logic would have `> PRNGBits` instead of `>= PRNGBits`.
 
 **Backend execution unit:** [Vector Unit (SFPU)](VectorUnit.md), round sub-unit
 
@@ -36,7 +36,7 @@ TT_SFP_STOCH_RND(/* u2 */ RoundingMode,
 if (Mod1 != SFPSTOCHRND_MOD1_INT32_TO_UINT8
  && Mod1 != SFPSTOCHRND_MOD1_INT32_TO_INT8) {
   // Is some other flavour of SFPSTOCHRND; see other pages for details.
-  UndefinedBehaviour();
+  UndefinedBehavior();
 }
 
 lanewise {

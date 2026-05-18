@@ -2,8 +2,8 @@
 
 The [`fma.c`](fma.c) file contains three functions:
 1. `fma_model_ieee`: A software implementation of FP32 fused multiply-add ("FMA") which is compliant with IEEE754.
-2. `fma_model_bh`: A software implementation of FP32 fused multiply-add ("FMA") which matches the behaviour of Blackhole Baby RISCV `fma.s` family of instructions and Blackhole Tensix Vector Unit (SFPU) [`SFPMAD`](../../BlackholeA0/TensixTile/TensixCoprocessor/SFPMAD.md) family of instructions.
-3. `fma_model_wh`: A software implementation of FP32 fused multiply-add ("FMA") which matches the behaviour of Wormhole Tensix Vector Unit (SFPU) [`SFPMAD`](../../WormholeB0/TensixTile/TensixCoprocessor/SFPMAD.md) family of instructions.
+2. `fma_model_bh`: A software implementation of FP32 fused multiply-add ("FMA") which matches the behavior of Blackhole Baby RISCV `fma.s` family of instructions and Blackhole Tensix Vector Unit (SFPU) [`SFPMAD`](../../BlackholeA0/TensixTile/TensixCoprocessor/SFPMAD.md) family of instructions.
+3. `fma_model_wh`: A software implementation of FP32 fused multiply-add ("FMA") which matches the behavior of Wormhole Tensix Vector Unit (SFPU) [`SFPMAD`](../../WormholeB0/TensixTile/TensixCoprocessor/SFPMAD.md) family of instructions.
 
 Note that these functions do not model the Tensix Matrix Unit (FPU) instructions.
 
@@ -16,7 +16,7 @@ The major differences between `fma_model_bh` and `fma_model_ieee` are:
 * Denormal outputs (after rounding) are flushed to signed zero. This allows some places earlier in the implementation to take a few shortcuts.
 * If `x * y` on its own would overflow to infinity, the result is infinity, even if the properly fused operation would have a finite result.
 * If `x * y` on its own would underflow to zero, the result is as if `x * y` was _exactly_ zero.
-* Rather than adding 23 bits of precision to `z` (the addend), 23 bits of precision are removed from `p` (the product). This makes the overall behaviour _somewhat_ similar to a separate multiply and add, but not entirely the same, as:
+* Rather than adding 23 bits of precision to `z` (the addend), 23 bits of precision are removed from `p` (the product). This makes the overall behavior _somewhat_ similar to a separate multiply and add, but not entirely the same, as:
   * The product has four additional bits of precision (three at the bottom, one at the top) as compared to an FP32 value.
   * The product is not rounded to FP32 (albeit the sticky shift can be seen as a kind of round-to-odd).
 
@@ -32,7 +32,7 @@ The major differences between `fma_model_wh` and `fma_model_bh` are:
 ## Correctness of `fma_model_ieee`
 
 If using `fma_model_ieee` as a baseline for understanding `fma_model_bh` and `fma_model_wh`, it is useful to know _why_ `fma_model_ieee` is correct. The requirements for IEEE754 compliance reduce down to three main areas:
-* If any input is NaN or ±infinity, the output will always be NaN or ±infinity. The standard spells out the various cases, though it allows implementations to choose the bit pattern of any output NaNs. The choice made by `fma_model_ieee` is for output NaNs to always be the bit pattern `0x7fc00000` (which happens to match the aarch64 behaviour when `FPCR.DN` is set).
+* If any input is NaN or ±infinity, the output will always be NaN or ±infinity. The standard spells out the various cases, though it allows implementations to choose the bit pattern of any output NaNs. The choice made by `fma_model_ieee` is for output NaNs to always be the bit pattern `0x7fc00000` (which happens to match the aarch64 behavior when `FPCR.DN` is set).
 * If the output is zero, the standard strictly specifies the rules for when it should be `-0` and when it should be `+0`.
 * For cases not covered by the above, the implementation needs to behave as if the computation was performed on infinite-precision intermediate values with just one rounding/truncation step at the end to convert the infinite-precision value to an FP32 output.
 
@@ -224,7 +224,7 @@ This logic looks at the three bits which were just discarded, and uses them to m
 |1|Exact value somewhere in open range `(0, 2)`|Round down, as that is nearest|
 |0|Exactly 0|Round down, as that gives the exact value|
 
-Note that adding one (as in <code>r<sub>6</sub> + 1</code>) can cause the mantissa bits to overflow and cause an exponent increase, and similarly can cause a finite value to overflow to infinity. Both of these behaviours are correct. As <code>r<sub>5</sub>_e &lt; 255</code>, the exponent cannot overflow into the sign field.
+Note that adding one (as in <code>r<sub>6</sub> + 1</code>) can cause the mantissa bits to overflow and cause an exponent increase, and similarly can cause a finite value to overflow to infinity. Both of these behaviors are correct. As <code>r<sub>5</sub>_e &lt; 255</code>, the exponent cannot overflow into the sign field.
 
 ---
 <pre><code>  return r_sign | r<sub>7</sub>;

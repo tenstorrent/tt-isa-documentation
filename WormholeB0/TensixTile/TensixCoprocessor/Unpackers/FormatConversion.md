@@ -61,7 +61,7 @@ The below table shows the same, but for when unpacking to [`Dst`](../Dst.md):
 
 > (†) The `REG2_Force_shared_exp` configuration field needs to be set, and then a fixed exponent is supplied via the `FORCED_SHARED_EXP_shared_exp` configuration field.
 >
-> (‡) Additional `ALU_FORMAT_SPEC_REG0_SrcAUnsigned` or `ALU_FORMAT_SPEC_REG0_SrcBUnsigned` configuration required to specify type. Unlike other configuration registers which influence the behaviour of unpack instructions, these `Src?Unsigned` configuration registers need to be held constant for the entire duration of the unpack operation.
+> (‡) Additional `ALU_FORMAT_SPEC_REG0_SrcAUnsigned` or `ALU_FORMAT_SPEC_REG0_SrcBUnsigned` configuration required to specify type. Unlike other configuration registers which influence the behavior of unpack instructions, these `Src?Unsigned` configuration registers need to be held constant for the entire duration of the unpack operation.
 
 The exact location of `InDataFormat` and `OutDataFormat` varies based on how the [`UNPACR`](../UNPACR_Regular.md) instruction was configured and invoked. Full details can be found within [`UNPACR`'s functional model](../UNPACR_Regular.md#functional-model); the abridged summary is:
 

@@ -27,7 +27,7 @@ switch (Mode) {
 case CMPDMAREG_MODE_GT: ResultVal = LeftVal  > RightVal; break;
 case CMPDMAREG_MODE_LT: ResultVal = LeftVal <  RightVal; break;
 case CMPDMAREG_MODE_EQ: ResultVal = LeftVal == RightVal; break;
-default: UndefinedBehaviour(); break;
+default: UndefinedBehavior(); break;
 }
 GPRs[CurrentThread][ResultReg] = ResultVal ? 1 : 0;
 ```

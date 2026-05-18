@@ -115,7 +115,7 @@ Triggering a pause has no effect if the core is _already_ paused waiting for a d
 Most RISCV instructions will always complete in a finite number of cycles. However, some instructions do not have a static bound on how long they will take to complete:
 * Loads from a [PCBuf](PCBufs.md) can wait for an indeterminate amount of time (unless `OverrideEn` and `OverrideBusy` are set).
 * Loads from a [mailbox](Mailboxes.md) can wait for an indeterminate amount of time (unless software has already confirmed the mailbox is non-empty by polling its emptiness).
-* Loads from [TDMA-RISC](../TDMA-RISC.md) can wait for an indeterminate amount of time when `MetadataFIFO.Peek()` is part of the read behaviour.
+* Loads from [TDMA-RISC](../TDMA-RISC.md) can wait for an indeterminate amount of time when `MetadataFIFO.Peek()` is part of the read behavior.
 * Loads from unmapped memory might wait forever.
 * Stores to a [PCBuf](PCBufs.md) or to a [mailbox](Mailboxes.md) can remain in the store queue for as long as the FIFO is full, which can cause subsequent instructions to be stalled for an indeterminate amount of time.
 * Stores to [push a Tensix instruction](PushTensixInstruction.md) can remain in the store queue for as long as the FIFOs in the Tensix frontend are full, and the FIFOs can remain full for an indeterminate amount of time if there's an in-flight [`STALLWAIT`](../TensixCoprocessor/STALLWAIT.md), [`SEMWAIT`](../TensixCoprocessor/SEMWAIT.md), [`ATGETM`](../TensixCoprocessor/ATGETM.md), [`ATCAS`](../TensixCoprocessor/ATCAS.md), or [`ATINCGETPTR`](../TensixCoprocessor/ATINCGETPTR.md) Tensix instruction. If so, this can cause subsequent RISCV instructions to be stalled for an indeterminate amount of time.

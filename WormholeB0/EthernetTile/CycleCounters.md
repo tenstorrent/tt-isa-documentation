@@ -37,7 +37,7 @@ If the low bit of `RISCV_DEBUG_REG_WDT_CNTL` is set, then the value within `RISC
 
 See the functional specification (below) for state and functions referenced herein.
 
-|Address|Write Behaviour|Read Behaviour|
+|Address|Write Behavior|Read Behavior|
 |---|---|---|
 |`RISCV_DEBUG_REG_WDT`<br/>`0xFFB1_21E0`|`wdt = new_val`|`return wdt`|
 |`RISCV_DEBUG_REG_WDT_CNTL`<br/>`0xFFB1_21E4`|`wdt_cntl = new_val`|`return wdt_cntl`|

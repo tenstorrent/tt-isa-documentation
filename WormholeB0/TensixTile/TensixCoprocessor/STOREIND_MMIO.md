@@ -25,7 +25,7 @@ uint16_t* Offset = (char*)&GPRs[CurrentThread][0] + OffsetHalfReg * 2;
 uint32_t Addr = GPRs[CurrentThread][AddrReg] + (*Offset >> 4);
 Addr = 0xFFB00000 + (Addr & 0x000FFFFC);
 if (Addr < 0xFFB11000) {
-  UndefinedBehaviour();
+  UndefinedBehavior();
 }
 
 *(uint32_t*)Addr = GPRs[CurrentThread][DataReg];

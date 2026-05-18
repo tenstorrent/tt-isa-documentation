@@ -10,7 +10,7 @@ The [`MOP`](MOP.md) and [`MOP_CFG`](MOP_CFG.md) instructions execute at the MOP 
 
 ## Functional model
 
-The MOP Expander sits at the start of the frontend of the Tensix coprocessor, before the Replay Expander. It is the sole place where `MOP` and `MOP_CFG` instructions are handled, and the only things it handles are `MOP` and `MOP_CFG` instructions. The behaviour of the MOP Expander can be described as an asynchronous generator acting on the instruction stream:
+The MOP Expander sits at the start of the frontend of the Tensix coprocessor, before the Replay Expander. It is the sole place where `MOP` and `MOP_CFG` instructions are handled, and the only things it handles are `MOP` and `MOP_CFG` instructions. The behavior of the MOP Expander can be described as an asynchronous generator acting on the instruction stream:
 
 ```py
 async def MOPExpander(MopCfg): # MopCfg is per-thread state

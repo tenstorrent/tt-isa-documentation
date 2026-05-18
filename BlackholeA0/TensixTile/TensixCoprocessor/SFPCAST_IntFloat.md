@@ -19,7 +19,7 @@ TT_SFPCAST(/* u4 */ VC, /* u4 */ VD, /* u4 */ Mod1)
 ```c
 if ((Mod1 & 3) > SFPCAST_MOD1_SM32_TO_FP32_RNS) {
   // Is some other flavour of SFPCAST; see other pages for details.
-  UndefinedBehaviour();
+  UndefinedBehavior();
 }
 
 lanewise {

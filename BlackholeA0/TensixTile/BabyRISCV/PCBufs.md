@@ -15,9 +15,9 @@ The PCBufs are variously mapped into address space of RISCV B / T0 / T1 / T2:
 <tr><th>RISCV B</th><td><code>PC_BUF_BASE</code> (RISCV B only)<br/><code>0xFFE8_0000</code> to <code>0xFFE8_FFFF</code></td><td><code>PC1_BUF_BASE</code> (RISCV B only)<br/><code>0xFFE9_0000</code> to <code>0xFFE9_FFFF</code></td><td><code>PC2_BUF_BASE</code> (RISCV B only)<br/><code>0xFFEA_0000</code> to <code>0xFFEA_FFFF</code></td>
 <tr><th>RISCV T<sub>i</sub></th><td><code>PC_BUF_BASE</code> (RISCV T0 only)<br/><code>0xFFE8_0000</code> to <code>0xFFE8_0003</code></td><td><code>PC_BUF_BASE</code> (RISCV T1 only)<br/><code>0xFFE8_0000</code> to <code>0xFFE8_0003</code></td><td><code>PC_BUF_BASE</code> (RISCV T2 only)<br/><code>0xFFE8_0000</code> to <code>0xFFE8_0003</code></td></tr></table>
 
-The behaviour of a memory access against a PCBuf depends on the issuing RISCV and whether the access is a read or a write:
+The behavior of a memory access against a PCBuf depends on the issuing RISCV and whether the access is a read or a write:
 
-<table><thead><tr><th/><th>Write Behaviour</th><th>Read Behaviour</th></tr></thead>
+<table><thead><tr><th/><th>Write Behavior</th><th>Read Behavior</th></tr></thead>
 <tr><th>RISCV B</th><td><pre><code>while PCBuf[i].FIFO.full:
   wait
 PCBuf[i].FIFO.push(write_value)</code></pre></td><td><pre><code>while True:
@@ -38,7 +38,7 @@ return PCBuf[i].FIFO.pop()</code></pre></td></tr>
 
 Note that the `wait`s in the above happen within the memory subsystem; they prevent the memory region in question from processing the next request, but they do not _necessarily_ prevent the issuing RISCV from executing some more RISCV instructions.
 
-The RISCV B read behaviour is particularly interesting, as it waits for all three of:
+The RISCV B read behavior is particularly interesting, as it waits for all three of:
 1. `PCBuf[i].FIFO.empty`, i.e. for RISCV T<sub>i</sub> to have popped all the values pushed by RISCV B.
 2. RISCV T<sub>i</sub> to be performing a read against <code>PC_BUF_BASE</code> and be blocked waiting due to `PCBuf[i].FIFO` being empty.
 3. Tensix T<sub>i</sub> to be idle, i.e. for the Tensix coprocessor to not have any in-flight instructions from Tensix thread T<sub>i</sub>. This is the same thing that RISCV T<sub>i</sub> can wait for via the [`CoprocessorDoneCheck` of Manual TTSync](ManualTTSync.md#coprocessordonecheck).

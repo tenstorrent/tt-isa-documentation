@@ -32,7 +32,7 @@ lanewise {
       // Plain pop from stack.
       if (FlagStack.IsEmpty()) {
         // Software should avoid using `Mod1 == 0` when the stack is empty.
-        UndefinedBehaviour();
+        UndefinedBehavior();
       }
       FlagStack.Pop();
     } else if (FlagStack.Size() == 8) {

@@ -4,8 +4,8 @@ The following exists in the RISCV T0 / T1 / T2 address space, starting at addres
 
 ```c
 uint32_t Padding;
-uint32_t CoprocessorDoneCheck; // Not a plain variable; has exotic read/write behaviours (see below).
-uint32_t MOPExpanderDoneCheck; // Not a plain variable; has exotic read/write behaviours (see below).
+uint32_t CoprocessorDoneCheck; // Not a plain variable; has exotic read/write behaviors (see below).
+uint32_t MOPExpanderDoneCheck; // Not a plain variable; has exotic read/write behaviors (see below).
 ```
 
 Stores to either of `CoprocessorDoneCheck` or `MOPExpanderDoneCheck` will have the stored value discarded within the memory subsystem. Loads from either will return an undefined value, albeit possibly not immediately, and this delay is the whole point of performing the load. Per the usual [RISCV memory ordering](MemoryOrdering.md) rules, the load can (to a limited extent) execute in parallel with subsequent independent instructions; one possible way to ensure that the load has returned before subsequent instructions start is to use an instruction sequence like:

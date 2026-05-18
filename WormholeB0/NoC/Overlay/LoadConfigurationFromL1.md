@@ -19,7 +19,7 @@ At the end of a phase (at "Has pointer to configuration for next phase?" on the 
 
 ### `STREAM_PHASE_AUTO_CFG_HEADER_REG_INDEX`
 
-<table><thead><tr><th align="right">First&nbsp;bit</th><th align="right">#&nbsp;Bits</th><th>Name</th><th>Write behaviour</th><th>Read behaviour</th></tr></thead>
+<table><thead><tr><th align="right">First&nbsp;bit</th><th align="right">#&nbsp;Bits</th><th>Name</th><th>Write behavior</th><th>Read behavior</th></tr></thead>
 <tr><td align="right">0</td><td align="right">12</td><td><code>PHASE_NUM_INCR</code></td><td><code>STREAM_CURR_PHASE_REG_INDEX += new_val</code></td><td><code>return NumMessagesRemainingInPhase</code></td></tr>
 <tr><td align="right">12</td><td align="right">12</td><td><code>CURR_PHASE_NUM_MSGS</code></td><td><code>NumMessagesRemainingInPhase = new_val</code></td><td><code>return NumMessagesRemainingInPhase</code></td></tr>
 <tr><td align="right">24</td><td align="right">8</td><td><code>NEXT_PHASE_NUM_CFG_REG_WRITES</code></td><td><pre><code>if (STREAM_MISC_CFG_REG_INDEX.PHASE_AUTO_CONFIG) {

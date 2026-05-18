@@ -15,7 +15,7 @@ The result is a 32-bit sign-magnitude integer, though if the absolute value was 
 |`SFPSTOCHRND_MOD1_FP32_TO_INT16`|±32767|`MOD0_FMT_INT16`|
 |`SFPSTOCHRND_MOD1_FP32_TO_UINT16`|0 - 65535|`MOD0_FMT_UINT16` or `MOD0_FMT_LO16_ONLY`|
 
-> (†) Due to a hardware bug, inputs in range `|x| < 0.5` are always rounded deterministically (and thus to zero), even when stochastic rounding is requested. Due to a hardware bug, stochastic rounding of inputs in range `|x| ≥ 0.5` has a slight bias towards increasing the magnitude rather than being 50:50, and can even sometimes increase the magnitude of values which do not require rounding. The latter bug also means that round to zero does not always round to zero. The functional model faithfully describes all the buggy behaviours.
+> (†) Due to a hardware bug, inputs in range `|x| < 0.5` are always rounded deterministically (and thus to zero), even when stochastic rounding is requested. Due to a hardware bug, stochastic rounding of inputs in range `|x| ≥ 0.5` has a slight bias towards increasing the magnitude rather than being 50:50, and can even sometimes increase the magnitude of values which do not require rounding. The latter bug also means that round to zero does not always round to zero. The functional model faithfully describes all the buggy behaviors.
 
 **Backend execution unit:** [Vector Unit (SFPU)](VectorUnit.md), round sub-unit
 
@@ -48,7 +48,7 @@ case SFPSTOCHRND_MOD1_FP32_TO_INT16 : KeepSign = true ; MaxMagnitude = 32767; br
 case SFPSTOCHRND_MOD1_FP32_TO_UINT16: KeepSign = false; MaxMagnitude = 65535; break;
 default:
   // Is some other flavour of SFPSTOCHRND; see other pages for details.
-  UndefinedBehaviour();
+  UndefinedBehavior();
 }
 
 lanewise {

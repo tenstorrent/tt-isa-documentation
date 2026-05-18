@@ -30,7 +30,7 @@ TT_SFP_STOCH_RND(/* bool */ StochasticRounding,
 if (Mod1 != SFPSTOCHRND_MOD1_INT32_TO_UINT8
  && Mod1 != SFPSTOCHRND_MOD1_INT32_TO_INT8) {
   // Is some other flavour of SFPSTOCHRND; see other pages for details.
-  UndefinedBehaviour();
+  UndefinedBehavior();
 }
 
 lanewise {

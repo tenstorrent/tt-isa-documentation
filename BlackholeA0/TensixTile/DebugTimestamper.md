@@ -48,7 +48,7 @@ Additional memory-mapped registers are used to configure the location of the buf
 
 See the functional specification (below) for state and functions referenced herein.
 
-|Address|Write Behaviour|Read Behaviour|
+|Address|Write Behavior|Read Behavior|
 |---|---|---|
 |`RISCV_DEBUG_REG_WALL_CLOCK_L`<br/>`0xFFB1_21F0`|`counter_high_at = counter >> 32`<br/>(No other effect)|`counter_high_at = counter >> 32`<br/>`return counter & 0xffffffff`|
 |`RISCV_DEBUG_REG_WALL_CLOCK_L+4`<br/>`0xFFB1_21F4`|No effect|`return counter >> 32`|
@@ -144,7 +144,7 @@ void CmdWrite(uint32_t new_val) {
     FlushAccum();
     break;
   default:
-    UndefinedBehaviour();
+    UndefinedBehavior();
     break;
   }
 }
@@ -195,7 +195,7 @@ void SetEventSize(uint32_t new_event_size) {
   if (accum.event_size == 0) {
     accum.event_size = new_event_size;
   } else if (accum.event_size != new_event_size) {
-    UndefinedBehaviour();
+    UndefinedBehavior();
   }
 }
 
