@@ -8,7 +8,7 @@ The typical software stack for these architectures, from highest level to lowest
 1. [TT-Forge](https://github.com/tenstorrent/tt-forge/)
 2. [TT-NN](https://github.com/tenstorrent/tt-metal/?tab=readme-ov-file#buy-hardware--install--discord--join-us)
 3. [TT-Metalium](https://github.com/tenstorrent/tt-metal/?tab=readme-ov-file#user-content-programming-guide--api-reference)
-4. [TT-LLK](https://github.com/tenstorrent/tt-llk/)
+4. [TT-LLK](https://github.com/tenstorrent/tt-metal/tree/main/tt_metal/tt-llk/README.md)
 
 The material in this repository is intended for software developers writing code at, or below, the level of TT-LLK.
 
@@ -18,6 +18,8 @@ At the moment, two architectures are covered in this repository:
 
 > [!NOTE]
 > Wormhole B0 and Blackhole A0 share substantial implementation but are not identical. Behavioral assumptions from one architecture's documentation do not transfer automatically to the other.
+
+See also [ttsim](https://github.com/tenstorrent/ttsim), the official simulator and golden reference implementation of the Tenstorrent ISA.
 
 -----
 
