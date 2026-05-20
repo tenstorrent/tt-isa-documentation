@@ -2,7 +2,7 @@
 
 **Summary:** The `SrcA` and/or `SrcB` banks currently being used by the [Matrix Unit (FPU)](MatrixUnit.md) are given to the Unpackers, and then the Matrix Unit (FPU) is optionally flipped to using the other `SrcA` and/or `SrcB` bank.
 
-Can also be used to completely reset the `SrcA` / `SrcB` synchronization mechanism, giving all banks to the Unpackers, setting the Unpackers to write to bank 0, and setting the Matrix Unit (FPU) to use bank 0 (though Matrix Unit (FPU) instructions which wait for bank validity will not be able to read from here until the bank is given back to the Matrix Unit).
+Can also be used to completely reset the `SrcA` / `SrcB` synchronization mechanism, giving all banks to the Unpackers, setting the Unpackers to write to bank 0, and setting the Matrix Unit (FPU) to use bank 0 (though Matrix Unit (FPU) instructions which wait for bank validity will not be able to read from here until the bank is given back to the Matrix Unit). This mode is `UnsupportedFunctionality` and its use is strongly discouraged, as it will typically result in nondeterministic hangs.
 
 See also [`SETDVALID`](SETDVALID.md). It is also possible to use [`SETRWC`](SETRWC.md) to perform a slightly different flavour of flip.
 
@@ -25,6 +25,7 @@ TT_CLEARDVALID(((/* bool */ FlipSrcB) << 1) +
 
 ```c
 if (Reset) {
+  UnsupportedFunctionality(); // Reset is unsafe and drops SrcA/B banks: see https://github.com/tenstorrent/tt-metal/issues/22383
   MatrixUnit.SrcABank = 0;
   MatrixUnit.SrcBBank = 0;
   Unpackers[0].SrcBank = 0;
