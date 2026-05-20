@@ -35,6 +35,9 @@ auto& ConfigState = Config[StateID];
 
 // Determine the data formats.
 uint4_t SrcAFmt = ConfigState.ALU_FORMAT_SPEC_REG_SrcA_override ? ConfigState.ALU_FORMAT_SPEC_REG_SrcA_val : ConfigState.ALU_FORMAT_SPEC_REG0_SrcA;
+if ((TTArchitecture == Blackhole) && !ThreadConfig[CurrentThread].DISABLE_IMPLIED_SRCA_FMT_Base) {
+  SrcAFmt = ImpliedSrcAFmt[MatrixUnit.SrcABank];
+}
 bool Use8bExponent;
 if (ThreadConfig[CurrentThread].FP16A_FORCE_Enable) {
   Use8bExponent = false;

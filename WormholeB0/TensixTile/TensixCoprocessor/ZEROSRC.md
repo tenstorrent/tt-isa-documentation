@@ -54,6 +54,8 @@ for (unsigned Bank = 0; Bank < 2; ++Bank) {
     }
   }
 }
+
+// Note: Blackhole implied format behavior not characterized
 ```
 
 ## Instruction scheduling

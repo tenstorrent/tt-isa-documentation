@@ -413,6 +413,9 @@ for (unsigned i = 0; i < 3; ++i) {
 uint6_t SrcRowBase = (WhichUnpacker ? ThreadConfig[CurrentThread].SRCB_SET_Base : ThreadConfig[CurrentThread].SRCA_SET_Base) << 4;
 if (FlipSrc) {
   (WhichUnpacker ? SrcB : SrcA)[CurrentUnpacker.SrcBank].AllowedClient = SrcClient::MatrixUnit;
+  if (TTArchitecture == Blackhole) {
+    (WhichUnpacker ? ImpliedSrcBFmt : ImpliedSrcAFmt)[CurrentUnpacker.SrcBank] = OutDataFormat;
+  }
   CurrentUnpacker.SrcBank ^= 1;
   CurrentUnpacker.SrcRow[CurrentThread] = SrcRowBase;
 } else if (ConfigState.THCON_SEC[WhichUnpacker].Unpack_Src_Reg_Set_Upd) {

@@ -30,4 +30,5 @@ if (FlipSrcB) {
   Unpackers[1].SrcBank ^= 1;
   Unpackers[1].SrcRow[CurrentThread] = ThreadConfig[CurrentThread].SRCB_SET_Base << 4;
 }
+// Note: Blackhole implied format behavior not characterized
 ```

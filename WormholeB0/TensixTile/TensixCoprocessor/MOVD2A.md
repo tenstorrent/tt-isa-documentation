@@ -32,6 +32,9 @@ if (ThreadConfig[CurrentThread].FP16A_FORCE_Enable) {
   SrcAStyle = FP16;
 } else {
   uint4_t SrcAFmt = ConfigState.ALU_FORMAT_SPEC_REG_SrcA_override ? ConfigState.ALU_FORMAT_SPEC_REG_SrcA_val : ConfigState.ALU_FORMAT_SPEC_REG0_SrcA;
+  if ((TTArchitecture == Blackhole) && !ThreadConfig[CurrentThread].DISABLE_IMPLIED_SRCA_FMT_Base) {
+    SrcAFmt = ImpliedSrcAFmt[MatrixUnit.SrcABank];
+  }
   UseDst32b = ConfigState.ALU_ACC_CTRL_Fp32_enabled || ConfigState.ALU_ACC_CTRL_INT8_math_enabled;
   if (SrcAFmt in {FP32, BF16, BFP8, BFP4, BFP2, INT32, INT16}) {
     SrcAStyle = BF16;

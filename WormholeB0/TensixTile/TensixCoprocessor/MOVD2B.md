@@ -33,6 +33,9 @@ if (ThreadConfig[CurrentThread].FP16A_FORCE_Enable) {
 } else {
   // This is not a documentation typo; SrcAFmt really is used to determine SrcBStyle.
   uint4_t SrcAFmt = ConfigState.ALU_FORMAT_SPEC_REG_SrcA_override ? ConfigState.ALU_FORMAT_SPEC_REG_SrcA_val : ConfigState.ALU_FORMAT_SPEC_REG0_SrcA;
+  if ((TTArchitecture == Blackhole) && !ThreadConfig[CurrentThread].DISABLE_IMPLIED_SRCB_FMT_Base) {
+    SrcAFmt = ImpliedSrcBFmt[MatrixUnit.SrcBBank]; // Note: Blackhole implied format behavior for SrcB not fully characterized
+  }
   UseDst32b = ConfigState.ALU_ACC_CTRL_Fp32_enabled || ConfigState.ALU_ACC_CTRL_INT8_math_enabled;
   if (SrcAFmt in {FP32, BF16, BFP8, BFP4, BFP2, INT32, INT16}) {
     SrcBStyle = BF16;

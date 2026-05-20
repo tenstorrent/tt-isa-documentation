@@ -23,6 +23,17 @@ uint1_t Unpackers[0]::SrcBank = 0; // For SrcA
 uint1_t Unpackers[1]::SrcBank = 0; // For SrcB
 ```
 
+## Implied data format (Blackhole only)
+
+On Blackhole, each `SrcA` and `SrcB` bank can carry an "implied" data format which (when enabled) overrides the configured `SrcAFmt` / `SrcBFmt` for Matrix Unit (FPU) instructions consuming that bank. The implied format is written by the Unpackers as part of populating a bank.
+
+```c
+uint4_t ImpliedSrcAFmt[2]; // Indexed by SrcA bank.
+uint4_t ImpliedSrcBFmt[2]; // Indexed by SrcB bank.
+```
+
+Matrix Unit (FPU) instructions read the implied format in place of the configured format when the corresponding `ThreadConfig.DISABLE_IMPLIED_SRCA_FMT_Base` (for `SrcA`) or `ThreadConfig.DISABLE_IMPLIED_SRCB_FMT_Base` (for `SrcB`) bit is `false`. This mechanism does not exist on Wormhole; the configured format is always used there.
+
 ## Data types
 
 Each datum in `SrcA` or `SrcB` is up to 19 bits wide, holding one of:
