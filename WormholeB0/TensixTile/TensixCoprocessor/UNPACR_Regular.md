@@ -32,8 +32,11 @@ TT_OP_UNPACR(/* u1 */ WhichUnpacker,
 ## Functional model
 
 ```c
-// Start by reading some configuration:
+if (RowSearch || UseContextCounter || !MultiContextMode || ContextADC || ContextNumber) {
+  UnsupportedFunctionality(); // No known usage, confidence in specification below is weak
+}
 
+// Start by reading some configuration:
 uint1_t StateID = ThreadConfig[CurrentThread].CFG_STATE_ID_StateID;
 auto& ConfigState = Config[StateID];
 auto& CurrentUnpacker = Unpackers[WhichUnpacker];
@@ -56,7 +59,6 @@ if (MultiContextMode) {
 }
 
 // Determine initial input address(es) and input datum count:
-
 auto& ConfigDescriptor = ConfigState.THCON_SEC[WhichUnpacker].REG0_TileDescriptor;
 
 bool IsUncompressed;
@@ -64,6 +66,9 @@ if (MultiContextMode) {
   IsUncompressed = ConfigState.THCON_SEC[WhichUnpacker].REG2_Disable_zero_compress_cntx[WhichContext];
 } else {
   IsUncompressed = ConfigDescriptor.IsUncompressed;
+}
+if (!IsUncompressed) {
+  UnsupportedFunctionality(); // No known usage, confidence in specification below is weak
 }
 
 uint16_t XDim;
@@ -220,7 +225,6 @@ if (DiscontiguousInputRows) {
 }
 
 // Determine initial output address:
-
 bool UnpackToDst;
 bool Transpose = ConfigState.THCON_SEC[WhichUnpacker].REG2_Haloize_mode;
 if (WhichUnpacker == 0) {
@@ -259,17 +263,19 @@ if (MultiContextMode && WhichUnpacker == 0) {
   }
 }
 
-uint4_t UpsampleZeroes = (1 << ConfigState.THCON_SEC[WhichUnpacker].Upsample_rate) - 1;
-bool UpsampleInterleave = ConfigState.THCON_SEC[WhichUnpacker].Upsample_and_interleave;
+uint4_t UpsampleZeroes = (1 << ConfigState.THCON_SEC[WhichUnpacker].REG2_Upsample_rate) - 1;
+bool UpsampleInterleave = ConfigState.THCON_SEC[WhichUnpacker].REG2_Upsample_and_interleave;
 uint4_t ColShift;
 if (DiscontiguousInputRows || WhichUnpacker == 1) {
   ColShift = 0;
 } else {
   ColShift = ConfigState.THCON_SEC[WhichUnpacker].REG2_Shift_amount_cntx[WhichContext & 3];
 }
+if (UpsampleZeroes || UpsampleInterleave || ColShift) {
+  UnsupportedFunctionality(); // No known usage, confidence in specification below is weak
+}
 
 // Check that various settings are compatible with each other:
-
 if (Transpose || DiscontiguousInputRows) {
   // These modes require that InAddr_Datums start at an aligned 16 byte boundary.
   if (InAddr_Datums != floor(InAddr_Datums / 16.) * 16.) {
@@ -284,7 +290,6 @@ if (UnpackToDst && (ColShift || Transpose)) {
 }
 
 // Main unpack loop:
-
 for (unsigned i = 0; i < InputNumDatums && DecompressNumDatums; ) {
   // Read a datum from L1:
   auto DatumBits = ReadL1Bytes(InAddr_Datums, DatumSizeBytes);
@@ -388,7 +393,6 @@ for (unsigned i = 0; i < InputNumDatums && DecompressNumDatums; ) {
 }
 
 // Update counters in preparation for next instruction:
-
 if (MultiContextMode && UseContextCounter) {
   uint3_t IncrementedCounter = WhichContext + 1;
   if (IncrementedCounter >= (1 << ConfigState.THCON_SEC[WhichUnpacker].Context_count)) {
