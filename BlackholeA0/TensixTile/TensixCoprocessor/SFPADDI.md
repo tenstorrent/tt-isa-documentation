@@ -1,4 +1,4 @@
-# `SFPADDI` (Vectorised floating-point addition/subtraction using BF16 immediate)
+# `SFPADDI` (Vectorized floating-point addition/subtraction using BF16 immediate)
 
 **Summary:** Performs lanewise FP32 `VD = BF16ToFP32(Imm16) ± VD`.
 

@@ -1,6 +1,6 @@
-# `SFPSTOCHRND` (Vectorised reduce floating-point precision)
+# `SFPSTOCHRND` (Vectorized reduce floating-point precision)
 
-**Summary:** Operating lanewise, reduces mantissa precision of an FP32 value down from 23 bits to either 7 bits or 10 bits. The discarded mantissa bits are used for rounding, which can be either stochastic or round to nearest with ties away from zero. Various extreme floating-point values are also normalised away:
+**Summary:** Operating lanewise, reduces mantissa precision of an FP32 value down from 23 bits to either 7 bits or 10 bits. The discarded mantissa bits are used for rounding, which can be either stochastic or round to nearest with ties away from zero. Various extreme floating-point values are also normalized away:
 * Denormals become positive zero.
 * Negative zero becomes positive zero.
 * -NaN becomes negative infinity.

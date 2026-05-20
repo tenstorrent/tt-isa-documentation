@@ -1,4 +1,4 @@
-# `SFPGT` (Vectorised sign-magnitude integer comparison)
+# `SFPGT` (Vectorized sign-magnitude integer comparison)
 
 **Summary:** Operating lanewise on 32-bit sign-magnitude integers, performs a comparison `VD > VC`, and writes the result of the comparison to `VD` and/or `LaneFlags` and/or the top of the vector conditional execution stack. Can instead be operating on FP32 values, in which case it uses the total order where -NaN < -Inf < ... < -0 < +0 < ... < +Inf < +NaN.
 

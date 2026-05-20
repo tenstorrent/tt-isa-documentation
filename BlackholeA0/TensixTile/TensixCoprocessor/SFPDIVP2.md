@@ -1,4 +1,4 @@
-# `SFPDIVP2` (Vectorised adjust floating-point exponent)
+# `SFPDIVP2` (Vectorized adjust floating-point exponent)
 
 **Summary:** Performs lanewise adjustment of FP32 exponent bits. The exponent bits are either set to the provided immediate, or the provided immediate is added to the exponent bits. In the latter case, no addition is performed if the starting value is infinity or NaN, and the result of the addition can wrap around. If software wishes to have exponent saturation rather than exponent wrapping, [`SFPMULI`](SFPMULI.md) can be used instead.
 

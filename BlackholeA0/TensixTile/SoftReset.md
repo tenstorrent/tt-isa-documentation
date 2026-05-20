@@ -113,7 +113,7 @@ Each RISCV core has a single reset bit associated with it, which low-level softw
 
 **Whilst held in soft reset:** New RISCV instructions will not start. The RISCV frontend will not perform any instruction reads against L1 nor against [core-local instruction RAM](BabyRISCV/InstructionRAM.md). If the appropriate bit of `RISCV_DEBUG_REG_DISABLE_RESET` is `false`, writes to [debug `DR` registers](BabyRISCV/DebugInterface.md) are discarded.
 
-**Upon leaving soft reset:** For RISCV T<sub>i</sub>, the [PCBuf](BabyRISCV/PCBufs.md) from RISCV B to RISCV T<sub>i</sub> will have its FIFO contents discarded. All branch predictor history will be forgotten. The [instruction cache](BabyRISCV/InstructionCache.md) will be invalidated. If the appropriate bit of `RISCV_DEBUG_REG_DISABLE_RESET` is `false`, the local data RAM will begin reinitialising itself to zero. All GPRs and FPRs (and, for RISCV T2, vector registers) will be set to zero, and `pc` will be set according to the below table.
+**Upon leaving soft reset:** For RISCV T<sub>i</sub>, the [PCBuf](BabyRISCV/PCBufs.md) from RISCV B to RISCV T<sub>i</sub> will have its FIFO contents discarded. All branch predictor history will be forgotten. The [instruction cache](BabyRISCV/InstructionCache.md) will be invalidated. If the appropriate bit of `RISCV_DEBUG_REG_DISABLE_RESET` is `false`, the local data RAM will begin reinitializing itself to zero. All GPRs and FPRs (and, for RISCV T2, vector registers) will be set to zero, and `pc` will be set according to the below table.
 
 <table><thead><th/><th>Initial <code>pc</code> when coming out of soft reset</th></thead>
 <tr><th align="left">RISCV B</th><td align="right"><code>0x00000</code></td></tr>

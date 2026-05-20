@@ -1,4 +1,4 @@
-# `SFPEXMAN` (Vectorised extract FP32 mantissa bits)
+# `SFPEXMAN` (Vectorized extract FP32 mantissa bits)
 
 **Summary:** Performs lanewise extraction of FP32 mantissa bits, depositing them in the low 23 bits. The next significant bit can be set to either `0` or `1`, and then the top 8 bits are always set to zero.
 

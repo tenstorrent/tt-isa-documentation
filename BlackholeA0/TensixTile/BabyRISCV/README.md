@@ -1,6 +1,6 @@
 # "Baby" RISCVs
 
-Each Tensix tile contains five RISCV cores. Collectively, these are called "baby" cores as they are relatively small 32-bit in-order single-issue cores, optimised for area and power efficiency rather than for high performance. Each RISCV core is intended to execute one RISCV instruction per cycle, running at a clock speed of 1.35 GHz. The five cores are called RISCV B, RISCV T0, RISCV T1, RISCV T2, and RISCV NC.
+Each Tensix tile contains five RISCV cores. Collectively, these are called "baby" cores as they are relatively small 32-bit in-order single-issue cores, optimized for area and power efficiency rather than for high performance. Each RISCV core is intended to execute one RISCV instruction per cycle, running at a clock speed of 1.35 GHz. The five cores are called RISCV B, RISCV T0, RISCV T1, RISCV T2, and RISCV NC.
 
 ## Instruction set
 
@@ -154,7 +154,7 @@ When the RISCV comes out of reset, the local data RAM will spend up to 2048 cloc
 For the purpose of RISCV memory ordering, each distinct mapping of the local data RAM into the address space is considered to be a separate memory region. As such, software is strongly encouraged to always use the `MEM_LOCAL_BASE` address for the RISCV core's own local data RAM, and only use the address between `0xFFB1_4000` and `0xFFB1_DFFF` for accessing the local data RAM of other RISCV cores.
 
 > [!TIP]
-> The Blackhole local data RAMs are twice the size of the Wormhole local data RAMs. The 2<sup>nd</sup> mapping between `0xFFB1_4000` and `0xFFB1_DFFF` is also new in Blackhole; it should enable the host to more easily initialise the local data RAM, and allow debuggers to more easily inspect it.
+> The Blackhole local data RAMs are twice the size of the Wormhole local data RAMs. The 2<sup>nd</sup> mapping between `0xFFB1_4000` and `0xFFB1_DFFF` is also new in Blackhole; it should enable the host to more easily initialize the local data RAM, and allow debuggers to more easily inspect it.
 
 ## RISCV `pc` snapshot
 

@@ -1,4 +1,4 @@
-# `SFPMAD` (Vectorised floating-point multiply then add)
+# `SFPMAD` (Vectorized floating-point multiply then add)
 
 **Summary:** Performs lanewise FP32 `VD = VA * VB + VC`. In some modes, the `VA` and/or `VD` indices from the instruction bits are ignored, and instead come from the low four bits of `LReg[7]` (which allows these bits to potentially differ between lanes).
 

@@ -1,6 +1,6 @@
 # "Baby" RISCVs
 
-Each Tensix tile contains five RISCV cores. Collectively, these are called "baby" cores as they are relatively small 32-bit in-order single-issue cores, optimised for area and power efficiency rather than for high performance. Each RISCV core is intended to execute one RV32IM instruction per cycle, running at a clock speed of 1 GHz. The five cores are called RISCV B, RISCV T0, RISCV T1, RISCV T2, and RISCV NC, with the major differences between them being:
+Each Tensix tile contains five RISCV cores. Collectively, these are called "baby" cores as they are relatively small 32-bit in-order single-issue cores, optimized for area and power efficiency rather than for high performance. Each RISCV core is intended to execute one RV32IM instruction per cycle, running at a clock speed of 1 GHz. The five cores are called RISCV B, RISCV T0, RISCV T1, RISCV T2, and RISCV NC, with the major differences between them being:
 
 ||RISCV B|RISCV T0|RISCV T1|RISCV T2|RISCV NC|
 |---|---|---|---|---|---|

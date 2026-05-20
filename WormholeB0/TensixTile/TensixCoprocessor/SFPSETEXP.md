@@ -1,4 +1,4 @@
-# `SFPSETEXP` (Vectorised set FP32 exponent bits)
+# `SFPSETEXP` (Vectorized set FP32 exponent bits)
 
 **Summary:** Operating lanewise, combines the FP32 exponent bits from one place (either an immediate, or part of the destination register) with the FP32 sign and mantissa bits from somewhere else.
 

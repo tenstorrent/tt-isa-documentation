@@ -1,4 +1,4 @@
-# `SFPLUTFP32` (Vectorised evaluate piecewise linear floating-point function)
+# `SFPLUTFP32` (Vectorized evaluate piecewise linear floating-point function)
 
 **Summary:** Operating lanewise, performs one of the FP32 multiply then add variants from one of the following tables. After the computation, the sign bit of the result can optionally be replaced with the original sign bit of `LReg[3]`.
 

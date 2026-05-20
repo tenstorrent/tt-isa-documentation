@@ -1,4 +1,4 @@
-# `SFPADD` (Vectorised floating-point addition/subtraction)
+# `SFPADD` (Vectorized floating-point addition/subtraction)
 
 **Summary:** Identical to [`SFPMAD`](SFPMAD.md), but is the preferred opcode when `VA == 10`, as this causes the computation to be lanewise FP32 `VD = ±(1.0 * VB) ± VC` (see the definition of [`LReg[10]`](LReg.md)).
 

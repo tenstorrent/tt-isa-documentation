@@ -1,4 +1,4 @@
-# `SFPSHFT` (Vectorised bitwise shift)
+# `SFPSHFT` (Vectorized bitwise shift)
 
 **Summary:** Performs lanewise bitwise (logical) shift left or right on a vector of 32-bit unsigned integers. There is no instruction for performing arithmetic right shift; software needs to construct this from a sequence of instructions if it requires it.
 

@@ -8,7 +8,7 @@ Most Matrix Unit (FPU) instructions use [RWCs](RWCs.md) as part of specifying wh
 
 ## Instructions
 
-The majority of Matrix Unit (FPU) instructions can be organised based on where they read from and write/accumulate to:
+The majority of Matrix Unit (FPU) instructions can be organized based on where they read from and write/accumulate to:
 
 <table><tr><th/><th>Reads <code>Dst</code></th><th>Reads <code>SrcA</code></th><th>Reads <code>SrcB</code></th><th>Reads nothing</th></tr>
 <tr><th align="right">Accumulates onto <code>Dst</code></th><td colspan="3"><a href="MVMUL.md"><code>MVMUL</code></a>, <a href="DOTPV.md"><code>DOTPV</code></a>, <a href="GAPOOL.md"><code>GAPOOL</code></a>, <a href="GMPOOL.md"><code>GMPOOL</code></a>, <a href="ELWMUL.md"><code>ELWMUL</code></a>, <a href="ELWADD.md"><code>ELWADD</code></a>, <a href="ELWSUB.md"><code>ELWSUB</code></a></td><td/></tr>
@@ -16,7 +16,7 @@ The majority of Matrix Unit (FPU) instructions can be organised based on where t
 <tr><th align="right">Writes to <code>SrcA</code></th><td><a href="MOVD2A.md"><code>MOVD2A</code></a></td><td><a href="SHIFTXA.md"><code>SHIFTXA</code></a></td><td><a href="MOVB2A.md"><code>MOVB2A</code></a></td><td><a href="ZEROSRC.md"><code>ZEROSRC</code></a></td></tr>
 <tr><th align="right">Writes to <code>SrcB</code></th><td><a href="MOVD2B.md"><code>MOVD2B</code></a></td><td/><td><a href="SHIFTXB.md"><code>SHIFTXB</code></a>, <a href="TRNSPSRCB.md"><code>TRNSPSRCB</code></a></td><td><a href="ZEROSRC.md"><code>ZEROSRC</code></a></td></tr></table>
 
-The remaining Matrix Unit (FPU) instructions which cannot be organised in this way are [`SETRWC`](SETRWC.md) and [`INCRWC`](INCRWC.md) for manipulating [RWCs](RWCs.md), and then the three oddball instructions [`CLEARDVALID`](CLEARDVALID.md), [`CLREXPHIST`](CLREXPHIST.md), and [`GATESRCRST`](GATESRCRST.md).
+The remaining Matrix Unit (FPU) instructions which cannot be organized in this way are [`SETRWC`](SETRWC.md) and [`INCRWC`](INCRWC.md) for manipulating [RWCs](RWCs.md), and then the three oddball instructions [`CLEARDVALID`](CLEARDVALID.md), [`CLREXPHIST`](CLREXPHIST.md), and [`GATESRCRST`](GATESRCRST.md).
 
 Instruction latency and throughput:
 

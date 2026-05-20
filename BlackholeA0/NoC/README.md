@@ -2,11 +2,11 @@
 
 Each NoC transaction consists of one or more packets. Each packet consists of one or more flits (exactly one header flit, followed by up to 256 data flits). Each flit consists of exactly 512 bits (64 bytes).
 
-Each NoC is a 2D torus of NoC routers and NIUs (NoC interface units). Packets initiate at an NIU, and terminate at an NIU, with routers moving packets between NIUs. The 2D torus is usually visualised as a 2D grid, where the left/right and top/bottom edges are connected to each other. NoC #0 is usually visualised as:
+Each NoC is a 2D torus of NoC routers and NIUs (NoC interface units). Packets initiate at an NIU, and terminate at an NIU, with routers moving packets between NIUs. The 2D torus is usually visualized as a 2D grid, where the left/right and top/bottom edges are connected to each other. NoC #0 is usually visualized as:
 
 ![](../../Diagrams/Out/NoC_BH_0.svg)
 
-NoC #1 connects the same set of tiles, but is physically separate from NoC #0, and flows in the opposite direction. It is usually visualised as:
+NoC #1 connects the same set of tiles, but is physically separate from NoC #0, and flows in the opposite direction. It is usually visualized as:
 
 ![](../../Diagrams/Out/NoC_BH_1.svg)
 
@@ -65,6 +65,6 @@ NoC transactions are fairly weakly ordered by default, but can be made stronger 
 |Router to neighbouring router|One flit (512 bits) per cycle per axis|9 cycles|
 |Router to directly connected NIU|One flit (512 bits) per cycle|~5 cycles|
 
-[Congestion](RoutingPaths.md#congestion) can negatively impact latency. If software uses the [`NOC_CMD_VC_LINKED` and/or `NOC_CMD_VC_STATIC`](MemoryMap.md#noc_ctrl) flags to enforce particular ordering, then throughput and latency can be negatively impacted: bandwidth might be available, but go unused, because the ordering flags are forcing packets to wait. If software uses the `NOC_CMD_PATH_RESERVE` flag on broadcasts, then the latency of broadcasts is increased, as all routers in the broadcast tree must inform the initiating tile that they're ready to receive the broadcast before any data can leave the initiating tile (if this reservation process fails, then the initiating tile will automatically try again, using randomised exponential backoff).
+[Congestion](RoutingPaths.md#congestion) can negatively impact latency. If software uses the [`NOC_CMD_VC_LINKED` and/or `NOC_CMD_VC_STATIC`](MemoryMap.md#noc_ctrl) flags to enforce particular ordering, then throughput and latency can be negatively impacted: bandwidth might be available, but go unused, because the ordering flags are forcing packets to wait. If software uses the `NOC_CMD_PATH_RESERVE` flag on broadcasts, then the latency of broadcasts is increased, as all routers in the broadcast tree must inform the initiating tile that they're ready to receive the broadcast before any data can leave the initiating tile (if this reservation process fails, then the initiating tile will automatically try again, using randomized exponential backoff).
 
 The amount of _useful_ throughput depends on the ratio of header flits to data flits; very short packets can use just a single header flit to transport 4 bytes of data, whereas very long packets use one header flit and 256 data flits to transport 16384 bytes of data.

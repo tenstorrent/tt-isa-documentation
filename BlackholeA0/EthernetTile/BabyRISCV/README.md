@@ -1,6 +1,6 @@
 # "Baby" RISCVs
 
-Each Ethernet tile contains two RISCV cores. Collectively, these are called "baby" cores as they are relatively small 32-bit in-order single-issue cores, optimised for area and power efficiency rather than for high performance. Each RISCV core is intended to execute one RISCV instruction per cycle, running at a clock speed of 1.35 GHz. The two cores are called RISCV E0 and RISCV E1.
+Each Ethernet tile contains two RISCV cores. Collectively, these are called "baby" cores as they are relatively small 32-bit in-order single-issue cores, optimized for area and power efficiency rather than for high performance. Each RISCV core is intended to execute one RISCV instruction per cycle, running at a clock speed of 1.35 GHz. The two cores are called RISCV E0 and RISCV E1.
 
 The baby RISCV cores in every Ethernet tile are very similar to [the baby RISCV cores in every Tensix tile](../../TensixTile/BabyRISCV/README.md). From the RISCV point of view, the major differences in Ethernet tiles as compared to Tensix tiles are:
 * Just two RISCV cores in every Ethernet tile (versus five in every Tensix tile).

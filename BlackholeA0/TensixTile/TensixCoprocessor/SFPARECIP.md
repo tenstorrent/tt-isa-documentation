@@ -1,4 +1,4 @@
-# `SFPARECIP` (Vectorised approximate floating-point reciprocal or exponential)
+# `SFPARECIP` (Vectorized approximate floating-point reciprocal or exponential)
 
 **Summary:** Performs lanewise FP32 reciprocal (`1/x`) or lanewise FP32 exponential (<code>e<sup>x</sup></code>). In both cases, the computation is [approximate](#approximation-accuracy). Software may wish to follow this instruction with other instructions to improve the accuracy (for example performing a few Newton-Raphson iterations), or precede it with other instructions to reduce the input range down to where the approximation works best.
 

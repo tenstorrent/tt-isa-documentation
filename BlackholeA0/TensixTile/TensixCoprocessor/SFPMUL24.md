@@ -1,4 +1,4 @@
-# `SFPMUL24` (Vectorised multiply of 23-bit integers)
+# `SFPMUL24` (Vectorized multiply of 23-bit integers)
 
 **Summary:** Performs lanewise multiplication of two 23-bit integers, returning either the low 23 bits or high 23 bits of their product. In some modes, the `VA` and/or `VD` indices from the instruction bits are ignored, and instead come from the low four bits of `LReg[7]` (which allows these bits to potentially differ between lanes). Due to how the floating-point datapath is reused for `SFPMUL24`, an exotic shift/add-like operation is performed after the multiply. This is a `NonContractualBehavior` and software is strongly encouraged to turn this operation into a no-op by always setting `VC == 9` (which refers to the constant zero; see the definition of [`LReg[9]`](LReg.md)).
 

@@ -1,4 +1,4 @@
-# `SFPLZ` (Vectorised count leading zeroes)
+# `SFPLZ` (Vectorized count leading zeroes)
 
 **Summary:** Performs lanewise count leading zeroes (`lzcnt`) on a vector of 32-bit unsigned integers or on the magnitudes of a vector of sign-magnitude integers. Inputs equal to zero are considered to have 32 leading zeroes. Lane flags can also be set based on whether the input was equal to zero.
 

@@ -8,6 +8,6 @@ Each Wormhole ASIC contains:
 * [1x ARC tile](ARCTile/README.md), for chip and board management purposes. Customers can mostly ignore this tile, as it does not execute customer workloads, nor is it involved in dispatching customer workloads.
 * [2x NoC (Network on Chip)](NoC/README.md), for communication between different tiles on the same ASIC.
 
-The [NoCs](NoC/README.md) connect the various tiles to form a 2D torus. The 2D torus is usually visualised as a 2D grid:
+The [NoCs](NoC/README.md) connect the various tiles to form a 2D torus. The 2D torus is usually visualized as a 2D grid:
 
 ![](../Diagrams/Out/NoC_Layout.svg)

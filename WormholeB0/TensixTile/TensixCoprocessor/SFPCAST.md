@@ -1,4 +1,4 @@
-# `SFPCAST` (Vectorised convert sign-magnitude integer to floating-point)
+# `SFPCAST` (Vectorized convert sign-magnitude integer to floating-point)
 
 **Summary:** Performs lanewise conversion of 32-bit sign-magnitude integers to FP32. The conversion is exact for inputs <code>|x| ≤ 2<sup>24</sup></code>. Inputs outside this range require rounding, which can either be stochastic or round to nearest with ties to even.
 

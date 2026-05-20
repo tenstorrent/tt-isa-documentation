@@ -1,4 +1,4 @@
-# `SFPCAST` (Vectorised two's complement integer absolute value)
+# `SFPCAST` (Vectorized two's complement integer absolute value)
 
 **Summary:** Performs lanewise absolute value on a vector of two's complement integers. This encoding of `SFPCAST` was intended to do something else, but due to a hardware bug, it ends up computing the absolute value. It is documented merely so that all encodings of `SFPCAST` have defined behavior; software is strongly encouraged to use [`SFPABS`](SFPABS.md) rather than this encoding of `SFPCAST`.
 

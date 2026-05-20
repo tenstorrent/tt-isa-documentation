@@ -1,4 +1,4 @@
-# `SFPSETSGN` (Vectorised set FP32 sign bit)
+# `SFPSETSGN` (Vectorized set FP32 sign bit)
 
 **Summary:** Operating lanewise, combines the FP32 sign bit from one place (either an immediate, or part of the destination register) with the FP32 exponent and mantissa bits from somewhere else. Can instead be operating on sign-magnitude integers, combining the sign bit from one place (either an immediate, or part of the destination register) with the magnitude bits from somewhere else. In either case, when the sign bit comes from an immediate, this is computing either the absolute value or the negated absolute value.
 

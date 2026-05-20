@@ -1,4 +1,4 @@
-# `SFPSETCC` (Vectorised compare against zero)
+# `SFPSETCC` (Vectorized compare against zero)
 
 **Summary:** Operating lanewise, performs a comparison `VC < 0` or `VC != 0` or `VC >= 0` or `VC == 0`, and writes the result of the comparison to `LaneFlags`. The elements of the input vector can be any type of 32-bit data, though software should ensure that sign-magnitude integers and FP32 have had negative zero flushed to positive zero.
 

@@ -1,4 +1,4 @@
-# `SFPSTOCHRND` (Vectorised reduce range of sign-magnitude integer)
+# `SFPSTOCHRND` (Vectorized reduce range of sign-magnitude integer)
 
 **Summary:** Operating lanewise, starts with a 32-bit sign-magnitude integer, shifts the magnitude right by some number of bits (the discarded bits are used for rounding, which can be stochastic or round to nearest with ties away from zero or round to zero †), then either clamps to the range -127 through +127 or takes the absolute value and then clamps to the range 0 through 255. The result remains a 32-bit sign-magnitude integer, though if the absolute value was taken, the result can be interpreted as any kind of integer.
 

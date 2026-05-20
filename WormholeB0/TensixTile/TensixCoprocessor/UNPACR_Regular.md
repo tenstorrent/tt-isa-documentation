@@ -466,7 +466,7 @@ uint32_t FormatConversion(uint4_t InDataFormat, uint4_t OutDataFormat, uint32_t 
     // cases, OutDataFormat has no meaning, but must be equal to InDataFormat.
     if (InDataFormat != OutDataFormat) UndefinedBehavior();
 
-    // Start by normalising to a format which is either 16 or 32 bits wide.
+    // Start by normalizing to a format which is either 16 or 32 bits wide.
     switch (InDataFormat) {
     case FP8: DatumBits <<= 8; InDataFormat = FP16; break;
     case BFP8: DatumBits = BFP8ToBF16(DatumBits     , ExpBits); InDataFormat = BF16; break;

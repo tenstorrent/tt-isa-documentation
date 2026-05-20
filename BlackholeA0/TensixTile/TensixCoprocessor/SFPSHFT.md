@@ -1,4 +1,4 @@
-# `SFPSHFT` (Vectorised bitwise shift)
+# `SFPSHFT` (Vectorized bitwise shift)
 
 **Summary:** Performs lanewise bitwise shift left or arithmetic shift right or bitwise shift right on a vector of 32-bit integers.
 

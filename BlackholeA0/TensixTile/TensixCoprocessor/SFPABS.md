@@ -1,4 +1,4 @@
-# `SFPABS` (Vectorised floating-point or two's complement absolute value)
+# `SFPABS` (Vectorized floating-point or two's complement absolute value)
 
 **Summary:** Performs lanewise absolute value on a vector of two's complement integers or a vector of FP32. In the latter case, -NaN is left as -NaN rather than becoming +NaN. To instead take the absolute value on a vector of sign-magnitude integers, or a vector of FP32 without special case handling of NaN, [`SFPSETSGN`](SFPSETSGN.md) can be used.
 

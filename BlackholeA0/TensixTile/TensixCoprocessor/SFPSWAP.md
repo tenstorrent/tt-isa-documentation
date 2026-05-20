@@ -1,4 +1,4 @@
-# `SFPSWAP` (Vectorised swap or min+max or argmin+argmax)
+# `SFPSWAP` (Vectorized swap or min+max or argmin+argmax)
 
 **Summary:** In its simplest mode, `SFPSWAP` swaps the contents of two vectors. In the next mode up, it takes two vectors of FP32 or two vectors of 32-bit sign-magnitude integers, simultaneously computes the lanewise minimum and lanewise maximum, and returns both vectors. In its most complex mode, it can be used for argmin+argmax: conditionally swap a pair of vectors (lanewise) based on the results of comparing a different pair of vectors (lanewise).
 

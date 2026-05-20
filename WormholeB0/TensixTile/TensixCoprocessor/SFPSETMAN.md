@@ -1,4 +1,4 @@
-# `SFPSETMAN` (Vectorised set FP32 mantissa bits)
+# `SFPSETMAN` (Vectorized set FP32 mantissa bits)
 
 **Summary:** Operating lanewise, combines the FP32 mantissa bits from one place (either an immediate, or part of the destination register) with the FP32 sign and exponent bits from somewhere else.
 

@@ -9,7 +9,7 @@ Each Blackhole ASIC contains:
 * 1x ARC tile and 1x Security tile, for chip and board management purposes. Customers can mostly ignore these tiles, as they do not execute customer workloads, nor are they involved in dispatching customer workloads.
 * [2x NoC (Network on Chip)](NoC/README.md), for communication between different tiles on the same ASIC.
 
-The [NoCs](NoC/README.md) connect the various tiles to form a 2D torus. The 2D torus is usually visualised as a 2D grid:
+The [NoCs](NoC/README.md) connect the various tiles to form a 2D torus. The 2D torus is usually visualized as a 2D grid:
 
 ![](../Diagrams/Out/NoC_BH_Layout.svg)
 

@@ -22,7 +22,7 @@ To configure the phase at the transmitter, software should:
 ## Unicast configuration
 
 In addition to the general configuration above, to configure the phase at the receiver, software should:
-1. Set the `REMOTE_SRC_IS_MCAST` field within `STREAM_MISC_CFG_REG_INDEX` to `false` (this is a performance optimisation, so things still work if software sets this incorrectly).
+1. Set the `REMOTE_SRC_IS_MCAST` field within `STREAM_MISC_CFG_REG_INDEX` to `false` (this is a performance optimization, so things still work if software sets this incorrectly).
 2. Set the `STREAM_REMOTE_SRC_DEST_INDEX` field within [`STREAM_REMOTE_SRC_REG_INDEX`](#stream_remote_src_reg_index) to `0`.
 
 In addition to the general configuration above, to configure the phase at the transmitter, software should:
@@ -34,7 +34,7 @@ In addition to the general configuration above, to configure the phase at the tr
 Some streams are capable of transmitting in multicast mode, with up to 32 distinct receiver streams in different tiles. The receivers need to all have the same stream ID, and have their L1 buffers in the same location in their local tile's L1.
 
 In addition to the general configuration above, to configure the phase at the receiver, software should:
-1. Set the `REMOTE_SRC_IS_MCAST` field within `STREAM_MISC_CFG_REG_INDEX` to `true` (this is a performance optimisation, so things still work if software sets this incorrectly).
+1. Set the `REMOTE_SRC_IS_MCAST` field within `STREAM_MISC_CFG_REG_INDEX` to `true` (this is a performance optimization, so things still work if software sets this incorrectly).
 2. Set the `STREAM_REMOTE_SRC_DEST_INDEX` field within [`STREAM_REMOTE_SRC_REG_INDEX`](#stream_remote_src_reg_index) to `i`, where all receivers have `i` less than the transmitter's `STREAM_MCAST_DEST_NUM_REG_INDEX`, and every receiver has a distinct `i`.
 
 In addition to the general configuration above, to configure the phase at the transmitter, software should:

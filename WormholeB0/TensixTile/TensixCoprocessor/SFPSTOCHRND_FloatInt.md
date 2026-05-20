@@ -1,4 +1,4 @@
-# `SFPSTOCHRND` (Vectorised convert floating-point to bounded sign-magnitude integer)
+# `SFPSTOCHRND` (Vectorized convert floating-point to bounded sign-magnitude integer)
 
 **Summary:** Operating lanewise, starts with FP32, rounds that to an integer (can be either stochastic or round to nearest with ties away from zero), then does one of:
 * Clamp to -127 through +127.

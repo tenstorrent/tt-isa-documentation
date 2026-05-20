@@ -1,4 +1,4 @@
-# `SFPLUT` (Vectorised evaluate piecewise linear floating-point function)
+# `SFPLUT` (Vectorized evaluate piecewise linear floating-point function)
 
 **Summary:** Operating lanewise, performs one of the FP32 multiply then add variants from the following table:
 

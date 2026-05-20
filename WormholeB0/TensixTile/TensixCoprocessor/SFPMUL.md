@@ -1,4 +1,4 @@
-# `SFPMUL` (Vectorised floating-point multiply)
+# `SFPMUL` (Vectorized floating-point multiply)
 
 **Summary:** Identical to [`SFPMAD`](SFPMAD.md), but is the preferred opcode when `VC == 9`, as this causes the computation to be lanewise FP32 `VD = VA * VB + 0` (see the definition of [`LReg[9]`](LReg.md)).
 

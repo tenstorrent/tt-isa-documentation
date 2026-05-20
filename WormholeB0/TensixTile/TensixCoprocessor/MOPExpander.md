@@ -90,7 +90,7 @@ async def ExpandTemplate1(MopCfg):
         yield EndOp1
 
 def IsNop(Instruction):
-  # This only recognises plain NOP (opcode 0x02), not DMANOP nor SFPNOP.
+  # This only recognizes plain NOP (opcode 0x02), not DMANOP nor SFPNOP.
   return Instruction.Opcode == NOP
 ```
 

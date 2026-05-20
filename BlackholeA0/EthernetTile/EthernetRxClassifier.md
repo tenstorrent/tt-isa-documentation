@@ -54,7 +54,7 @@ The `EOP_STATUS_GOOD_LO` register contains a bitmask, with one bit per EOP code.
 
 ## 3. Extract some headers from the frame, and augment them slightly
 
-This stage starts by looking at the EtherType, and is able to recognise any of:
+This stage starts by looking at the EtherType, and is able to recognize any of:
 
 * IEEE 802.1ad VLAN tag, followed by IEEE 802.1Q VLAN tag, followed by arbitrary EtherType or length
 * IEEE 802.1Q VLAN tag, followed by IEEE 802.1AE EtherType
@@ -69,7 +69,7 @@ If an arbitrary EtherType or length is matched, then a tiny remapping step is pe
 The next part of the stage is extracting an S-Tag and a C-Tag:
 * If the EtherType or length exactly equals the low 16 bits of `USER_DEFINED_VLAN_TAG[0]`, and that register specifies to perform tag replacement, the S-Tag comes from `USER_DEFINED_STAG[0]` and the C-Tag comes from `USER_DEFINED_CTAG[0]`.
 * Otherwise, if the EtherType or length exactly equals the low 16 bits of `USER_DEFINED_VLAN_TAG[1]`, and that register specifies to perform tag replacement, the S-Tag comes from `USER_DEFINED_STAG[1]` and the C-Tag comes from `USER_DEFINED_CTAG[1]`.
-* Otherwise, the S-Tag is the recognised IEEE 802.1ad VLAN tag (if any) and the C-Tag is the recognised IEEE 802.1Q VLAN tag (if any).
+* Otherwise, the S-Tag is the recognized IEEE 802.1ad VLAN tag (if any) and the C-Tag is the recognized IEEE 802.1Q VLAN tag (if any).
 
 > [!IMPORTANT]
 > The EtherType and S-Tag / C-Tag remapping only affects the subsequent decisions made by the classifier; it doesn't change the frame contents as eventually delivered to an RX queue.
@@ -152,7 +152,7 @@ If the L3 header is present and is IPv6, then stage 4 will consider all the enab
 
 |First&nbsp;bit|#&nbsp;Bits|Purpose|
 |--:|--:|---|
-|0|16|Input EtherType to recognise|
+|0|16|Input EtherType to recognize|
 |16|16|Replacement EtherType|
 
 ### `USER_DEFINED_VLAN_TAG[i]`
@@ -161,7 +161,7 @@ If the L3 header is present and is IPv6, then stage 4 will consider all the enab
 
 |First&nbsp;bit|#&nbsp;Bits|Purpose|
 |--:|--:|---|
-|0|16|Input EtherType to recognise|
+|0|16|Input EtherType to recognize|
 |16|2|<ul><li><code>0</code>: Disable</li><li><code>1</code>: If EtherType matches, replace the C-Tag with `USER_DEFINED_CTAG[i]`</li><li><code>2</code>: Reserved</li><li><code>3</code>: If EtherType matches, replace the S-Tag with `USER_DEFINED_STAG[i]` and the C-Tag with `USER_DEFINED_CTAG[i]`</li></ul>|
 |18|14|Reserved|
 
@@ -187,7 +187,7 @@ If the L3 header is present and is IPv6, then stage 4 will consider all the enab
 
 |First&nbsp;bit|#&nbsp;Bits|Purpose|
 |--:|--:|---|
-|0|16|Input EtherType to recognise|
+|0|16|Input EtherType to recognize|
 |16|8|Replacement protocol or next header field (depending on the value in bits 24 through 26)|
 |24|3|<ul><li><code>0</code>, <code>1</code>, <code>2</code>, <code>3</code>: Consider the L3 header to be absent</li><li><code>4</code>: Reserved</li><li><code>5</code>: Consider the L3 header to be present, treating it as an IPv4 header with protocol coming from bits 16 through 23 of this register, and source and destination addresses coming from `USER_DEFINED_SRC_IP_ADDR[i]` and `USER_DEFINED_DST_IP_ADDR[i]`</li><li><code>6</code>: Reserved</li><li><code>7</code>: Consider the L3 header to be present, treating it as an IPv6 header with next header field coming from bits 16 through 23 of this register, and source and destination addresses coming from `USER_DEFINED_SRC_IP_ADDR[i]` and `USER_DEFINED_DST_IP_ADDR[i]`</li></ul>|
 |27|5|Reserved|
@@ -218,7 +218,7 @@ IPv4 uses just `j == 0` to specify a 32-bit address, whereas IPv6 uses all four 
 
 |First&nbsp;bit|#&nbsp;Bits|Purpose|
 |--:|--:|---|
-|0|16|Input EtherType to recognise|
+|0|16|Input EtherType to recognize|
 |16|16|Reserved|
 
 ### `USER_REDUCED_ETHERTYPE[i]`
@@ -269,7 +269,7 @@ A 48-bit MAC address is specified using `j == 0` and the low 16 bits of `j == 1`
 
 |First&nbsp;bit|#&nbsp;Bits|Purpose|
 |--:|--:|---|
-|0|8|Input protocol number (IPv4) or next header value (IPv6) to recognise|
+|0|8|Input protocol number (IPv4) or next header value (IPv6) to recognize|
 |8|24|Reserved|
 
 ### `USER_REDUCED_PROTOCOL[i]`
@@ -296,7 +296,7 @@ A 48-bit MAC address is specified using `j == 0` and the low 16 bits of `j == 1`
 
 |First&nbsp;bit|#&nbsp;Bits|Purpose|
 |--:|--:|---|
-|0|8|Input protocol number (IPv4) or next header value (IPv6) to recognise|
+|0|8|Input protocol number (IPv4) or next header value (IPv6) to recognize|
 |8|1|If `true`, `USER_PORT_REDUCTION_RULE` entries for TCP will be applied|
 |9|3|Reserved|
 |12|1|If `true`, `USER_PORT_REDUCTION_RULE` entries for UDP will be applied|

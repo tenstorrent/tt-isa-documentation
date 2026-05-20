@@ -1,4 +1,4 @@
-# `SFPAND` (Vectorised bitwise-and)
+# `SFPAND` (Vectorized bitwise-and)
 
 **Summary:** Performs lanewise bitwise-and between two vectors of 32-bit unsigned integers.
 

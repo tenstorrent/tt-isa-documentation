@@ -61,7 +61,7 @@ The L2 cache includes a prefetcher. A pair of memory-mapped registers are presen
 |`BASE + 0x0000`|`L2PF1_BASIC_CONTROL`|32 bits|
 |`BASE + 0x0004`|`L2PF1_USER_CONTROL`|32 bits|
 
-See [`sifive_l2pf1.h`](https://github.com/sifive/freedom-metal/blob/fa026d2ee08e5ba49e8ae703fb4cbcbb710a6a69/metal/drivers/sifive_l2pf1.h) and [`sifive_l2pf1.c`](https://github.com/sifive/freedom-metal/blob/fa026d2ee08e5ba49e8ae703fb4cbcbb710a6a69/src/drivers/sifive_l2pf1.c) for examples of using these registers. In particular, the [recommended initialisation sequence](https://github.com/sifive/freedom-metal/blob/fa026d2ee08e5ba49e8ae703fb4cbcbb710a6a69/src/drivers/sifive_l2pf1.c#L152) is to write `0x15811` to `L2PF1_BASIC_CONTROL` and `0x38c84e` to `L2PF1_USER_CONTROL`.
+See [`sifive_l2pf1.h`](https://github.com/sifive/freedom-metal/blob/fa026d2ee08e5ba49e8ae703fb4cbcbb710a6a69/metal/drivers/sifive_l2pf1.h) and [`sifive_l2pf1.c`](https://github.com/sifive/freedom-metal/blob/fa026d2ee08e5ba49e8ae703fb4cbcbb710a6a69/src/drivers/sifive_l2pf1.c) for examples of using these registers. In particular, the [recommended initialization sequence](https://github.com/sifive/freedom-metal/blob/fa026d2ee08e5ba49e8ae703fb4cbcbb710a6a69/src/drivers/sifive_l2pf1.c#L152) is to write `0x15811` to `L2PF1_BASIC_CONTROL` and `0x38c84e` to `L2PF1_USER_CONTROL`.
 
 ## L3 Cache
 
@@ -110,7 +110,7 @@ The 38 array elements at `CCACHE0_WAYMASK0` correspond exactly to the 38 differe
 |36|Hart 2 L2 cache|
 |37|Hart 3 L2 cache|
 
-See [`sifive_ccache0.h`](https://github.com/sifive/freedom-metal/blob/fa026d2ee08e5ba49e8ae703fb4cbcbb710a6a69/metal/drivers/sifive_ccache0.h) and [`sifive_ccache0.c`](https://github.com/sifive/freedom-metal/blob/fa026d2ee08e5ba49e8ae703fb4cbcbb710a6a69/src/drivers/sifive_ccache0.c) for examples of using these registers. In particular, the recommended initialisation sequence is to write `15` to `CCACHE0_WAYENABLE` and `0xFFFF` to every `CCACHE0_WAYMASK0` entry, thereby allocating all 2 MiB to regular cache ways, and nothing at all to L3 as uncached scratchpad (LIM). If coming directly out of reset, the writes to `CCACHE0_WAYMASK0` can be skipped, as `0xFFFF` is the default value for every entry.
+See [`sifive_ccache0.h`](https://github.com/sifive/freedom-metal/blob/fa026d2ee08e5ba49e8ae703fb4cbcbb710a6a69/metal/drivers/sifive_ccache0.h) and [`sifive_ccache0.c`](https://github.com/sifive/freedom-metal/blob/fa026d2ee08e5ba49e8ae703fb4cbcbb710a6a69/src/drivers/sifive_ccache0.c) for examples of using these registers. In particular, the recommended initialization sequence is to write `15` to `CCACHE0_WAYENABLE` and `0xFFFF` to every `CCACHE0_WAYMASK0` entry, thereby allocating all 2 MiB to regular cache ways, and nothing at all to L3 as uncached scratchpad (LIM). If coming directly out of reset, the writes to `CCACHE0_WAYMASK0` can be skipped, as `0xFFFF` is the default value for every entry.
 
 ## MMU TLBs
 

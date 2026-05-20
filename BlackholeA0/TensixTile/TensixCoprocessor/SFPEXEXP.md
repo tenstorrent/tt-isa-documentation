@@ -1,4 +1,4 @@
-# `SFPEXEXP` (Vectorised extract FP32 exponent bits)
+# `SFPEXEXP` (Vectorized extract FP32 exponent bits)
 
 **Summary:** Performs lanewise extraction of FP32 exponent bits, depositing them as an integer either in the range 0 through 255 or -127 through +128. When the latter range is used, the result is a two's complement integer. Lane flags can also be set based on the sign of the result.
 

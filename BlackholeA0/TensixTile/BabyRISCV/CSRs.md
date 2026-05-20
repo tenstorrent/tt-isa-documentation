@@ -1,6 +1,6 @@
 # CSRs
 
-The baby RISCV cores recognise the following CSRs:
+The baby RISCV cores recognize the following CSRs:
 
 |Address|Name|Specification|Notes|
 |---|---|---|---|
@@ -77,7 +77,7 @@ The baby RISCV cores recognise the following CSRs:
 |30|1|`EnBFloat`|If set, "Zfh" instructions (such as `fadd.h`) operate on BF16 values rather than FP16 values|
 |31|1|`EnBFloatRTNE`|Provided that `EnBFloat` is set, provides a static rounding mode for BF16 instructions: RTZ when clear, RTNE when set|
 
-At reset, all fields are initialised to zero/clear, except for `StMergeTimer`, which is initialised to `16`.
+At reset, all fields are initialized to zero/clear, except for `StMergeTimer`, which is initialized to `16`.
 
 ## `pmacfg0` and `pmacfg1`
 
@@ -90,7 +90,7 @@ The high 31 bits of these CSRs were _intended_ to be used to specify an aligned 
 |First&nbsp;bit|#&nbsp;Bits|Name|Purpose|
 |--:|--:|---|---|
 |0|11|`tensix_issue_queue_status`|RISCV T<sub>i</sub>: Thread-specific bitmask of instruction types, bit set if at least one instruction of that type has been pushed by RISCV T<sub>i</sub> and is still occupying queue space somewhere in the Tensix frontend<br/>Elsewhere: Copy of `or_reduced_tensix_issue_queue_status`|
-|11|1|`sfpu_cc`|`true` if at least one Vector Unit (SFPU) lane is currently enabled. If making use of this bit, software is responsible for ensuring sufficient synchronisation: it needs to ensure that all relevant Vector Unit (SFPU) instructions have finished executing, and that the lane enable state has been given enough time to propagate to this CSR|
+|11|1|`sfpu_cc`|`true` if at least one Vector Unit (SFPU) lane is currently enabled. If making use of this bit, software is responsible for ensuring sufficient synchronization: it needs to ensure that all relevant Vector Unit (SFPU) instructions have finished executing, and that the lane enable state has been given enough time to propagate to this CSR|
 |12|1|Reserved||
 |13|11|`or_reduced_tensix_issue_queue_status`|Bitmask of instruction types, bit set if at least one instruction of that type has been pushed by any RISCV T<sub>i</sub> and is still occupying queue space somewhere in the Tensix frontend||
 |24|1|`sfpu_cc`|Copy of bit 11|

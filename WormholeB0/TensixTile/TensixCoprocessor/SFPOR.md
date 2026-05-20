@@ -1,4 +1,4 @@
-# `SFPOR` (Vectorised bitwise-or)
+# `SFPOR` (Vectorized bitwise-or)
 
 **Summary:** Performs lanewise bitwise-or between two vectors of 32-bit unsigned integers.
 

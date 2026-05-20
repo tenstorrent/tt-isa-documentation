@@ -139,7 +139,7 @@ Once multiple GDDR6 channels are in use, then care is required, as otherwise it 
 
 A few effects are visible in the above table:
 1. When there is heavy NoC congestion, NoC #1 performs better than NoC #0 for writes, but NoC #0 performs better than NoC #1 for reads. This is fully explained by the different [routing paths used by each NoC](../NoC/RoutingPaths.md), combined with DRAM tiles being arranged in columns: random writes on NoC #0 will have a lot of contention in the columns containing DRAM tiles, and likewise responses to random reads on NoC #1 will have a lot of contention in those same columns.
-2. When tile pairings are made carefully, there is generally very little difference between NoC #0 and NoC #1. This is because careful pairings tend to involve minimising vertical data movement, and once data is only moving in one axis, the routing path differences between NoC #0 and NoC #1 mostly evaporate.
+2. When tile pairings are made carefully, there is generally very little difference between NoC #0 and NoC #1. This is because careful pairings tend to involve minimizing vertical data movement, and once data is only moving in one axis, the routing path differences between NoC #0 and NoC #1 mostly evaporate.
 3. Static VC allocation remains important for large writes.
 
 ## Ordering

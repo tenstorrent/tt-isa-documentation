@@ -9,7 +9,7 @@ The PIC (programmable interrupt controller) can:
 
 ## IRQs
 
-The 11 recognised IRQs are:
+The 11 recognized IRQs are:
 
 |Index|Raised by|Enabled if|
 |--:|---|---|

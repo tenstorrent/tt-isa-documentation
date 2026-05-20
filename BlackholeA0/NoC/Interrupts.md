@@ -24,7 +24,7 @@ If initiating several NoC requests, software can either:
 
 ## Bulk interrupt handler
 
-A bulk interrupt handler is designed to be capable of handling multiple bits per invocation. This pattern should not be used when the same NoC NIU interrupt is enabled for both RISCV B and RISCV NC, as there is a narrow race condition in claiming the interrupts. In all other cases, bulk interrupt handlers are preferred, as they better amortise the cost of taking the interrupt.
+A bulk interrupt handler is designed to be capable of handling multiple bits per invocation. This pattern should not be used when the same NoC NIU interrupt is enabled for both RISCV B and RISCV NC, as there is a narrow race condition in claiming the interrupts. In all other cases, bulk interrupt handlers are preferred, as they better amortize the cost of taking the interrupt.
 
 The interrupt handler should:
 1. Save any RISCV execution state which it intends to modify.

@@ -1,4 +1,4 @@
-# `SFPNOT` (Vectorised bitwise-not)
+# `SFPNOT` (Vectorized bitwise-not)
 
 **Summary:** Performs lanewise bitwise-not on a vector of 32-bit unsigned integers.
 

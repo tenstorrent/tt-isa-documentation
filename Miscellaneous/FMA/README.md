@@ -115,7 +115,7 @@ Note the similarity to previous statements about `p`:
 ---
 <pre><code>  // Shortcut if p == 0
   if (p<sub>1</sub>_m == 0) return z<sub>2</sub>_m ? z : z_sign &amp; p_sign;</code></pre>
-This logic handles <code>p<sub>1</sub>_m == 0</code>. The <code>z<sub>2</sub>_m == 0</code> case _could_ also be handled here, but it does not need to be special-cased, as it happens to be correctly handled by the subsequent logic. For now, the exposition assumes <code>z<sub>2</sub>_m != 0</code>; the <code>z<sub>2</sub>_m == 0</code> case will be analysed separately later.
+This logic handles <code>p<sub>1</sub>_m == 0</code>. The <code>z<sub>2</sub>_m == 0</code> case _could_ also be handled here, but it does not need to be special-cased, as it happens to be correctly handled by the subsequent logic. For now, the exposition assumes <code>z<sub>2</sub>_m != 0</code>; the <code>z<sub>2</sub>_m == 0</code> case will be analyzed separately later.
 
 ---
 <pre><code>#define sticky_shift(var, orig, amount) \
@@ -181,7 +181,7 @@ At this point:
 This logic handles <code>r<sub>4</sub>_m</code> being exactly zero. Recall that <code>r<sub>4</sub>_m</code> is a "sticky-LSB integer", but it being even implies that it is exact. The logic is required because of the special rules about the sign of the FP32 result when the infinite-precision result is exactly zero, and also means that the subsequent `__builtin_clzll` is well defined.
 
 ---
-<pre><code>  // Normalise 64-bit result to 37 zero bits, 1 one bit, 26 fractional bits
+<pre><code>  // Normalize 64-bit result to 37 zero bits, 1 one bit, 26 fractional bits
   int32_t n = 37 - __builtin_clzll(r<sub>4</sub>_m);
   int32_t r<sub>5</sub>_e = r<sub>3</sub>_e + n;
   if (r<sub>5</sub>_e &gt;= 255) return r_sign | 0x7f800000; // Inf

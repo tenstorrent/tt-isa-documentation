@@ -1,4 +1,4 @@
-# `SFPIADD` (Vectorised integer addition or subtraction)
+# `SFPIADD` (Vectorized integer addition or subtraction)
 
 **Summary:** Performs lanewise addition or subtraction between two vectors of 32-bit unsigned integers or 32-bit signed two's complement integers, or adds a signed 12-bit immediate to all lanes of such a vector. Lane flags can also be set based on the sign of the result.
 

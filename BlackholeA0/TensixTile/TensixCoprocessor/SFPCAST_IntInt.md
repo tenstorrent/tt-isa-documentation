@@ -1,4 +1,4 @@
-# `SFPCAST` (Vectorised convert between two's complement integer and sign-magnitude integer)
+# `SFPCAST` (Vectorized convert between two's complement integer and sign-magnitude integer)
 
 **Summary:** Performs lanewise conversion of 32-bit signed two's complement integers to 32-bit sign-magnitude integers, or conversion of 32-bit sign-magnitude integers to 32-bit signed two's complement integers. Both formats have one value not representable in the other (two's complement <code>-2<sup>31</sup></code> and sign-magnitude `-0`), and the conversion maps these values to each other. To avoid surprises, software is encouraged to avoid input values which are not representable in the output format.
 

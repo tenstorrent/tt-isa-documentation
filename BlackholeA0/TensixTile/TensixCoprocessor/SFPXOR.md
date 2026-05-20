@@ -1,4 +1,4 @@
-# `SFPXOR` (Vectorised bitwise exclusive-or)
+# `SFPXOR` (Vectorized bitwise exclusive-or)
 
 **Summary:** Performs lanewise bitwise exclusive-or between two vectors of 32-bit unsigned integers.
 
