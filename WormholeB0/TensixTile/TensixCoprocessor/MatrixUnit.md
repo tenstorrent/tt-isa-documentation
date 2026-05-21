@@ -55,6 +55,8 @@ All of these behaviors are NonContractualBehaviors and these opcode values are l
 
 ## Performance
 
+The figures in this section are Wormhole-specific; relative ratios between instructions broadly apply to Blackhole, but absolute throughput and product-specific tile counts differ.
+
 Theoretical maximum performance per Matrix Unit (FPU), running at Wormhole's standard 1 GHz clock rate:
 
 |Instruction|1 Fidelity Phase|2 Fidelity Phases|3 Fidelity Phases|4 Fidelity Phases|
