@@ -38,8 +38,9 @@ auto& ConfigState = Config[StateID];
 // Determine the data formats.
 // This is not a documentation typo; SrcAFmt really is used.
 uint4_t SrcAFmt = ConfigState.ALU_FORMAT_SPEC_REG_SrcA_override ? ConfigState.ALU_FORMAT_SPEC_REG_SrcA_val : ConfigState.ALU_FORMAT_SPEC_REG0_SrcA;
+uint4_t SrcBFmt = ConfigState.ALU_FORMAT_SPEC_REG_SrcB_override ? ConfigState.ALU_FORMAT_SPEC_REG_SrcB_val : ConfigState.ALU_FORMAT_SPEC_REG1_SrcB;
 if ((TTArchitecture == Blackhole) && !ThreadConfig[CurrentThread].DISABLE_IMPLIED_SRCB_FMT_Base) {
-  SrcAFmt = ImpliedSrcBFmt[MatrixUnit.SrcBBank]; // Note: Blackhole implied format behavior for SrcB not fully characterized
+  SrcAFmt = SrcBFmt = ImpliedSrcBFmt[MatrixUnit.SrcBBank];
 }
 bool Use8bExponent;
 if (ThreadConfig[CurrentThread].FP16A_FORCE_Enable) {
@@ -76,6 +77,11 @@ for (; NumRows; --NumRows, ++DstRow, SrcRow += !Broadcast1RowTo8) {
     if (LaneConfig[Column / 2].BLOCK_DEST_MOV.Bit[Column & 1]) continue;
     uint19_t SrcBVal = SrcB[MatrixUnit.SrcBBank][SrcRow][BroadcastCol0 ? 0 : Column];
     if (FlushDenormals && !(SrcBVal & 0xff)) SrcBVal = 0;
+    if (SrcBFmt == FP16) {
+      SrcBVal &= 0x7FF1F; // drop high 3 exp bits
+    } else if (SrcBFmt != TF32) {
+      SrcBVal &= 0x7F8FF; // drop low 3 man bits
+    }
     uint16_t Val16b = Use8bExponent ? RemoveLowMantissa(SrcBVal) : RemoveHighExponent(SrcBVal);
     if (SrcAFmt == TF32) {
       if (UseDst32bLo) {
@@ -104,38 +110,6 @@ for (; NumRows; --NumRows, ++DstRow, SrcRow += !Broadcast1RowTo8) {
 
 // Advance the RWCs.
 ApplyAddrMod(AddrMod);
-```
-
-Supporting definitions:
-```c
-uint16_t RemoveLowMantissa(uint19_t x) {
-  // Input is Sign,Man(10b),Exp(8b)
-  // Output is Sign,Man(7b),Exp(8b) with Man taken from high 7b of input Man
-
-  // It is expected that the input will be Src-style BF16, and therefore that
-  // the low 3b of the input Man is zero. The output is Dst-style BF16. If
-  // the input is instead Src-style TF32, then the low three bits of mantissa
-  // are discarded, but there is a MOVB2D code path which can later reattach
-  // these low three bits to form a Dst-style FP32/TF32.
-
-  uint19_t Sign = x & (1 << 18);
-  uint19_t ManHi = x & (0x7f << 11);
-  uint19_t Exp = x & 0xff;
-  return (Sign >> 3) | (ManHi >> 3) | Exp;
-}
-
-uint16_t RemoveHighExponent(uint19_t x) {
-  // Input is Sign,Man(10b),Exp(8b)
-  // Output is Sign,Man(10b),Exp(5b) with Exp taken from low 5b of input Exp
-
-  // It is expected that the input will be Src-style FP16, and therefore that
-  // the high 3b of the input Exp is zero. The output is Dst-style FP16.
-
-  uint19_t Sign = x & (1 << 18);
-  uint19_t Man = x & (0x3ff << 8);
-  uint19_t ExpLo = x & 0x1f;
-  return (Sign >> 3) | (Man >> 3) | ExpLo;
-}
 ```
 
 ## Instruction scheduling

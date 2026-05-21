@@ -99,38 +99,6 @@ for (; NumRows; --NumRows, ++DstRow, ++SrcRow) {
 ApplyAddrMod(AddrMod);
 ```
 
-Supporting definitions:
-```c
-uint16_t RemoveLowMantissa(uint19_t x) {
-  // Input is Sign,Man(10b),Exp(8b)
-  // Output is Sign,Man(7b),Exp(8b) with Man taken from high 7b of input Man
-
-  // It is expected that the input will be Src-style BF16, and therefore that
-  // the low 3b of the input Man is zero. The output is Dst-style BF16. If
-  // the input is instead Src-style TF32, then the low three bits of mantissa
-  // are discarded, but there is a MOVA2D code path which can later reattach
-  // these low three bits to form a Dst-style FP32/TF32.
-
-  uint19_t Sign = x & (1 << 18);
-  uint19_t ManHi = x & (0x7f << 11);
-  uint19_t Exp = x & 0xff;
-  return (Sign >> 3) | (ManHi >> 3) | Exp;
-}
-
-uint16_t RemoveHighExponent(uint19_t x) {
-  // Input is Sign,Man(10b),Exp(8b)
-  // Output is Sign,Man(10b),Exp(5b) with Exp taken from low 5b of input Exp
-
-  // It is expected that the input will be Src-style FP16, and therefore that
-  // the high 3b of the input Exp is zero. The output is Dst-style FP16.
-
-  uint19_t Sign = x & (1 << 18);
-  uint19_t Man = x & (0x3ff << 8);
-  uint19_t ExpLo = x & 0x1f;
-  return (Sign >> 3) | (Man >> 3) | ExpLo;
-}
-```
-
 ## Instruction scheduling
 
 If `MOVA2D` is used, then for the next three cycles, software should avoid reading from the region of `Dst` which was written to. To partially enforce this, if a thread presents an instruction from the following list (regardless of where in `Dst` it might access), hardware will automatically stall the thread for an appropriate number of cycles: `MOVD2A`, `MOVD2B`, `ELWMUL`, `MVMUL`, `DOTPV`, `GMPOOL`, `GAPOOL`, `MFCONV3S1`, `CONV3S1`, `MPOOL3S1`, `APOOL3S1`, `CONV3S2`, `MPOOL3S2`, `APOOL3S2`.

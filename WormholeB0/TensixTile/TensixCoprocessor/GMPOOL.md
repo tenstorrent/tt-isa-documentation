@@ -61,6 +61,7 @@ uint1_t StateID = ThreadConfig[CurrentThread].CFG_STATE_ID_StateID;
 auto& ConfigState = Config[StateID];
 
 // Determine the data formats.
+// Note: Blackhole implied format behavior for SrcB not fully characterized
 uint4_t SrcAStyle, DstStyle;
 bool UseDst32b;
 if (ThreadConfig[CurrentThread].FP16A_FORCE_Enable) {
