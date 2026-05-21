@@ -17,7 +17,7 @@ TT_SFPSHFT(/* i12 */ (Imm12 & 0xfff), /* u4 */ VC, /* u4 */ VD, /* u4 */ Mod1)
 ## Functional model
 
 ```c
-if (Mod1 > 1) { // Reserved/unsupported instruction modifiers
+if (Mod1 > 1) { // Reserved instruction modifiers
   NonContractualBehavior {
     Mod1 &= 1; // Current silicon behavior (not architecturally guaranteed)
   }
