@@ -1,6 +1,6 @@
 # `SFPADD` (Vectorized floating-point addition)
 
-**Summary:** Identical to [`SFPMAD`](SFPMAD.md), but is the preferred opcode when `VA == 10`, as this causes the computation to be lanewise FP32 `VD = 1.0 * VB + VC` (see the definition of [`LReg[10]`](LReg.md)).
+**Summary:** Identical to [`SFPMAD`](SFPMAD.md), but is the preferred opcode when `VA == 10`, as this causes the computation to be lanewise FP32 `VD = 1.0 * VB + VC` (see the definition of [`LReg[10]`](LReg.md)). Do not use this instruction unless `VA == 10`; use `SFPMAD` instead for other cases.
 
 **Backend execution unit:** [Vector Unit (SFPU)](VectorUnit.md), MAD sub-unit
 
