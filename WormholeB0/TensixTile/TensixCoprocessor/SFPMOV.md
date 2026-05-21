@@ -24,6 +24,11 @@ TT_SFPMOV(0, /* u4 */ VC, /* u4 */ VD, /* u4 */ Mod1)
 ## Functional model
 
 ```c
+if (Mod1 & 4) { // Reserved instruction modifier
+  NonContractualBehavior {
+    Mod1 &= ~4; // Current silicon behavior (not architecturally guaranteed)
+  }
+}
 lanewise {
   if (VD < 12 || LaneConfig.DISABLE_BACKDOOR_LOAD) {
     if (LaneEnabled || Mod1 == SFPMOV_MOD1_ALL_LANES_ENABLED) {
