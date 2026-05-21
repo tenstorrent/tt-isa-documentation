@@ -17,6 +17,11 @@ TT_SFPCAST(/* u4 */ VC, /* u4 */ VD, /* u4 */ Mod1)
 ## Functional model
 
 ```c
+if (Mod1 > 3) { // Reserved instruction modifiers
+  NonContractualBehavior {
+    Mod1 &= 3; // Current silicon behavior (not architecturally guaranteed)
+  }
+}
 if ((Mod1 & 3) > SFPCAST_MOD1_SM32_TO_FP32_RNS) {
   // Is some other flavour of SFPCAST; see other pages for details.
   UndefinedBehavior();

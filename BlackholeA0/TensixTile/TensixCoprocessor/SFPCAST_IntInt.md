@@ -26,6 +26,11 @@ One of the following data type conversions is performed. Software does not need 
 ## Functional model
 
 ```c
+if (Mod1 > 3) { // Reserved instruction modifiers
+  NonContractualBehavior {
+    Mod1 &= 3; // Current silicon behavior (not architecturally guaranteed)
+  }
+}
 if ((Mod1 & 3) != SFPCAST_MOD1_INT32_SM32) {
   // Is some other flavour of SFPCAST; see other pages for details.
   UndefinedBehavior();

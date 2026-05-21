@@ -17,6 +17,11 @@ TT_SFPCAST(/* u4 */ VC, /* u4 */ VD, /* u4 */ Mod1)
 ## Functional model
 
 ```c
+if (Mod1 > 1) { // Reserved instruction modifiers
+  NonContractualBehavior {
+    Mod1 &= 1; // Current silicon behavior (not architecturally guaranteed)
+  }
+}
 lanewise {
   if (VD < 12 || LaneConfig.DISABLE_BACKDOOR_LOAD) {
     if (LaneEnabled) {
