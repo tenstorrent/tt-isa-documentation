@@ -106,7 +106,8 @@ case SFPSHFT2_MOD1_SUBVEC_SHFLROR1:
   }
   break;
 case SFPSHFT2_MOD1_SUBVEC_SHFLSHR1:
-  // Within each group of eight lanes, shift lanes right by one lane.
+  UnsupportedFunctionality(); // No known usage, confidence in specification below is weak
+  // Within each group of eight lanes, shift lanes right by one lane, with the first lane replaced by an incorrect value.
   if (VD < 8 || VD == 16) {
     auto vc = LReg[VC];
     for (unsigned Lane = 0; Lane < 32; ++Lane) {
