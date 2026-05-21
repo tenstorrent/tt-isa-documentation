@@ -20,4 +20,4 @@ TT_MOVDBGA2D(/* bool */ UseDst32bLo,
 
 ## Functional model
 
-See [`MOVA2D`'s functional model](MOVA2D.md#functional-model), ignoring the paragraph about the Wait Gate.
+See [`MOVA2D`'s functional model](MOVA2D.md#functional-model), ignoring the paragraph about the Wait Gate. It is strongly recommended to set `DISABLE_IMPLIED_SRCA_FMT_Base` on Blackhole when using this instruction, as the interaction with `ImpliedSrcAFmt` is ill-specified when the bank is not valid. In practice, `SFPU_DEST_FMT_Base` will be used as the default implied format for an invalid bank, but this is a `NonContractualBehavior` and should not be relied on by software.

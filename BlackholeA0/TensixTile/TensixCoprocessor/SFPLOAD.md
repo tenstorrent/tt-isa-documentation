@@ -70,7 +70,9 @@ if (Mod0 == MOD0_FMT_SRCB) {
     Mod0 = MOD0_FMT_FP32; // NB: Functionally identical to MOD0_FMT_INT32.
   } else {
     uint4_t SrcBFmt = ConfigState.ALU_FORMAT_SPEC_REG_SrcB_override ? ConfigState.ALU_FORMAT_SPEC_REG_SrcB_val : ConfigState.ALU_FORMAT_SPEC_REG1_SrcB;
-    // Note: Blackhole implied format behavior for SrcB not fully characterized
+    if ((TTArchitecture == Blackhole) && ThreadConfig[CurrentThread].SFPU_DEST_FMT_Enable) {
+      SrcBFmt = ThreadConfig[CurrentThread].SFPU_DEST_FMT_Base;
+    }
     if (SrcBFmt in {FP32, TF32, BF16, BFP8, BFP4, BFP2, INT32, INT16}) {
       Mod0 = MOD0_FMT_BF16;
     } else {
