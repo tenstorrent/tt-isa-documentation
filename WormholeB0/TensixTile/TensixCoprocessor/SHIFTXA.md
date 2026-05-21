@@ -1,6 +1,6 @@
 # `SHIFTXA` (Shift 16 rows of `SrcA` left or right by one lane)
 
-**Summary:** An aligned block of 16 rows of `SrcA` is shifted left or right by one lane, with the vacant lane filled with zero, and written to the first 16 rows of `SrcA`. A hardware bug makes this instruction somewhat difficult to use.
+**Summary:** An aligned block of 16 rows of `SrcA` is shifted left or right by one lane, with the vacant lane filled with zero, and written to the first 16 rows of `SrcA`. Due to a hardware bug that makes it difficult to use, this instruction is `UnsupportedFunctionality` and its use is strongly discouraged.
 
 **Backend execution unit:** [Matrix Unit (FPU)](MatrixUnit.md)
 
@@ -36,6 +36,7 @@ while (SrcA[MatrixUnit.SrcABank].AllowedClient != MatrixUnit) {
 
 Once dispatched to the Matrix Unit (FPU):
 ```c
+UnsupportedFunctionality(); // No known usage, confidence in specification below is weak
 uint6_t InRow = HardwareBug() & 0x30;
 
 for (unsigned i = 0; i < 16; ++i) {
