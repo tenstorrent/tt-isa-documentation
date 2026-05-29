@@ -20,7 +20,7 @@ TT_ADDRCRXY(((/* bool */ PK) << 2) +
               /* bool */ X0)
 ```
 
-There is no syntax to specify `/* u2 */ ThreadOverride`; if a non-zero value is desired for this field, the raw encoding must be used.
+There is no syntax to specify `/* u2 */ ThreadOverride`; if a non-zero value is desired for this field, the raw encoding must be used. Use of `ThreadOverride` is `UnsupportedFunctionality` and is strongly discouraged.
 
 ## Encoding
 
@@ -29,6 +29,9 @@ There is no syntax to specify `/* u2 */ ThreadOverride`; if a non-zero value is 
 ## Functional model
 
 ```c
+if (ThreadOverride) {
+  UnsupportedFunctionality(); // No known usage, confidence in specification below is weak
+}
 uint2_t WhichThread = ThreadOverride == 0 ? CurrentThread : ThreadOverride - 1;
 if (U0) ApplyTo(ADCs[WhichThread].Unpacker[0]);
 if (U1) ApplyTo(ADCs[WhichThread].Unpacker[1]);
