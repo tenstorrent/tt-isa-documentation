@@ -1,6 +1,6 @@
 # `REG2FLOP` (Move from GPRs to ADCs)
 
-**Summary:** Move between 8 and 32 bits of a GPR to an ADC value, where it can subsequently be used for unpacker or packer address computations. To instead move a constant to an ADC value, see `SETADC` or `SETADCXX` or `SETADCXY` or `SETADCZW`.
+**Summary:** Move between 8 and 32 bits of a GPR to an ADC value, where it can subsequently be used for unpacker or packer address computations. To instead move a constant to an ADC value, see `SETADC` or `SETADCXX` or `SETADCXY` or `SETADCZW`. This instruction is `UnsupportedFunctionality` and its use is discouraged.
 
 **Backend execution unit:** [Scalar Unit (ThCon)](ScalarUnit.md)
 
@@ -25,6 +25,7 @@ TT_REG2FLOP(/* u2 */ SizeSel,
 ## Functional model
 
 ```c
+UnsupportedFunctionality(); // No known usage, confidence in specification below is weak
 uint32_t Value = GPRs[CurrentThread][InputReg];
 switch (SizeSel) {
 case 0: // 128 bit (not valid)

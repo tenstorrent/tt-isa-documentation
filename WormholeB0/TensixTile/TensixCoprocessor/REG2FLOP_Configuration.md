@@ -17,6 +17,9 @@ TT_REG2FLOP(/* u2 */ SizeSel, 0, 0, 0, /* u7 */ ThConCfgIndex, /* u6 */ InputReg
 ## Functional model
 
 ```c
+if (TTArchitecture == Blackhole) {
+  UnsupportedFunctionality(); // No known usage, confidence in specification below is weak
+}
 if (ThConCfgIndex >= (GLOBAL_CFGREG_BASE_ADDR32 - THCON_CFGREG_BASE_ADDR32)) {
   // Can only write to backend configuration whose field name starts with THCON_.
   // See WRCFG for a similar instruction without this limitation.
@@ -27,6 +30,7 @@ uint1_t StateID = ThreadConfig[CurrentThread].CFG_STATE_ID_StateID;
 uint32_t* ThConCfgBase = &Config[StateID][THCON_CFGREG_BASE_ADDR32];
 
 if (SizeSel == 0) {
+  UnsupportedFunctionality(); // No known usage, confidence in specification below is weak
   // 128 bit configuration write
   memcpy(&ThConCfgBase[ThConCfgIndex & ~3], &GPRs[CurrentThread][InputReg & ~3], 16);
 } else {
