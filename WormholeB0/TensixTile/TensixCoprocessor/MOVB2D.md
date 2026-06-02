@@ -39,8 +39,11 @@ auto& ConfigState = Config[StateID];
 // This is not a documentation typo; SrcAFmt really is used.
 uint4_t SrcAFmt = ConfigState.ALU_FORMAT_SPEC_REG_SrcA_override ? ConfigState.ALU_FORMAT_SPEC_REG_SrcA_val : ConfigState.ALU_FORMAT_SPEC_REG0_SrcA;
 uint4_t SrcBFmt = ConfigState.ALU_FORMAT_SPEC_REG_SrcB_override ? ConfigState.ALU_FORMAT_SPEC_REG_SrcB_val : ConfigState.ALU_FORMAT_SPEC_REG1_SrcB;
+if ((TTArchitecture == Blackhole) && !ThreadConfig[CurrentThread].DISABLE_IMPLIED_SRCA_FMT_Base) {
+  SrcAFmt = ImpliedSrcBFmt[MatrixUnit.SrcBBank];
+}
 if ((TTArchitecture == Blackhole) && !ThreadConfig[CurrentThread].DISABLE_IMPLIED_SRCB_FMT_Base) {
-  SrcAFmt = SrcBFmt = ImpliedSrcBFmt[MatrixUnit.SrcBBank];
+  SrcBFmt = ImpliedSrcBFmt[MatrixUnit.SrcBBank];
 }
 bool Use8bExponent;
 if (ThreadConfig[CurrentThread].FP16A_FORCE_Enable) {

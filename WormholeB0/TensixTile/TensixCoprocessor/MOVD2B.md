@@ -33,8 +33,8 @@ if (ThreadConfig[CurrentThread].FP16A_FORCE_Enable) {
 } else {
   // This is not a documentation typo; SrcAFmt really is used to determine SrcBStyle.
   uint4_t SrcAFmt = ConfigState.ALU_FORMAT_SPEC_REG_SrcA_override ? ConfigState.ALU_FORMAT_SPEC_REG_SrcA_val : ConfigState.ALU_FORMAT_SPEC_REG0_SrcA;
-  if ((TTArchitecture == Blackhole) && !ThreadConfig[CurrentThread].DISABLE_IMPLIED_SRCB_FMT_Base) {
-    SrcAFmt = ImpliedSrcBFmt[MatrixUnit.SrcBBank]; // Note: Blackhole implied format behavior for SrcB not fully characterized
+  if ((TTArchitecture == Blackhole) && !ThreadConfig[CurrentThread].DISABLE_IMPLIED_SRCA_FMT_Base) {
+    SrcAFmt = ImpliedSrcBFmt[MatrixUnit.SrcBBank];
   }
   UseDst32b = ConfigState.ALU_ACC_CTRL_Fp32_enabled || ConfigState.ALU_ACC_CTRL_INT8_math_enabled;
   if (SrcAFmt in {FP32, BF16, BFP8, BFP4, BFP2, INT32, INT16}) {
@@ -146,3 +146,5 @@ uint19_t ShuffleTF32(uint19_t x) {
 `MOVD2B` does not automatically wait at the Wait Gate to ensure that `SrcB[MatrixUnit.SrcBBank].AllowedClient == SrcClient::MatrixUnit`, so software may wish to use [`STALLWAIT`](STALLWAIT.md) (with block bit B6 and condition code C11) prior to `MOVD2B`.
 
 If `MOVD2B` is used, then during the next three cycles, the only instruction that the Matrix Unit (FPU) can accept is another `MOVD2B`. If a thread presents any other Matrix Unit (FPU) instruction, then hardware will automatically stall the thread for an appropriate number of cycles.
+
+It is strongly recommended to set `DISABLE_IMPLIED_SRCA_FMT_Base` on Blackhole when using this instruction, as the interaction with `ImpliedSrcBFmt` is ill-specified when the bank is not valid. In practice, `SFPU_DEST_FMT_Base` will be used as the default implied format for an invalid bank, but this is a `NonContractualBehavior` and should not be relied on by software.
