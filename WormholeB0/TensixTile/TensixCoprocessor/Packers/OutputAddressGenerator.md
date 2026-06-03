@@ -29,7 +29,12 @@ for (unsigned i = 0; i < 4; ++i) {
     + ADC.Y * ConfigState.PCK0_ADDR_CTRL_XY_REG_1_Ystride
     + ADC.Z * ConfigState.PCK0_ADDR_CTRL_ZW_REG_1_Zstride
     + ADC.W * ConfigState.PCK0_ADDR_CTRL_ZW_REG_1_Wstride;
-  Addr += (YZW_Addr & ~0xf);
+  if (TTArchitecture == Blackhole) {
+    YZW_Addr >>= 4; // Blackhole: YZW_Addr is in units of bytes, with 16B alignment required
+  } else {
+    YZW_Addr &= ~15; // Wormhole: YZW_Addr is in units of 16B chunks, with 256B alignment required
+  }
+  Addr += YZW_Addr;
   ADCsToAdvance[WhichADC] = true;
 
   if (PackerIConfig.Add_l1_dest_addr_offset) {
@@ -115,6 +120,6 @@ Per the code in the functional model, output addresses are only changed when `Ne
 
 ## ADCs and `AddrMod`
 
-The Y, Z, and W counters of _some_ ADC are used to compute `YZW_Addr`, which is then incorporated into the output address. The masking in `Addr += (YZW_Addr & ~0xf)` makes this feature less useful than it might otherwise be, as it means that these counters can only be used to adjust the output address in units of 256 bytes.
+The Y, Z, and W counters of _some_ ADC are used to compute `YZW_Addr`, which is then incorporated into the output address. The masking in `YZW_Addr &= ~15` on Wormhole makes this feature less useful than it might otherwise be, as it means that these counters can only be used to adjust the output address in units of 256 bytes. Blackhole improves the usability of this feature by allowing the output address to be adjusted in units of 16 bytes.
 
 After `YZW_Addr` has been computed, the Y and Z counters are updated based on `CurrentInstruction.AddrMod`. The Y, Z, and W counters can also be updated using `SETADC`, `SETADCXY`, `INCADCXY`, `ADDRCRXY`, `SETADCZW`, `INCADCZW`, `ADDRCRZW`, and `REG2FLOP`.
