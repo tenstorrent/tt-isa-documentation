@@ -106,13 +106,16 @@ case SFPSHFT2_MOD1_SUBVEC_SHFLROR1:
   }
   break;
 case SFPSHFT2_MOD1_SUBVEC_SHFLSHR1:
-  UnsupportedFunctionality(); // No known usage, confidence in specification below is weak
-  // Within each group of eight lanes, shift lanes right by one lane, with the first lane replaced by an incorrect value.
+  // This mode should not be used on Wormhole due to a hardware bug. SFPSHFT2_MOD1_SUBVEC_SHFLROR1 should always be
+  // used instead, as the only difference is the change of UnpredictableValue() to a defined value, and that defined
+  // value is typically the one wanted anyway for butterfly reductions.
+  UnsupportedFunctionality(); // No plausible utility, confidence in specification below is weak
+  // Within each group of eight lanes, shift lanes right by one lane, with the first lane replaced by an unpredictable value.
   if (VD < 8 || VD == 16) {
     auto vc = LReg[VC];
     for (unsigned Lane = 0; Lane < 32; ++Lane) {
       if (LaneEnabled[Lane]) {
-        LReg[VD][Lane] = Lane & 7 ? vc[Lane - 1] : HardwareBug();
+        LReg[VD][Lane] = Lane & 7 ? vc[Lane - 1] : UnpredictableValue();
       }
     }
   }
@@ -152,7 +155,7 @@ default:
 }
 ```
 
-Note `HardwareBug()` in the above; it is meant to evaluate to `0`, but instead evaluates to `vc0[Lane + 7]`, where `vc0` is whatever the most recent `SFPSHFT2_MOD1_SUBVEC_SHFLROR1_AND_COPY4` or `SFPSHFT2_MOD1_SUBVEC_SHFLROR1` with `VD < 12` observed when executing its `auto vc = LReg[VC]`. Notably, executing `SFPSHFT2_MOD1_SUBVEC_SHFLROR1` with `VD` and `VC` both set to `9` will ensure that `vc0` is `0`. This is a `NonContractualBehavior`.
+Note `UnpredictableValue()` in the above; it was meant to evaluate to `0`, but instead has been observed to evaluate to `vc0[Lane + 7]`, where `vc0` is whatever the most recent `SFPSHFT2_MOD1_SUBVEC_SHFLROR1_AND_COPY4` or `SFPSHFT2_MOD1_SUBVEC_SHFLROR1` with `VD < 12` observed when executing its `auto vc = LReg[VC]`. This behavior has not been thoroughly validated, so its use is discouraged.
 
 Supporting definitions:
 ```c
@@ -194,3 +197,5 @@ If `SFPSHFT2_MOD1_SUBVEC_SHFLROR1_AND_COPY4` or `SFPSHFT2_MOD1_SUBVEC_SHFLROR1` 
 * `SFPXOR`
 
 One simple way to comply with all of the above requirements is to always insert an `SFPNOP` instruction after any use of `SFPSHFT2_MOD1_SUBVEC_SHFLROR1_AND_COPY4` or `SFPSHFT2_MOD1_SUBVEC_SHFLROR1` or `SFPSHFT2_MOD1_SUBVEC_SHFLSHR1`.
+
+Violations of these scheduling restrictions result in `UndefinedBehavior`.
