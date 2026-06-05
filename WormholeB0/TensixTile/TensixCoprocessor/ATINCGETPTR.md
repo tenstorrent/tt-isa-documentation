@@ -45,7 +45,7 @@ uint32_t OriginalValue;
 
 retry:
 FIFOControl* L1Address = GPRs[CurrentThread][AddrReg] * 16;
-if (L1Address >= (1464*1024)) UndefinedBehavior(); // Address must be in L1
+if (L1Address >= TENSIX_SRAM_SIZE) UndefinedBehavior(); // Address must be in L1
 
 atomic {
   uint32_t FIFOSize = L1Address->Wr - L1Address->Rd;

@@ -20,7 +20,7 @@ The instruction is considered complete once the following happens:
 
 ```c
 uint32_t* L1Address = GPRs[CurrentThread][AddrReg] * 16 + Ofs * 4;
-if (L1Address >= (1464*1024)) UndefinedBehavior(); // Address must be in L1
+if (L1Address >= TENSIX_SRAM_SIZE) UndefinedBehavior(); // Address must be in L1
 uint32_t* GPR = &GPRs[CurrentThread][InOutReg];
 uint32_t IncrementBy = *GPR;
 uint32_t IntMask = (2u << IntWidth) - 1u;

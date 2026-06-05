@@ -21,7 +21,7 @@ There is no syntax to specify `/* u1 */ SingleDataReg`; if a non-zero value is d
 The instruction is considered complete once the following happens:
 ```c
 uint16_t *L1Address = GPRs[CurrentThread][AddrReg] * 16;
-if (L1Address >= (1464*1024)) UndefinedBehavior(); // Address must be in L1
+if (L1Address >= TENSIX_SRAM_SIZE) UndefinedBehavior(); // Address must be in L1
 
 uint16_t ToWrite[8];
 if (SingleDataReg) {

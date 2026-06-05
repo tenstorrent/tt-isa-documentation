@@ -20,7 +20,7 @@ TT_ATCAS(0, /* u4 */ SetVal, /* u4 */ CmpVal, /* u2 */ Ofs, 0, /* u6 */ AddrReg)
 retry:
 
 uint32_t* L1Address = GPRs[CurrentThread][AddrReg] * 16 + Ofs * 4;
-if (L1Address >= (1464*1024)) UndefinedBehavior(); // Address must be in L1
+if (L1Address >= TENSIX_SRAM_SIZE) UndefinedBehavior(); // Address must be in L1
 
 atomic {
   if (*L1Address != CmpVal) {

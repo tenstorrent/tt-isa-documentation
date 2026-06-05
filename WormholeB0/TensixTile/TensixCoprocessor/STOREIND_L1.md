@@ -22,7 +22,7 @@ TT_STOREIND(1, 0, /* u2 */ Size, /* u7 */ OffsetHalfReg, /* u2 */ OffsetIncremen
 uint32_t* GPR = &GPRs[CurrentThread][DataReg & (Size ? 0x3f : 0x3c)];
 uint16_t* Offset = (char*)&GPRs[CurrentThread][0] + OffsetHalfReg * 2;
 uint32_t L1Address = (GPRs[CurrentThread][AddrReg] * 16) + *Offset;
-if (L1Address >= (1464*1024)) UndefinedBehavior(); // Address must be in L1
+if (L1Address >= TENSIX_SRAM_SIZE) UndefinedBehavior(); // Address must be in L1
 
 switch (OffsetIncrement) {
 case 0: *Offset += 0; break;

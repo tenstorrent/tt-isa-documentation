@@ -17,7 +17,7 @@ void Mover(uint32_t dst, uint32_t src, uint32_t count, uint32_t mode) {
   // Determine target address.
   if (mode == XMOV_L1_TO_L1 || mode == XMOV_L0_TO_L1) {
     // In the "_TO_L1" modes, dst must be an address in L1.
-    if (dst >= (1024*1464)) UndefinedBehavior();
+    if (dst >= TENSIX_SRAM_SIZE) UndefinedBehavior();
   } else {
     // In the "_TO_L0" modes, dst can refer to either Tensix Backend Configuration or Instruction RAM.
     if (dst <= 0xffff) dst += TENSIX_CFG_BASE;
@@ -32,7 +32,7 @@ void Mover(uint32_t dst, uint32_t src, uint32_t count, uint32_t mode) {
   // Perform the operation.
   if (mode == XMOV_L1_TO_L1 || mode == XMOV_L1_TO_L0) {
     // In the "L1_TO_" modes, a memcpy is done, and src must be an address in L1.
-    if (src >= (1024*1464)) UndefinedBehavior();
+    if (src >= TENSIX_SRAM_SIZE) UndefinedBehavior();
     memcpy(dst, src, count); // NB: Takes multiple cycles to complete.
   } else {
     // In the "L0_TO_" modes, a memset is done.

@@ -193,7 +193,7 @@ void TDMA_RISC_Command_Processor() {
       else if ((Cmd & 0x600) != 0x600) UndefinedBehavior();
       else {
         uint32_t Dst = Params[0];
-        if (Dst >= (1024*1464)) UndefinedBehavior(); // Dst must be an address in L1
+        if (Dst >= TENSIX_SRAM_SIZE) UndefinedBehavior(); // Dst must be an address in L1
         if (Cmd & 0x100) {
           async *(uint64_t*)Dst = (uint64_t(Params[3]) << 32) | uint64_t(Params[2]);
         } else {

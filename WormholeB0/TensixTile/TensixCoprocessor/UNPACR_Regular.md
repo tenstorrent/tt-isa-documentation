@@ -427,7 +427,7 @@ Supporting definitions:
 
 ```c
 uint32_t ReadL1Bytes(double Addr, double NumBytes) {
-  if (Addr < 0 || Addr >= (1464*1024)) UndefinedBehavior(); // Address must be in L1
+  if (Addr < 0 || Addr >= TENSIX_SRAM_SIZE) UndefinedBehavior(); // Address must be in L1
   uint32_t BitAddr = Addr * 8.;
   uint32_t NumBits = NumBytes * 8.;
   uint32_t Result = 0;
