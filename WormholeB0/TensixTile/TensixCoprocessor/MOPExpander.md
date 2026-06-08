@@ -1,6 +1,6 @@
 # MOP Expander
 
-The Tensix frontend contains one so-called MOP Expander per Tensix thread. Once appropriately configured, a MOP expander allows a single incoming `MOP` (macro-op) instruction to be expanded out to a sequence of up to 32639 instructions, though typical configuration might result in something more like 10 or 100 instructions.
+The Tensix frontend contains one so-called MOP Expander per Tensix thread. Once appropriately configured, a MOP expander allows a single incoming `MOP` (macro-op) instruction to be expanded out to a long sequence of instructions (up to 32639 on Wormhole, and more on Blackhole, which uses wider iteration counts), though typical configuration might result in something more like 10 to 100 instructions.
 
 The frontend _also_ contains a [Replay Expander](REPLAY.md) per Tensix thread, which serves a similar role to the MOP Expander, though the MOP Expander is typically used for repetitive looping instruction sequences, whereas the Replay Expander is typically used for linear non-looping sequences. The Replay Expander sits _after_ the MOP Expander in the frontend, so the MOP Expander can output [`REPLAY`](REPLAY.md) instructions as part of its looping sequence, and those `REPLAY` instructions will subsequently be expanded by the Replay Expander (the converse is not true; the expansion of a `REPLAY` instruction cannot contain `MOP` instructions). In either case, the expanders allow a RISCV core to push instructions at a rate of less than one instruction per cycle, but the Tensix backend to still receive one instruction per cycle per thread. This frees up the RISCV cores to perform other tasks, rather than having to spend every single cycle pushing a Tensix instruction.
 
@@ -24,7 +24,7 @@ async def MOPExpander(MopCfg): # MopCfg is per-thread state
         async for x in ExpandTemplate0((MaskHi << 16) + Instruction.MaskLo, Instruction.Count1, MopCfg):
           yield x
       else:
-        async for x in ExpandTemplate1(MopCfg):
+        async for x in ExpandTemplate1(Instruction, MopCfg):
           yield x
     else:
       yield Instruction # Just pass through everything other than MOP and MOP_CFG
@@ -55,9 +55,19 @@ async def ExpandTemplate0(Mask, Count1, MopCfg):
         yield SkipB
     Mask >>= 1
 
-async def ExpandTemplate1(MopCfg):
-  OuterCount = MopCfg[0] & 127
-  InnerCount = MopCfg[1] & 127
+async def ExpandTemplate1(Instruction, MopCfg):
+  if TTArchitecture == Blackhole:
+    OuterCount = MopCfg[0] & 1023
+    InnerCount = MopCfg[1] & 1023
+    if OuterOverride := (Instruction.Bits >> 10) & 1023: # instruction bits [19:10]
+      UnsupportedFunctionality() # No known usage, confidence in specification below is weak
+      OuterCount = OuterOverride
+    if InnerOverride := Instruction.Bits & 1023: # instruction bits [9:0]
+      UnsupportedFunctionality() # No known usage, confidence in specification below is weak
+      InnerCount = InnerOverride
+  else:
+    OuterCount = MopCfg[0] & 127
+    InnerCount = MopCfg[1] & 127
   StartOp    = MopCfg[2]
   EndOp0     = MopCfg[3]
   EndOp1     = MopCfg[4]
@@ -71,8 +81,13 @@ async def ExpandTemplate1(MopCfg):
     LoopOpFlip = LoopOp ^ LoopOp1 # Inner loop will alternate between the two instructions and will
     InnerCount *= 2               # execute for twice as many iterations. It is expressed like this
                                   # because Loop0Last / Loop1Last override the last iteration.
-  if OuterCount == 1 and IsNop(StartOp) and InnerCount == 0 and not IsNop(EndOp0):
-    OuterCount += 128 # Hardware bug
+  if IsNop(StartOp) and InnerCount == 0 and not IsNop(EndOp0):
+    UnsupportedFunctionality() # No plausible utility, confidence in specification below is weak
+    if not IsNop(EndOp1):
+      if OuterCount == 1:
+        OuterCount += (1024 if TTArchitecture == Blackhole else 128) # Hardware bug
+    else:
+      OuterCount += 1 # Hardware bug
   for j in range(OuterCount):
     if not IsNop(StartOp):
       yield StartOp
@@ -99,8 +114,8 @@ def IsNop(Instruction):
 Each instance of `MopCfg` is mapped into the address space of one RISCV core as if it were `uint32_t[9]`, starting at address `TENSIX_MOP_CFG_BASE`, though the address range is **write-only**: attempting to read it from RISCV triggers `UndefinedBehavior`. RISCV T0 gets `MopCfg` for Tensix thread T0, RISCV T1 gets `MopCfg` for Tensix thread T1, and RISCV T2 gets `MopCfg` for Tensix thread T2. As per the above functional model, the meaning of each entry in `MopCfg` varies based on which template a `MOP` instruction requests:
 ||Template 0 usage|Template 1 usage|
 |---|---|---|
-|**`MopCfg[0]`**|Not used for anything|`OuterCount` (low seven bits only)|
-|**`MopCfg[1]`**|`Flags` (low two bits only; `HasB` and `HasA123`)|`InnerCount` (low seven bits only)|
+|**`MopCfg[0]`**|Not used for anything|`OuterCount` (low seven bits on Wormhole; low ten bits on Blackhole)|
+|**`MopCfg[1]`**|`Flags` (low two bits only; `HasB` and `HasA123`)|`InnerCount` (low seven bits on Wormhole; low ten bits on Blackhole)|
 |**`MopCfg[2]`**|`InsnB` (only used if `HasB`)|`StartOp` (not used if it's a `NOP`)|
 |**`MopCfg[3]`**|`InsnA0`|`EndOp0` (not used if it's a `NOP`)|
 |**`MopCfg[4]`**|`InsnA1` (only used if `HasA123`)|`EndOp1` (not used if it's a `NOP` nor if `EndOp0` is a `NOP`)|
@@ -108,6 +123,8 @@ Each instance of `MopCfg` is mapped into the address space of one RISCV core as 
 |**`MopCfg[6]`**|`InsnA3` (only used if `HasA123`)|`LoopOp1` (not used if it's a `NOP`)|
 |**`MopCfg[7]`**|`SkipA0`|`Loop0Last`|
 |**`MopCfg[8]`**|`SkipB` (only used if `HasB`)|`Loop1Last`|
+
+On Blackhole, a template 1 `MOP` instruction can additionally override the `MopCfg`-sourced `OuterCount` and `InnerCount` using instruction bits [19:10] and [9:0] respectively (a non-zero field overrides the corresponding count); see the functional model. Use of these override fields has not been validated and is therefore `UnsupportedFunctionality`.
 
 Though the functional model shows `MopCfg` being sampled at the start of `ExpandTemplate0` / `ExpandTemplate1`, actual hardware (mostly) samples the values as required during the expansion process. As such, software should not change `MopCfg` while an expansion is in progress. [RISCV TTSync](../BabyRISCV/TTSync.md) can be used to wait for expansions to finish, and software is strongly encouraged to use it prior to writing new MOP Expander configuration.
 
