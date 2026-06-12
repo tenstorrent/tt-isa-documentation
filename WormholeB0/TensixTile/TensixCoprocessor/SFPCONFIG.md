@@ -118,7 +118,7 @@ Supporting definitions:
 |--:|--:|---|---|
 |0|1|`ENABLE_FP16A_INF`|Controls how [`SFPLOAD`](SFPLOAD.md) interprets [FP16 bit patterns](FloatBitPatterns.md#fp16) that can mean infinity|
 |1|1|`DISABLE_BACKDOOR_LOAD`|If `false`, instructions with `VD ≥ 12` are treated as writes (of the instruction bits) to `LoadMacroConfig.InstructionTemplate[VD - 12]`; software should set to `true` if it wants to execute [`SFPSTORE`](SFPSTORE.md) or [`SFPSWAP`](SFPSWAP.md) with `VD ≥ 12`|
-|2|1|`ENABLE_DEST_INDEX`|If `true`, causes [`SFPSWAP`](SFPSWAP.md) to perform `argmin` and `argmax` rather than `min` and `max`|
+|2|1|`ENABLE_DEST_INDEX`|If `true`, causes [`SFPSWAP`](SFPSWAP.md) to perform `argmin` and `argmax` rather than `min` and `max`; do not execute instructions other than `SFPSWAP` with this bit set due to Wormhole/Blackhole HW erratum `TEN-2932` (details not fully characterized - fixed in Quasar)|
 |3|1|`CAPTURE_DEFAULT_DEST_INDEX`|If both this and `ENABLE_DEST_INDEX` are `true`, causes [`SFPLOAD`](SFPLOAD.md) to perform a 2<sup>nd</sup> `LReg` write containing the `Dst` index|
 |4|1|`BLOCK_DEST_WR_FROM_SFPU`|If `true`, [`SFPSTORE`](SFPSTORE.md) will not write to `Dst`|
 |5|1|`BLOCK_SFPU_RD_FROM_DEST`|If `true`, [`SFPLOAD`](SFPLOAD.md) will not write to `LReg`|
