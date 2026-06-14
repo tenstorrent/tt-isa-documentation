@@ -208,13 +208,16 @@ InAddr_Deltas = WrapAddr(InAddr_Deltas);
 
 uint32_t UnpackRowWidth; // Number of datums to read before advancing by RowStride
 if (TTArchitecture == Blackhole) {
-  UnpackRowWidth = (DatumSizeBytes <= 1) ? 16 : 32; // Note: behavior not yet characterized for BFP2/4 formats
+  UnpackRowWidth = (DatumSizeBytes <= 1) ? 16 : 32;
 } else { // Wormhole
   UnpackRowWidth = 16;
 }
 
 bool DiscontiguousInputRows = ConfigState.THCON_SEC[WhichUnpacker].REG2_Tileize_mode;
 if (DiscontiguousInputRows) {
+  if (DatumSizeBytes < 1) {
+    UndefinedBehavior(); // BFP2(a) has no valid Throttle_mode with tileize; BFP4(a) addressing is incorrect
+  }
   RowStride = (ConfigState.THCON_SEC[WhichUnpacker].REG2_Shift_amount_cntx[0] <<  4)
             | (ConfigState.THCON_SEC[WhichUnpacker].REG2_Shift_amount_cntx[1] <<  8)
             | (ConfigState.THCON_SEC[WhichUnpacker].REG2_Shift_amount_cntx[2] << 12);
