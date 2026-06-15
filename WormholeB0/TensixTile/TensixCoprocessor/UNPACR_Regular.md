@@ -265,6 +265,9 @@ if (MultiContextMode && WhichUnpacker == 0) {
     OutAddr = CtxOutAddr;
   }
 }
+if ((OutAddr & 15) || ((WhichUnpacker == 0) && (OutAddr < 64))) {
+  UnsupportedFunctionality(); // No known usage, confidence in specification below is weak
+}
 
 uint4_t UpsampleZeroes = (1 << ConfigState.THCON_SEC[WhichUnpacker].REG2_Upsample_rate) - 1;
 bool UpsampleInterleave = ConfigState.THCON_SEC[WhichUnpacker].REG2_Upsample_and_interleave;
@@ -290,6 +293,43 @@ if (DiscontiguousInputRows && (UpsampleZeroes > 0 || !IsUncompressed)) {
 }
 if (UnpackToDst && (ColShift || Transpose)) {
   UndefinedBehavior();
+}
+if (UnpackToDst) {
+  if (ThreadConfig[CurrentThread].SRCA_SET_SetOvrdWithAddr) {
+    UndefinedBehavior(); // Silicon behavior is likely "Row &= 0x3CF", which is not useful; do not use this mode
+  }
+} else {
+  if (!ThreadConfig[CurrentThread].SRCA_SET_SetOvrdWithAddr) {
+    UnsupportedFunctionality(); // No known usage, confidence in specification below is weak
+  }
+}
+
+uint2_t ThrottleMode = ConfigState.THCON_SEC[WhichUnpacker].REG2_Throttle_mode;
+if ((TTArchitecture == Wormhole) && (ThrottleMode > 2)) {
+  UndefinedBehavior(); // x8 ThrottleMode is illegal on Wormhole
+}
+if (!UnpackToDst && (WhichUnpacker == 0) && (InputNumDatums > 16)) { // check for SrcA burst drop cases
+  // This logic is mildly simplified and conservative vs. exact (rather complex) silicon behavior
+  uint32_t StartRow = OutAddr / 16 - 4;
+  if (DatumSizeBytes == 0.25) {
+    ThrottleMode = 0; // BFP2a/BFP2 always run at x1
+  } else if (DiscontiguousInputRows) {
+    ThrottleMode = 2; // tileize always runs at x4, regardless of Throttle_mode
+  } else if ((TTArchitecture == Blackhole) && !ConfigState.THCON_SEC[0].REG1_ovrd_default_throttle_mode) {
+    ThrottleMode = (DatumSizeBytes == 1) ? 3 : 2; // 8-bit modes use x8, others use x4
+  }
+  uint32_t ThrottleBytes = 16u << ThrottleMode;
+  if ((TTArchitecture == Blackhole) && (ThrottleMode == 2) && (DatumSizeBytes >= 2)) {
+    ThrottleBytes = 128; // upgrade to x4 "2x"
+  }
+  uint32_t BurstRows = ThrottleBytes / (16 * DatumSizeBytes); // throughput / row_bytes
+  BurstRows = std::max(BurstRows, 1u);
+  BurstRows = std::min(BurstRows, 8u);
+  if (StartRow & (BurstRows - 1)) {
+    UnsupportedFunctionality(); // SrcA bursts may span 16-row set boundaries and drop writes
+    // Pseudocode below does not describe the exact SrcA burst drop behavior. Software must not
+    // depend on the precise behavior; do not write software that triggers SrcA burst drops.
+  }
 }
 
 // Main unpack loop:
@@ -336,12 +376,6 @@ for (unsigned i = 0; i < InputNumDatums && DecompressNumDatums; ) {
     if (DecompressDrop) {--DecompressDrop; continue;}
     for (unsigned k = 0; k <= UpsampleZeroes; ++k, Datum = 0, ++OutAddr) {
       if (UpsampleInterleave && k != 0) continue;
-      // Note: the destination mapping below is described per-datum, but the hardware writes these registers in bursts
-      // of multiple contiguous rows. Alignment requirements on OutAddr are not yet fully characterized; in particular,
-      // for SrcA, a burst that spans a 16-row set boundary may not commit all of its datums per the formula below.
-      // This spec marks the bank-edge boundary cases as UndefinedBehavior() pending characterization, but software
-      // should additionally avoid OutAddr values that would cause a SrcA burst to span a 16-row set boundary until
-      // that case is pinned down.
       uint1_t Bank = CurrentUnpacker.SrcBank;
       unsigned Row = (OutAddr / 16);
       uint4_t Col = OutAddr & 15;
@@ -351,7 +385,7 @@ for (unsigned i = 0; i < InputNumDatums && DecompressNumDatums; ) {
           wait;
         }
         Row += CurrentUnpacker.SrcRow[CurrentThread];
-        if (Row >= 64) UndefinedBehavior(); // Strict pending OutAddr alignment requirement/burst-edge characterization
+        if (Row >= 64) UndefinedBehavior();
         SrcB[Bank][Row][Col] = Datum;
       } else {
         while (SrcA[Bank].AllowedClient != SrcClient::Unpackers) {
@@ -363,9 +397,13 @@ for (unsigned i = 0; i < InputNumDatums && DecompressNumDatums; ) {
           Row -= 4;
           Col -= ColShift;
           if (ThreadConfig[CurrentThread].SRCA_SET_SetOvrdWithAddr) {
-            if (Row >= 64) UndefinedBehavior(); // Strict pending OutAddr alignment requirement/burst-edge characterization
+            if (TTArchitecture == Blackhole) { // allowed for BH fast tilize
+              Row &= 63;
+            } else {
+              if (Row >= 64) UndefinedBehavior();
+            }
           } else {
-            if (Row >= 16) UndefinedBehavior(); // Strict pending OutAddr alignment requirement/burst-edge characterization
+            if (Row >= 16) UndefinedBehavior();
             Row += CurrentUnpacker.SrcRow[CurrentThread];
           }
           if (Transpose) {
@@ -377,11 +415,7 @@ for (unsigned i = 0; i < InputNumDatums && DecompressNumDatums; ) {
         } else {
           // Write to Dst:
           Row -= 4;
-          if (ThreadConfig[CurrentThread].SRCA_SET_SetOvrdWithAddr) {
-            UndefinedBehavior(); // Silicon behavior is likely "Row &= 0x3CF", which is not useful; do not use this mode
-          } else {
-            Row &= 0x3ff;
-          }
+          Row &= 0x3ff;
           if (OutDataFormat in {FP32, TF32, INT32}) {
             Dst32b[Row][Col] = Datum;
           } else {
