@@ -7,8 +7,6 @@
 > [!TIP]
 > Compared to Wormhole, some modes of `SFPSTORE` have changes in Blackhole:
 > * `MOD0_FMT_INT32_ALL`: Overhauled addressing mode.
-> * `MOD0_FMT_FP32`: Denormals now flushed to signed zero.
-> * `MOD0_FMT_SRCB`: Resolves to one of `MOD0_FMT_FP16` or `MOD0_FMT_BF16` or `MOD0_FMT_FP32` in the same way as before, but `MOD0_FMT_FP32` has changed and is no longer equivalent to `MOD0_FMT_INT32`, so software will need to explicitly specify `MOD0_FMT_INT32` if that is what it wants.
 > * `MOD0_FMT_INT8_COMP`: Deprecated, and no longer performs a data type conversion.
 > * `MOD0_FMT_INT32_SM`: Deprecated, and no longer performs a data type conversion.
 >
@@ -47,11 +45,11 @@ One of the following data type conversions is specified using the `Mod0` field:
 
 > (*) This mode is deprecated. It is included in the table because it was useful in Wormhole, but Blackhole no longer performs conversions from two's complement integers to sign-magnitude as part of `SFPSTORE`. Software is encouraged to use [`SFPCAST`](SFPCAST_IntInt.md) instead.
 >
-> (†) As part of the conversion to FP32 / FP16 / BF16, denormals will be flushed to zero, and mantissa will be truncated towards zero. If converting to FP16, then large magnitudes are converted to infinity. If converting to FP16, NaN is also converted to infinity, so software is advised to avoid NaN inputs for this conversion. If converting to BF16, the mantissa truncation can turn _some_ NaN values into infinity, albeit canonical NaNs produced by arithmetic instructions do not suffer any truncation.
+> (†) As part of the conversion to FP32 / FP16 / BF16, denormals will be flushed to zero. Additionally, when converting to FP16 / BF16, mantissa will be truncated towards zero. If converting to FP16, then large magnitudes are converted to infinity. If converting to FP16, NaN is also converted to infinity, so software is advised to avoid NaN inputs for this conversion. If converting to BF16, the mantissa truncation can turn _some_ NaN values into infinity, albeit canonical NaNs produced by arithmetic instructions do not suffer any truncation.
 >
 > (‡) This mode also changes the addressing scheme somewhat, and causes `LaneEnabled` to be ignored; see the functional model for details.
 
-The `MOD0_FMT_SRCB` mode resolves to one of `MOD0_FMT_FP16` or `MOD0_FMT_BF16` or `MOD0_FMT_FP32`; see the functional model for details.
+The `MOD0_FMT_SRCB` mode resolves to one of `MOD0_FMT_FP16` or `MOD0_FMT_BF16` or `MOD0_FMT_FP32`; see the functional model for details. Use `MOD0_FMT_INT32` instead of `MOD0_FMT_SRCB` for INT32 data to avoid the denormal-to-zero flush performed by `MOD0_FMT_FP32`.
 
 ## Cross-lane data movement pattern
 

@@ -22,7 +22,7 @@ One of the following data type conversions is specified using the `Mod0` field:
 |---|---|---|---|
 |`MOD0_FMT_FP16`|FP32 (not containing NaN)|→|FP16 (†)|
 |`MOD0_FMT_BF16`|FP32 (not containing NaN)|→|BF16 (†)|
-|`MOD0_FMT_FP32`|FP32 or sign-magnitude integer|→|FP32 or Integer "32" (as per `LReg` type)|
+|`MOD0_FMT_FP32`|FP32|→|FP32 (†)|
 |`MOD0_FMT_INT32`|FP32 or sign-magnitude integer|→|FP32 or Integer "32" (as per `LReg` type)|
 |`MOD0_FMT_INT32_ALL` (‡)|FP32 or sign-magnitude integer|→|FP32 or Integer "32" (as per `LReg` type)|
 |`MOD0_FMT_INT32_SM`|Two's complement integer (not containing -2<sup>31</sup>)|→|Integer "32"|
@@ -35,11 +35,11 @@ One of the following data type conversions is specified using the `Mod0` field:
 |`MOD0_FMT_LO16`|Unsigned integer (rotated left by 16 bits)|→|Opaque 32 bits|
 |`MOD0_FMT_HI16`|Unsigned integer|→|Opaque 32 bits|
 
-(†) As part of the conversion to FP16 / BF16, denormals will be flushed to zero, and mantissa will be truncated towards zero. If converting to FP16, then large magnitudes are converted to infinity. If converting to FP16, NaN is also converted to infinity, so software is advised to avoid NaN inputs for this conversion. If converting to BF16, the mantissa truncation can turn _some_ NaN values into infinity, so software is again advised to avoid NaN inputs for this conversion.
+(†) As part of the conversion to FP32 / FP16 / BF16, denormals will be flushed to zero. Additionally, when converting to FP16 / BF16, mantissa will be truncated towards zero. If converting to FP16, then large magnitudes are converted to infinity. If converting to FP16, NaN is also converted to infinity, so software is advised to avoid NaN inputs for this conversion. If converting to BF16, the mantissa truncation can turn _some_ NaN values into infinity, so software is again advised to avoid NaN inputs for this conversion.
 
 (‡) This mode also changes the addressing scheme slightly, and causes `LaneEnabled` to be ignored; see the functional model for details.
 
-The `MOD0_FMT_SRCB` mode resolves to one of `MOD0_FMT_FP16` or `MOD0_FMT_BF16` or `MOD0_FMT_FP32`; see the functional model for details.
+The `MOD0_FMT_SRCB` mode resolves to one of `MOD0_FMT_FP16` or `MOD0_FMT_BF16` or `MOD0_FMT_FP32`; see the functional model for details. Use `MOD0_FMT_INT32` instead of `MOD0_FMT_SRCB` for INT32 data to avoid the denormal-to-zero flush performed by `MOD0_FMT_FP32`.
 
 ## Cross-lane data movement pattern
 
@@ -58,7 +58,7 @@ auto& ConfigState = Config[StateID];
 // Resolve MOD0_FMT_SRCB to something concrete.
 if (Mod0 == MOD0_FMT_SRCB) {
   if (ConfigState.ALU_ACC_CTRL_SFPU_Fp32_enabled) {
-    Mod0 = MOD0_FMT_FP32; // NB: Functionally identical to MOD0_FMT_INT32.
+    Mod0 = MOD0_FMT_FP32;
   } else {
     uint4_t SrcBFmt = ConfigState.ALU_FORMAT_SPEC_REG_SrcB_override ? ConfigState.ALU_FORMAT_SPEC_REG_SrcB_val : ConfigState.ALU_FORMAT_SPEC_REG1_SrcB;
     // Note: Blackhole implied format behavior for SrcB not fully characterized
@@ -93,7 +93,7 @@ for (unsigned Lane = 0; Lane < 32; ++Lane) {
       switch (Mod0) {
       case MOD0_FMT_FP16:      Dst16b[Row][Column] = DstEncodeFP16(ToFP16(Datum)); break;
       case MOD0_FMT_BF16:      Dst16b[Row][Column] = DstEncodeBF16(ToBF16(Datum)); break;
-      case MOD0_FMT_FP32:      Dst32b[Row][Column] = DstEncodeFP32(Datum); break;
+      case MOD0_FMT_FP32:      Dst32b[Row][Column] = DstEncodeFP32(ToFP32(Datum)); break;
       case MOD0_FMT_INT32:     Dst32b[Row][Column] = DstEncodeFP32(Datum); break;
       case MOD0_FMT_INT32_ALL: Dst32b[Row][Column] = DstEncodeFP32(Datum); break;
       case MOD0_FMT_INT32_SM:  Dst32b[Row][Column] = DstEncodeFP32(ToSignMag(Datum)); break;
@@ -164,6 +164,17 @@ uint16_t ToBF16(uint32_t x) {
     Man = 0;
   }
   return (Sign | Exp | Man) >> 16;
+}
+
+uint32_t ToFP32(uint32_t x) {
+  // Flush denormals to signed zero.
+  uint32_t Sign = x & 0x80000000;
+  uint32_t Exp  = x & 0x7f800000;
+  uint32_t Man  = x & 0x007fffff;
+  if (Exp == 0) {
+    Man = 0;
+  }
+  return Sign | Exp | Man;
 }
 
 uint32_t ToSignMag(uint32_t x) {
