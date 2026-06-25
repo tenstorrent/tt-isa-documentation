@@ -257,11 +257,11 @@ When `DaisySel == 3` and `SignalSel == 4`:
 
 |First&nbsp;bit|#&nbsp;Bits|Contents|
 |--:|--:|---|
-|0|58|Reserved|
-|58|2|`RWCs[0].FidelityPhase`|
-|60|2|`RWCs[1].FidelityPhase`|
-|62|2|`RWCs[2].FidelityPhase`|
-|64|64|Reserved|
+|0|62|Reserved|
+|62|2|`RWCs[0].FidelityPhase`|
+|64|2|`RWCs[1].FidelityPhase`|
+|66|2|`RWCs[2].FidelityPhase`|
+|68|60|Reserved|
 
 ## `SrcA` and `SrcB` access control
 
