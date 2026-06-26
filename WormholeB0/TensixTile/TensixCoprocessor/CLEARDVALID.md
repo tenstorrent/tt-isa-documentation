@@ -30,10 +30,12 @@ if (Reset) {
   MatrixUnit.SrcBBank = 0;
   Unpackers[0].SrcBank = 0;
   Unpackers[1].SrcBank = 0;
-  SrcA[0].AllowedClient = SrcClient::Unpackers;
-  SrcA[1].AllowedClient = SrcClient::Unpackers;
-  SrcB[0].AllowedClient = SrcClient::Unpackers;
-  SrcB[1].AllowedClient = SrcClient::Unpackers;
+  SrcA[0].AllowedClient = SrcA[1].AllowedClient = SrcClient::Unpackers;
+  SrcB[0].AllowedClient = SrcB[1].AllowedClient = SrcClient::Unpackers;
+  if (TTArchitecture == Blackhole) {
+    ImpliedSrcAFmt[0] = ImpliedSrcAFmt[1] = 0;
+    ImpliedSrcBFmt[0] = ImpliedSrcBFmt[1] = 0;
+  }
 } else {
   if (FlipSrcA) {
     SrcA[MatrixUnit.SrcABank].AllowedClient = SrcClient::Unpackers;
