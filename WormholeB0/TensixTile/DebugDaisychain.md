@@ -2,6 +2,8 @@
 
 The debug daisychain can be used to present various internal signals from the Tensix tile, in groups of 128 bits. Most of these signals relate to internal implementation details of the Wormhole chip and are only meaningful to Tenstorrent engineers, but some of the signals are potentially useful to customers building a low level debugger, and those are described here.
 
+Signals labeled "Reserved" return `UnpredictableValue()`. Software should not depend on the values returned in these bits.
+
 ## `RISCV_DEBUG_REG_DBG_BUS_CNTL_REG`
 
 Software writes to this register to control the debug daisychain.
@@ -253,7 +255,7 @@ When `DaisySel == 3` and `SignalSel == 3`:
 |48|10|`RWCs[2].Dst_Cr`|
 |58|70|Reserved|
 
-When `DaisySel == 3` and `SignalSel == 4`:
+When `DaisySel == 3` and `SignalSel == 4` (on Wormhole):
 
 |First&nbsp;bit|#&nbsp;Bits|Contents|
 |--:|--:|---|
@@ -262,6 +264,16 @@ When `DaisySel == 3` and `SignalSel == 4`:
 |64|2|`RWCs[1].FidelityPhase`|
 |66|2|`RWCs[2].FidelityPhase`|
 |68|60|Reserved|
+
+When `DaisySel == 3` and `SignalSel == 4` (on Blackhole):
+
+|First&nbsp;bit|#&nbsp;Bits|Contents|
+|--:|--:|---|
+|0|60|Reserved|
+|60|2|`RWCs[0].FidelityPhase`|
+|62|2|`RWCs[1].FidelityPhase`|
+|64|2|`RWCs[2].FidelityPhase`|
+|66|62|Reserved|
 
 ## `SrcA` and `SrcB` access control
 
