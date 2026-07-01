@@ -99,6 +99,10 @@ case FP8:             case INT8:  DatumSizeBytes = 1; break;
 case FP16: case BF16: case INT16: DatumSizeBytes = 2; break;
 case FP32: case TF32: case INT32: DatumSizeBytes = 4; break;
 }
+bool Exponent4b = false; // for FP8 only
+if (TTArchitecture == Blackhole) {
+  Exponent4b = ConfigState.THCON_SEC[WhichUnpacker].REG1_Unp_LF8_4b_exp;
+}
 
 unsigned InAddr;
 if (MultiContextMode && WhichContext != 0) {
@@ -365,7 +369,7 @@ for (unsigned i = 0; i < InputNumDatums && DecompressNumDatums; ) {
     }
   }
   // Do the format conversion:
-  uint32_t Datum = FormatConversion(InDataFormat, OutDataFormat, DatumBits, ExpBits, WhichUnpacker, UnpackToDst);
+  uint32_t Datum = FormatConversion(InDataFormat, OutDataFormat, DatumBits, ExpBits, WhichUnpacker, UnpackToDst, Exponent4b);
   if (AllDatumsAreZero) {
     Datum = 0;
     DecompressionZeroes = 0;
@@ -476,7 +480,7 @@ uint32_t ReadL1Bytes(double Addr, double NumBytes) {
   return Result;
 }
 
-uint32_t FormatConversion(uint4_t InDataFormat, uint4_t OutDataFormat, uint32_t DatumBits, uint8_t ExpBits, uint1_t WhichUnpacker, bool UnpackToDst) {
+uint32_t FormatConversion(uint4_t InDataFormat, uint4_t OutDataFormat, uint32_t DatumBits, uint8_t ExpBits, uint1_t WhichUnpacker, bool UnpackToDst, bool Exponent4b) {
   if (InDataFormat == FP32) {
     // Conversions are possible from FP32 to a few other types.
     switch (OutDataFormat) {
@@ -508,7 +512,21 @@ uint32_t FormatConversion(uint4_t InDataFormat, uint4_t OutDataFormat, uint32_t 
 
     // Start by normalizing to a format which is either 16 or 32 bits wide.
     switch (InDataFormat) {
-    case FP8: DatumBits <<= 8; InDataFormat = FP16; break;
+    case FP8:
+      if (Exponent4b) {
+        uint32_t Sign = DatumBits & 0x80;
+        uint32_t Exp = (DatumBits >> 3) & 15;
+        uint32_t Man = DatumBits & 7;
+        uint32_t ManPad = ((Exp == 15) && (Man == 7)) ? 0x7F : 0;
+        Exp = Exp ? (Exp + 8) : 0;
+        DatumBits = (Sign << 8) | (Exp << 10) | (Man << 7) | ManPad;
+      } else if ((TTArchitecture == Blackhole) && ((DatumBits & 0x7F) == 0x7F)) {
+        DatumBits = (DatumBits << 8) | 0xFF; // BH-specific special case for exponent and mantissa all 1s
+      } else {
+        DatumBits <<= 8;
+      }
+      InDataFormat = FP16;
+      break;
     case BFP8: DatumBits = BFP8ToBF16(DatumBits     , ExpBits); InDataFormat = BF16; break;
     case BFP4: DatumBits = BFP8ToBF16(DatumBits << 4, ExpBits); InDataFormat = BF16; break;
     case BFP2: DatumBits = BFP8ToBF16(DatumBits << 6, ExpBits); InDataFormat = BF16; break;
