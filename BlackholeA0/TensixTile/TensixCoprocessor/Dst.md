@@ -3,20 +3,22 @@
 The `Dst` register can be viewed as either having 1024 rows and 16 columns of 16-bit data, or 512 rows and 16 columns of 32-bit data. Instruction descriptions use `Dst16b` for the former, and `Dst32b` for the latter. In either case, the underlying storage is the same:
 
 ```c
-uint16_t DstBits[1024][16];
+uint16_t DstBits[1024][16] = UnpredictableValue(); // no power-on reset value
 ```
 
 In addition, each of the 1024 rows has 1 valid bit associated with it:
 
 ```c
-bool DstRowValid[1024];
+bool DstRowValid[1024] = {true, ..., true};
 ```
+
+Note that the power-on reset state can result in reads of `UnpredictableValue()`. Software should scrub `Dst` at initialization time, preferably with an `SFPSTORE` of all 1024 rows to a known value, or minimally with a `ZEROACC` of all rows to clear `DstRowValid` to `false`.
 
 Most of the time, `Dst16b[Row][Col]` is simple syntactic sugar for `DstBits[Adj16(Row)][Col]`.
 
 The same region of memory can instead be viewed as a 512x16 matrix of 32-bit data; reads from `Dst32b[Row][Col]` give `(DstBits[Adj32(Row)][Col] << 16) | DstBits[Adj32(Row) + 8][Col]`, and writes to `Dst32b[Row][Col]` perform the inverse unpacking and write to `DstBits[Adj32(Row)][Col]` and `DstBits[Adj32(Row) + 8][Col]`. At any given time, software is expected to be exclusively using `Dst16b` or exclusively using `Dst32b`; mixing and matching `Dst16b` and `Dst32b` is _possible_, but tends to require great care. When using `Dst32b`, `Row` remains a 10-bit index, though the mapping down to `Adj32(Row)` can only yield 512 distinct values.
 
-If bit 11 of `RISCV_DEBUG_REG_DBG_FEATURE_DISABLE` is set, then `Dst16b[Row][Col]` stops being syntactic sugar for `DstBits[Adj16(Row)][Col]`, and instead reads from `Dst16b[Row][Col]` give the high 16 bits of `Dst32b[Row][Col]`, and writes to `Dst16b[Row][Col]` write to the high 16 bits of `Dst32b[Row][Col]` (and also write an `UnpredictableValue()` to the low 16 bits). Use of this bit in software is strongly discouraged because the resulting `UnpredictableValue` semantics can lead to difficult-to-diagnose issues.
+If bit 11 of `RISCV_DEBUG_REG_DBG_FEATURE_DISABLE` is set, then `Dst16b[Row][Col]` stops being syntactic sugar for `DstBits[Adj16(Row)][Col]`, and instead reads from `Dst16b[Row][Col]` give the high 16 bits of `Dst32b[Row][Col]`, and writes to `Dst16b[Row][Col]` write to the high 16 bits of `Dst32b[Row][Col]` (and also write an `UnpredictableValue()` to the low 16 bits). Use of this bit in software is `UnsupportedFunctionality` because the resulting `UnpredictableValue` semantics can lead to difficult-to-diagnose issues.
 
 The `Adj16` and `Adj32` functions are:
 ```c
