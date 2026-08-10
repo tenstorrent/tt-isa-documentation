@@ -133,7 +133,7 @@ case SFPSHFT2_MOD1_SHFT_LREG:
   }
   break;
 case SFPSHFT2_MOD1_SHFT_IMM:
-  // This mode has limited use; see SFPSHFT for a more useful alternative.
+  UnsupportedFunctionality(); // No plausible utility; use SFPSHFT with ARG_IMM_USE_VC instead
   if (VD < 8 || VD == 16) {
     lanewise {
       if (LaneEnabled) {
