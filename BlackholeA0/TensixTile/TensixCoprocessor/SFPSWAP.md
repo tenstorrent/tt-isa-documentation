@@ -43,15 +43,12 @@ for (unsigned Lane = 0; Lane < 32; ++Lane) {
         // Unconditional swap.
         ShouldSwap = true;
       } else {
-        // Min+max or argmin+argmax, implemented as a conditional swap: do
-        // nothing if the values are already correctly ordered, otherwise
-        // swap them.
-        if (VDGetsMin.Bit[Lane]) {
-          // Want to end up with VD = min, so swap if VC is smaller.
-          ShouldSwap = SignMagIsSmaller(VCVal, VDVal);
-        } else {
-          // Want to end up with VD = max, so swap if VC is larger.
-          ShouldSwap = !SignMagIsSmaller(VCVal, VDVal);
+        // Min+max or argmin+argmax, implemented as a conditional swap. Note that
+        // equal values are not always left alone: max lanes swap equal positive
+        // values, and min lanes swap equal negative values.
+        ShouldSwap = SignMagIsSmaller(VCVal, VDVal) || ((VCVal == VDVal) && (VCVal & 0x80000000));
+        if (!VDGetsMin.Bit[Lane]) {
+          ShouldSwap = !ShouldSwap;
         }
         if (LaneConfig[Lane].EXCHANGE_SRCB_SRCC) {
           ShouldSwap = !ShouldSwap;
