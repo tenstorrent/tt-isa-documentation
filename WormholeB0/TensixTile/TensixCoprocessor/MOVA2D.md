@@ -39,12 +39,28 @@ if ((TTArchitecture == Blackhole) && !ThreadConfig[CurrentThread].DISABLE_IMPLIE
   SrcAFmt = ImpliedSrcAFmt[MatrixUnit.SrcABank];
 }
 bool Use8bExponent;
+bool UseDst32b;
 if (ThreadConfig[CurrentThread].FP16A_FORCE_Enable) {
   Use8bExponent = false;
-} else if (SrcAFmt in {FP32, TF32, BF16, BFP8, BFP4, BFP2, INT32, INT16}) {
-  Use8bExponent = true;
+  UseDst32b = false;
 } else {
-  Use8bExponent = false;
+  if ((TTArchitecture == Blackhole) && ConfigState.ALU_ACC_CTRL_Fp32_enabled) {
+    // On Blackhole, MOV[DBG][A,B]2D pretend that SrcAFmt is TF32 whenever fp32 accumulation
+    // is enabled, so that the move writes 32-bit Dst datums at 32-bit Dst addresses (matching
+    // what the rest of Dst is using). Wormhole lacks this, so on Wormhole a move with fp32
+    // accumulation enabled and SrcAFmt != TF32 writes a 16-bit datum at a 16-bit Dst address.
+    SrcAFmt = TF32;
+  }
+  if (ConfigState.ALU_ACC_CTRL_Fp32_enabled || ConfigState.ALU_ACC_CTRL_INT8_math_enabled) {
+    // Note that ALU_ACC_CTRL_INT8_math_enabled does _not_ cause 32-bit Dst datums to be
+    // written, even though integer "32" math elsewhere uses 32-bit Dst datums.
+    Use8bExponent = true;
+  } else if (SrcAFmt in {FP32, TF32, BF16, BFP8, BFP4, BFP2, INT32, INT16}) {
+    Use8bExponent = true;
+  } else {
+    Use8bExponent = false;
+  }
+  UseDst32b = (SrcAFmt == TF32);
 }
 bool FlushDenormals = !ConfigState.ALU_ACC_CTRL_Zero_Flag_disabled_src;
 
@@ -70,7 +86,7 @@ for (; NumRows; --NumRows, ++DstRow, ++SrcRow) {
     uint19_t SrcAVal = SrcA[MatrixUnit.SrcABank][SrcRow][Column];
     if (FlushDenormals && !(SrcAVal & 0xff)) SrcAVal = 0;
     uint16_t Val16b = Use8bExponent ? RemoveLowMantissa(SrcAVal) : RemoveHighExponent(SrcAVal);
-    if (SrcAFmt == TF32) {
+    if (UseDst32b) {
       if (UseDst32bLo) {
         UndefinedBehavior(); // Write data will be corrupted on Blackhole (HW erratum TEN-4245); Wormhole behavior is unlikely to be useful
       }

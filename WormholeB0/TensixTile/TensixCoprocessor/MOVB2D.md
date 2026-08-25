@@ -46,12 +46,31 @@ if ((TTArchitecture == Blackhole) && !ThreadConfig[CurrentThread].DISABLE_IMPLIE
   SrcBFmt = ImpliedSrcBFmt[MatrixUnit.SrcBBank];
 }
 bool Use8bExponent;
+bool UseDst32b;
 if (ThreadConfig[CurrentThread].FP16A_FORCE_Enable) {
+  if (TTArchitecture == Wormhole) {
+    SrcBFmt = FP16;
+  }
   Use8bExponent = false;
-} else if (SrcAFmt in {FP32, TF32, BF16, BFP8, BFP4, BFP2, INT32, INT16}) {
-  Use8bExponent = true;
+  UseDst32b = false;
 } else {
-  Use8bExponent = false;
+  if ((TTArchitecture == Blackhole) && ConfigState.ALU_ACC_CTRL_Fp32_enabled) {
+    // On Blackhole, MOV[DBG][A,B]2D pretend that SrcAFmt is TF32 whenever fp32 accumulation
+    // is enabled, so that the move writes 32-bit Dst datums at 32-bit Dst addresses (matching
+    // what the rest of Dst is using). Wormhole lacks this, so on Wormhole a move with fp32
+    // accumulation enabled and SrcAFmt != TF32 writes a 16-bit datum at a 16-bit Dst address.
+    SrcAFmt = TF32;
+  }
+  if (ConfigState.ALU_ACC_CTRL_Fp32_enabled || ConfigState.ALU_ACC_CTRL_INT8_math_enabled) {
+    // Note that ALU_ACC_CTRL_INT8_math_enabled does _not_ cause 32-bit Dst datums to be
+    // written, even though integer "32" math elsewhere uses 32-bit Dst datums.
+    Use8bExponent = true;
+  } else if (SrcAFmt in {FP32, TF32, BF16, BFP8, BFP4, BFP2, INT32, INT16}) {
+    Use8bExponent = true;
+  } else {
+    Use8bExponent = false;
+  }
+  UseDst32b = (SrcAFmt == TF32);
 }
 bool FlushDenormals = !ConfigState.ALU_ACC_CTRL_Zero_Flag_disabled_src;
 
@@ -80,13 +99,17 @@ for (; NumRows; --NumRows, ++DstRow, SrcRow += !Broadcast1RowTo8) {
     if (LaneConfig[Column / 2].BLOCK_DEST_MOV.Bit[Column & 1]) continue;
     uint19_t SrcBVal = SrcB[MatrixUnit.SrcBBank][SrcRow][BroadcastCol0 ? 0 : Column];
     if (FlushDenormals && !(SrcBVal & 0xff)) SrcBVal = 0;
-    if (SrcBFmt == FP16) {
-      SrcBVal &= 0x7FF1F; // drop high 3 exp bits
-    } else if (SrcBFmt != TF32) {
-      SrcBVal &= 0x7F8FF; // drop low 3 man bits
+    if (TTArchitecture == Wormhole) {
+      if (SrcBFmt in {FP16, FP8, BFP8a, INT8}) {
+        SrcBVal &= 0x7FF1F; // drop high 3 exp bits
+      } else if (SrcBFmt in {BFP4a, BFP2a}) {
+        SrcBVal &= 0x7F81F; // drop high 3 exp bits and low 3 man bits
+      } else if (SrcBFmt != TF32) {
+        SrcBVal &= 0x7F8FF; // drop low 3 man bits
+      }
     }
     uint16_t Val16b = Use8bExponent ? RemoveLowMantissa(SrcBVal) : RemoveHighExponent(SrcBVal);
-    if (SrcAFmt == TF32) {
+    if (UseDst32b) {
       if (UseDst32bLo) {
         UndefinedBehavior(); // Write data will be corrupted on Blackhole (HW erratum TEN-4245); Wormhole behavior is unlikely to be useful
       }
