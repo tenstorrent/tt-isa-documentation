@@ -83,6 +83,13 @@ The following pseudocode routines are shared across the various opcodes in the m
 ```c
 int32_t ReadSrcInt8(uint19_t x, bool FlushDenormals) {
   // Src holds INT8 as Sign,Mag(10b),Exp(8b)
+  // The exponent is ignored below, which is only valid because every INT8 datum is expected to
+  // carry the fixed raw exponent of 16 that unpackers give to this type (or 0 when the magnitude
+  // is zero); see SrcASrcB.md. Hardware treats it as a real exponent and aligns the two operands of
+  // an integer add against it before adding, so if datums with differing exponents are combined,
+  // the result is scaled relative to what this function describes, and can be zero if the exponents
+  // are far enough apart. Software must therefore only present INT8 datums in this form, and any
+  // nonconforming INT8 datum value is UnsupportedFunctionality.
   if (FlushDenormals && !(x & 0xFF)) return 0;
   uint1_t Sign = x >> 18;
   uint10_t Mag = (x >> 8) & 0x3ff;
