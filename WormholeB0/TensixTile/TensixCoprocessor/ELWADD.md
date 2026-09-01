@@ -91,6 +91,9 @@ DstRow &= 0x3f8;
 uint2_t FidelityPhase = RWCs[CurrentThread].FidelityPhase;
 FidelityPhase += ThreadConfig[CurrentThread].FIDELITY_BASE_Phase;
 FidelityPhase &= 3;
+if (FidelityPhase) {
+  UnsupportedFunctionality(); // ELWADD/SUB should not be used with FidelityPhase
+}
 
 // Perform the element-wise computation.
 for (unsigned i = 0; i < 8; ++i) {
@@ -112,8 +115,6 @@ for (unsigned i = 0; i < 8; ++i) {
       case TF32: SrcAValFP = SrcDecodeTF32(SrcAVal); SrcBValFP = SrcDecodeTF32(SrcBVal); break;
       }
       float Result = SrcAValFP + SrcBValFP;
-      if (FidelityPhase & 1) Result /= 32.f;  // These divisions are rarely desirable, so software
-      if (FidelityPhase & 2) Result /= 128.f; // is encouraged to ensure that FidelityPhase == 0.
       if (UseDst32b) {
         // Dst is FP32, regardless of SrcAStyle.
         if (AddDst) Result += ReadDstFP32(Dst32b[DstRow + i][j]);
