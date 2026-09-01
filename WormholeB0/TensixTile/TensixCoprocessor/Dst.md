@@ -27,6 +27,8 @@ uint10_t Adj32(uint10_t Row) {
 }
 ```
 
+Each of the valid bits is indexed by physical row: an access to `Dst32b[Row]` consults `DstRowValid[Adj32(Row)]` (and does not consult `Adj32(Row) + 8`), whereas an access to `Dst16b[Row]` consults `DstRowValid[Row]`.
+
 ## Data types
 
 Each datum in `Dst16b` is up to 16 bits wide, holding one of:

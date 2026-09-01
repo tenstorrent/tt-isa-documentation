@@ -40,6 +40,8 @@ uint10_t Adj32(uint10_t r) {
 
 Note that `Config` in the above functions refers to Tensix backend configuration. In addition to their usage in these two functions, `Config.DEST_ACCESS_CFG_remap_addrs` and `Config.DEST_ACCESS_CFG_swizzle_32b` also affect how packers address `Dst`.
 
+Each of the valid bits is indexed by physical row: an access to `Dst32b[Row]` consults `DstRowValid[Adj32(Row)]` (and does not consult `Adj32(Row) + 8`), whereas an access to `Dst16b[Row]` consults `DstRowValid[Adj16(Row)]`.
+
 ## Data types
 
 Each datum in `Dst16b` is up to 16 bits wide, holding one of:
