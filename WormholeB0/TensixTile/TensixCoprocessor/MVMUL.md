@@ -80,6 +80,9 @@ if (ThreadConfig[CurrentThread].FP16A_FORCE_Enable) {
   UseDst32b = ConfigState.ALU_ACC_CTRL_Fp32_enabled;
 }
 bool FlushDenormals = !ConfigState.ALU_ACC_CTRL_Zero_Flag_disabled_src; // Note: behavior has yet to be fully characterized
+if (!FlushDenormals) {
+  UnsupportedFunctionality(); // Asymmetric "keep SrcB denormals" mode that cannot represent 0.0 should not be used
+}
 
 // Determine the row range.
 unsigned NumRows = BroadcastSrcBRow ? 7 : 8;
