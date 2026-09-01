@@ -74,6 +74,11 @@ if (ThreadConfig[CurrentThread].FP16A_FORCE_Enable) {
 }
 bool FlushDenormals = !ConfigState.ALU_ACC_CTRL_Zero_Flag_disabled_src;
 
+if ((UseDst32b || UseDst32bLo) != (ConfigState.ALU_ACC_CTRL_Fp32_enabled ||
+                                   ConfigState.ALU_ACC_CTRL_INT8_math_enabled)) {
+  UndefinedBehavior(); // DstRowValid update addressing is incorrect in this case
+}
+
 // Determine the row range.
 unsigned NumRows;
 DstRow += ThreadConfig[CurrentThread].DEST_TARGET_REG_CFG_MATH_Offset;
