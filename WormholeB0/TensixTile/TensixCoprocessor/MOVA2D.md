@@ -41,6 +41,7 @@ if ((TTArchitecture == Blackhole) && !ThreadConfig[CurrentThread].DISABLE_IMPLIE
 bool Use8bExponent;
 bool UseDst32b;
 if (ThreadConfig[CurrentThread].FP16A_FORCE_Enable) {
+  UnsupportedFunctionality(); // No known usage, confidence in specification below is weak
   Use8bExponent = false;
   UseDst32b = false;
 } else {

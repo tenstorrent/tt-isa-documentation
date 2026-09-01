@@ -65,6 +65,7 @@ auto& ConfigState = Config[StateID];
 uint4_t SrcAStyle, DstStyle;
 bool UseDst32b;
 if (ThreadConfig[CurrentThread].FP16A_FORCE_Enable) {
+  UnsupportedFunctionality(); // No known usage, confidence in specification below is weak
   SrcAStyle = FP16;
   DstStyle = FP16;
   UseDst32b = false;

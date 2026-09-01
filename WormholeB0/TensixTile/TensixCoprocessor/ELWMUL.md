@@ -55,6 +55,7 @@ auto& ConfigState = Config[StateID];
 uint4_t SrcAStyle;
 bool UseDst32b;
 if (ThreadConfig[CurrentThread].FP16A_FORCE_Enable) {
+  UnsupportedFunctionality(); // No known usage, confidence in specification below is weak
   SrcAStyle = FP16;
   UseDst32b = false;
 } else if (ConfigState.ALU_ACC_CTRL_INT8_math_enabled) {
