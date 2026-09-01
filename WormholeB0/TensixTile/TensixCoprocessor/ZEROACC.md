@@ -37,8 +37,7 @@ if (Mode == ZEROACC_MODE_ONE_ROW) {
   uint10_t Row = Imm10;
   Row += ThreadConfig[CurrentThread].DEST_TARGET_REG_CFG_MATH_Offset;
   Row += RWCs[CurrentThread].Dst + ConfigState.DEST_REGW_BASE_Base;
-  if (ConfigState.ALU_ACC_CTRL_Fp32_enabled || ConfigState.ALU_ACC_CTRL_INT8_math_enabled ||
-      RISCV_DEBUG_REG_DBG_FEATURE_DISABLE[11]) {
+  if (ConfigState.ALU_ACC_CTRL_Fp32_enabled || ConfigState.ALU_ACC_CTRL_INT8_math_enabled) {
     DstRowValid[Adj32(Row)] = false;
   } else {
     DstRowValid[Row] = false;
