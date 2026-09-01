@@ -54,6 +54,14 @@ auto& ConfigState = Config[StateID];
 // Note: Blackhole implied format behavior for SrcB not fully characterized
 uint4_t SrcAStyle;
 bool UseDst32b;
+uint4_t SrcAFmt = ConfigState.ALU_FORMAT_SPEC_REG_SrcA_override ? ConfigState.ALU_FORMAT_SPEC_REG_SrcA_val : ConfigState.ALU_FORMAT_SPEC_REG0_SrcA;
+uint4_t SrcBFmt = ConfigState.ALU_FORMAT_SPEC_REG_SrcB_override ? ConfigState.ALU_FORMAT_SPEC_REG_SrcB_val : ConfigState.ALU_FORMAT_SPEC_REG1_SrcB;
+if ((TTArchitecture == Blackhole) && !ThreadConfig[CurrentThread].DISABLE_IMPLIED_SRCA_FMT_Base) {
+  SrcAFmt = ImpliedSrcAFmt[MatrixUnit.SrcABank];
+}
+if ((TTArchitecture == Blackhole) && !ThreadConfig[CurrentThread].DISABLE_IMPLIED_SRCB_FMT_Base) {
+  SrcBFmt = ImpliedSrcBFmt[MatrixUnit.SrcBBank];
+}
 if (ThreadConfig[CurrentThread].FP16A_FORCE_Enable) {
   UnsupportedFunctionality(); // No known usage, confidence in specification below is weak
   SrcAStyle = FP16;
@@ -62,10 +70,6 @@ if (ThreadConfig[CurrentThread].FP16A_FORCE_Enable) {
   SrcAStyle = INT8;
   UseDst32b = true;
 } else {
-  uint4_t SrcAFmt = ConfigState.ALU_FORMAT_SPEC_REG_SrcA_override ? ConfigState.ALU_FORMAT_SPEC_REG_SrcA_val : ConfigState.ALU_FORMAT_SPEC_REG0_SrcA;
-  if ((TTArchitecture == Blackhole) && !ThreadConfig[CurrentThread].DISABLE_IMPLIED_SRCA_FMT_Base) {
-    SrcAFmt = ImpliedSrcAFmt[MatrixUnit.SrcABank];
-  }
   if (SrcAFmt in {FP32, BF16, BFP8, BFP4, BFP2, INT32, INT16}) {
     SrcAStyle = BF16;
   } else if (SrcAFmt in {FP16, FP8, BFP8a, BFP4a, BFP2a, INT8}) {
@@ -92,8 +96,8 @@ FidelityPhase &= 3;
 // Perform the element-wise computation.
 for (unsigned i = 0; i < 8; ++i) {
   for (unsigned j = 0; j < 16; ++j) {
-    uint19_t SrcAVal = SrcA[MatrixUnit.SrcABank][SrcARow + i][j];
-    uint19_t SrcBVal = SrcB[MatrixUnit.SrcBBank][SrcBRow + (BroadcastSrcBRow ? 0 : i)][BroadcastSrcBCol0 ? 0 : j];
+    uint19_t SrcAVal = TruncateSrc(SrcA[MatrixUnit.SrcABank][SrcARow + i][j], SrcAFmt);
+    uint19_t SrcBVal = TruncateSrc(SrcB[MatrixUnit.SrcBBank][SrcBRow + (BroadcastSrcBRow ? 0 : i)][BroadcastSrcBCol0 ? 0 : j], SrcBFmt);
     if (SrcAStyle == INT8) {
       int32_t SrcAValInt = ReadSrcInt8(SrcAVal & (FidelityPhase & 1 ? 0x41fff : 0x4e0ff), true);
       int32_t SrcBValInt = ReadSrcInt8(SrcBVal & (FidelityPhase & 2 ? 0x40fff : 0x7f0ff), FlushDenormals);

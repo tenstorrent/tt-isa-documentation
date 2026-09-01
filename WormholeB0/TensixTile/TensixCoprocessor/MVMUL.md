@@ -54,6 +54,14 @@ auto& ConfigState = Config[StateID];
 // Note: Blackhole implied format behavior for SrcB not fully characterized
 uint4_t SrcAStyle;
 bool UseDst32b;
+uint4_t SrcAFmt = ConfigState.ALU_FORMAT_SPEC_REG_SrcA_override ? ConfigState.ALU_FORMAT_SPEC_REG_SrcA_val : ConfigState.ALU_FORMAT_SPEC_REG0_SrcA;
+uint4_t SrcBFmt = ConfigState.ALU_FORMAT_SPEC_REG_SrcB_override ? ConfigState.ALU_FORMAT_SPEC_REG_SrcB_val : ConfigState.ALU_FORMAT_SPEC_REG1_SrcB;
+if ((TTArchitecture == Blackhole) && !ThreadConfig[CurrentThread].DISABLE_IMPLIED_SRCA_FMT_Base) {
+  SrcAFmt = ImpliedSrcAFmt[MatrixUnit.SrcABank];
+}
+if ((TTArchitecture == Blackhole) && !ThreadConfig[CurrentThread].DISABLE_IMPLIED_SRCB_FMT_Base) {
+  SrcBFmt = ImpliedSrcBFmt[MatrixUnit.SrcBBank];
+}
 if (ThreadConfig[CurrentThread].FP16A_FORCE_Enable) {
   UnsupportedFunctionality(); // No known usage, confidence in specification below is weak
   SrcAStyle = FP16;
@@ -62,10 +70,6 @@ if (ThreadConfig[CurrentThread].FP16A_FORCE_Enable) {
   SrcAStyle = INT8;
   UseDst32b = true;
 } else {
-  uint4_t SrcAFmt = ConfigState.ALU_FORMAT_SPEC_REG_SrcA_override ? ConfigState.ALU_FORMAT_SPEC_REG_SrcA_val : ConfigState.ALU_FORMAT_SPEC_REG0_SrcA;
-  if ((TTArchitecture == Blackhole) && !ThreadConfig[CurrentThread].DISABLE_IMPLIED_SRCA_FMT_Base) {
-    SrcAFmt = ImpliedSrcAFmt[MatrixUnit.SrcABank];
-  }
   if (SrcAFmt in {FP32, BF16, BFP8, BFP4, BFP2, INT32, INT16}) {
     SrcAStyle = BF16;
   } else if (SrcAFmt in {FP16, FP8, BFP8a, BFP4a, BFP2a, INT8}) {
@@ -95,7 +99,7 @@ union {int32_t i; float f} SrcBMatrix[NumRows][16], SrcAMatrix[16][16], Multipli
 
 for (unsigned i = 0; i < NumRows; ++i) {
   for (unsigned j = 0; j < 16; ++j) {
-    uint19_t SrcBVal = SrcB[MatrixUnit.SrcBBank][SrcBRow + (BroadcastSrcBRow ? 0 : i)][j];
+    uint19_t SrcBVal = TruncateSrc(SrcB[MatrixUnit.SrcBBank][SrcBRow + (BroadcastSrcBRow ? 0 : i)][j], SrcBFmt);
     switch (SrcAStyle) {
     case INT8: SrcBMatrix[i][j].i = ReadSrcInt8(SrcBVal & (FidelityPhase & 2 ? 0x40fff : 0x7f0ff), FlushDenormals); break;
     case BF16: SrcBMatrix[i][j].f = SrcBFidelityBits(SrcDecodeBF16(SrcBVal), FidelityPhase); break;
@@ -107,7 +111,7 @@ for (unsigned i = 0; i < NumRows; ++i) {
 
 for (unsigned i = 0; i < 16; ++i) {
   for (unsigned j = 0; j < 16; ++j) {
-    uint19_t SrcAVal = SrcA[MatrixUnit.SrcABank][SrcARow + i][j];
+    uint19_t SrcAVal = TruncateSrc(SrcA[MatrixUnit.SrcABank][SrcARow + i][j], SrcAFmt);
     switch (SrcAStyle) {
     case INT8: SrcAMatrix[i][j].i = ReadSrcInt8(SrcAVal & (FidelityPhase & 1 ? 0x41fff : 0x4e0ff), true); break;
     case BF16: SrcAMatrix[i][j].f = SrcAFidelityBits(SrcDecodeBF16(SrcAVal), FidelityPhase); break;

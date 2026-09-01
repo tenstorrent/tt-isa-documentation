@@ -81,6 +81,22 @@ To calculate the performance of an entire Wormhole ASIC, multiply the above numb
 The following pseudocode routines are shared across the various opcodes in the matrix unit.
 
 ```c
+uint19_t TruncateSrc(uint19_t x, uint4_t Fmt) {
+  // On Wormhole (only), a Src datum is truncated on the way out of SrcA/B according to its own
+  // data format. This applies both to the Matrix Unit's arithmetic inputs and to the move datapath
+  // used by MOVB2A/MOVB2D, and it uses each operand's own format rather than SrcAStyle.
+  if (TTArchitecture == Wormhole) {
+    if (Fmt in {FP16, FP8, BFP8a, INT8}) {
+      x &= 0x7FF1F; // drop high 3 exp bits
+    } else if (Fmt in {BFP4a, BFP2a}) {
+      x &= 0x7F81F; // drop high 3 exp bits and low 3 man bits
+    } else if (Fmt != TF32) {
+      x &= 0x7F8FF; // drop low 3 man bits
+    }
+  }
+  return x;
+}
+
 int32_t ReadSrcInt8(uint19_t x, bool FlushDenormals) {
   // Src holds INT8 as Sign,Mag(10b),Exp(8b)
   // The exponent is ignored below, which is only valid because every INT8 datum is expected to

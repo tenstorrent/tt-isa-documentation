@@ -64,6 +64,14 @@ auto& ConfigState = Config[StateID];
 // Note: Blackhole implied format behavior for SrcB not fully characterized
 uint4_t SrcAStyle, DstStyle;
 bool UseDst32b;
+uint4_t SrcAFmt = ConfigState.ALU_FORMAT_SPEC_REG_SrcA_override ? ConfigState.ALU_FORMAT_SPEC_REG_SrcA_val : ConfigState.ALU_FORMAT_SPEC_REG0_SrcA;
+uint4_t SrcBFmt = ConfigState.ALU_FORMAT_SPEC_REG_SrcB_override ? ConfigState.ALU_FORMAT_SPEC_REG_SrcB_val : ConfigState.ALU_FORMAT_SPEC_REG1_SrcB;
+if ((TTArchitecture == Blackhole) && !ThreadConfig[CurrentThread].DISABLE_IMPLIED_SRCA_FMT_Base) {
+  SrcAFmt = ImpliedSrcAFmt[MatrixUnit.SrcABank];
+}
+if ((TTArchitecture == Blackhole) && !ThreadConfig[CurrentThread].DISABLE_IMPLIED_SRCB_FMT_Base) {
+  SrcBFmt = ImpliedSrcBFmt[MatrixUnit.SrcBBank];
+}
 if (ThreadConfig[CurrentThread].FP16A_FORCE_Enable) {
   UnsupportedFunctionality(); // No known usage, confidence in specification below is weak
   SrcAStyle = FP16;
@@ -74,10 +82,6 @@ if (ThreadConfig[CurrentThread].FP16A_FORCE_Enable) {
   DstStyle = INT32;
   UseDst32b = true;
 } else {
-  uint4_t SrcAFmt = ConfigState.ALU_FORMAT_SPEC_REG_SrcA_override ? ConfigState.ALU_FORMAT_SPEC_REG_SrcA_val : ConfigState.ALU_FORMAT_SPEC_REG0_SrcA;
-  if ((TTArchitecture == Blackhole) && !ThreadConfig[CurrentThread].DISABLE_IMPLIED_SRCA_FMT_Base) {
-    SrcAFmt = ImpliedSrcAFmt[MatrixUnit.SrcABank];
-  }
   UseDst32b = ConfigState.ALU_ACC_CTRL_Fp32_enabled;
   if (SrcAFmt in {FP32, BF16, BFP8, BFP4, BFP2, INT32, INT16}) {
     SrcAStyle = BF16;
@@ -131,8 +135,8 @@ for (unsigned j = 0; j < 16; ++j) {
   // Iterate over SrcA rows (and SrcB columns), updating Max / MaxIndex.
   for (unsigned i_ = 0; i_ < 16; ++i_) {
     unsigned i = (i_ < 8) ? (i_ ^ 4) : i_; // Tweak the visitation order (only makes a difference for resolving ties in ArgMax)
-    uint19_t SrcAVal = SrcA[MatrixUnit.SrcABank][SrcARow + i][j];
-    uint19_t SrcBVal = SrcB[MatrixUnit.SrcBBank][SrcBRow    ][i];
+    uint19_t SrcAVal = TruncateSrc(SrcA[MatrixUnit.SrcABank][SrcARow + i][j], SrcAFmt);
+    uint19_t SrcBVal = TruncateSrc(SrcB[MatrixUnit.SrcBBank][SrcBRow    ][i], SrcBFmt);
     Datum x = ReadAndScaleSrc(SrcAVal, SrcAStyle, SrcBVal);
     if (AsComparable(x) >= AsComparable(Max)) {
       Max = x;

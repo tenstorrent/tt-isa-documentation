@@ -105,15 +105,7 @@ for (; NumRows; --NumRows, ++DstRow, SrcRow += !Broadcast1RowTo8) {
     if (LaneConfig[Column / 2].BLOCK_DEST_MOV.Bit[Column & 1]) continue;
     uint19_t SrcBVal = SrcB[MatrixUnit.SrcBBank][SrcRow][BroadcastCol0 ? 0 : Column];
     if (FlushDenormals && !(SrcBVal & 0xff)) SrcBVal = 0;
-    if (TTArchitecture == Wormhole) {
-      if (SrcBFmt in {FP16, FP8, BFP8a, INT8}) {
-        SrcBVal &= 0x7FF1F; // drop high 3 exp bits
-      } else if (SrcBFmt in {BFP4a, BFP2a}) {
-        SrcBVal &= 0x7F81F; // drop high 3 exp bits and low 3 man bits
-      } else if (SrcBFmt != TF32) {
-        SrcBVal &= 0x7F8FF; // drop low 3 man bits
-      }
-    }
+    SrcBVal = TruncateSrc(SrcBVal, SrcBFmt);
     uint16_t Val16b = Use8bExponent ? RemoveLowMantissa(SrcBVal) : RemoveHighExponent(SrcBVal);
     if (UseDst32b) {
       if (UseDst32bLo) {

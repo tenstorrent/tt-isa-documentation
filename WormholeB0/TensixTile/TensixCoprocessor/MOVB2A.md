@@ -32,7 +32,9 @@ Once dispatched to the Matrix Unit (FPU):
 uint1_t StateID = ThreadConfig[CurrentThread].CFG_STATE_ID_StateID;
 auto& ConfigState = Config[StateID];
 uint4_t SrcBFmt = ConfigState.ALU_FORMAT_SPEC_REG_SrcB_override ? ConfigState.ALU_FORMAT_SPEC_REG_SrcB_val : ConfigState.ALU_FORMAT_SPEC_REG1_SrcB;
-// Blackhole DISABLE_IMPLIED_SRCB_FMT_Base is not relevant here because SrcBFmt is only used on Wormhole below
+if ((TTArchitecture == Blackhole) && !ThreadConfig[CurrentThread].DISABLE_IMPLIED_SRCB_FMT_Base) {
+  SrcBFmt = ImpliedSrcBFmt[MatrixUnit.SrcBBank];
+}
 bool FlushDenormals = !ConfigState.ALU_ACC_CTRL_Zero_Flag_disabled_src;
 
 // Determine the row range.
@@ -55,15 +57,7 @@ for (; NumRows; --NumRows, ++SrcARow, ++SrcBRow) {
     if (LaneConfig[Column / 2].BLOCK_DEST_MOV.Bit[Column & 1]) continue;
     uint19_t SrcVal = SrcB[MatrixUnit.SrcBBank][SrcBRow][Column];
     if (FlushDenormals && !(SrcVal & 0xff)) SrcVal = 0;
-    if (TTArchitecture == Wormhole) {
-      if (SrcBFmt in {FP16, FP8, BFP8a, INT8}) {
-        SrcVal &= 0x7FF1F; // drop high 3 exp bits
-      } else if (SrcBFmt in {BFP4a, BFP2a}) {
-        SrcVal &= 0x7F81F; // drop high 3 exp bits and low 3 man bits
-      } else if (SrcBFmt != TF32) {
-        SrcVal &= 0x7F8FF; // drop low 3 man bits
-      }
-    }
+    SrcVal = TruncateSrc(SrcVal, SrcBFmt);
     SrcA[MatrixUnit.SrcABank][SrcARow][Column] = SrcVal;
   }
 }
