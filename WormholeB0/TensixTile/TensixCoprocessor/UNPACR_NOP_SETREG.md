@@ -1,6 +1,6 @@
 # `UNPACR_NOP` (MMIO register write sequenced with UNPACR)
 
-**Summary:** Once previous `UNPACR` instructions have finished their L1 reads, perform a 32-bit memory write within a small window of the MMIO address space.
+**Summary:** Once previous `UNPACR` instructions have finished their L1 reads, perform a 32-bit memory write within a small window of the MMIO address space. This mode is `UnsupportedFunctionality` and its use is strongly discouraged: it has no known usage, the address window is selected by state (`SetRegBase`) which is not part of the regular backend configuration, and the write is ordered against nothing other than the unpacker's own L1 reads.
 
 **Backend execution unit:** [Unpackers](Unpackers/README.md)
 
@@ -24,6 +24,8 @@ TT_UNPACR_NOP(/* u1 */ WhichUnpacker,
 Once all previous `UNPACR` instructions with the same value for `WhichUnpacker` have finished their L1 reads, the following happens:
 
 ```c
+UnsupportedFunctionality(); // No known usage, confidence in specification below is weak
+
 uint32_t Addr = 0xFFB00000 + Unpackers.SetRegBase[AddrSel] + (AddrMid << 12);
 
 if (Accumulate) {
