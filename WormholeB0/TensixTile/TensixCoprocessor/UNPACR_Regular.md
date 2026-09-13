@@ -170,6 +170,9 @@ if (IsUncompressed) {
     YPos = ADC_XY.Y & 0xff;
     XEnd = ADCs[WhichADC].Unpacker[WhichUnpacker].Channel[1].X;
   }
+  if (XEnd < XPos) {
+    UndefinedBehavior(); // Hardware searches for an end address that it has already passed
+  }
   FirstDatum = ((ADC_ZW.W * ZDim + ADC_ZW.Z) * YDim + YPos) * XDim + XPos;
   InputNumDatums = XEnd - XPos;
 } else {
