@@ -23,7 +23,7 @@ Each unpacker gets its own set of X/Y/Z/W values, which are used in various ways
 
 <table><tr><th/><th>Channel 0 Usage</th><th>Channel 1 Usage</th></tr>
 <tr><th>X</th><td>Input address generator (for forming L1 address, and part of datum count)</td><td>Input address generator (part of datum count)</td></tr>
-<tr><th>Y</th><td rowspan="3">Decompressor (for seeking to a particular compression row within L1)</td><td rowspan="3">Output address generator (for forming <code>Dst</code> or <code>SrcA</code> address in unpacker 0, and <code>SrcB</code> address in unpacker 1)</td>
+<tr><th>Y</th><td rowspan="3">Input address generator (for forming L1 address), and decompressor (for seeking to a particular compression row within L1)</td><td rowspan="3">Output address generator (for forming <code>Dst</code> or <code>SrcA</code> address in unpacker 0, and <code>SrcB</code> address in unpacker 1)</td>
 <tr><th>Z</th></tr>
 <tr><th>W</th></tr></table>
 
