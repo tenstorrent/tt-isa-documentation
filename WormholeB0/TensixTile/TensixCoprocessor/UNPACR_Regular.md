@@ -148,7 +148,7 @@ if (IsUncompressed) {
   unsigned XEnd;
   if (!RowSearch) {
     XPos = ADC_XY.X;
-    YPos = ADC_XY.Y;
+    YPos = ADC_XY.Y & 0xff;
     XEnd = ADCs[WhichADC].Unpacker[WhichUnpacker].Channel[1].X + 1;
   } else if (ConfigDescriptor.BlobsPerXYPlane) {
     uint4_t BlobsYStart[8];
@@ -167,7 +167,7 @@ if (IsUncompressed) {
     }
   } else {
     XPos = 0;
-    YPos = ADC_XY.Y;
+    YPos = ADC_XY.Y & 0xff;
     XEnd = ADCs[WhichADC].Unpacker[WhichUnpacker].Channel[1].X;
   }
   FirstDatum = ((ADC_ZW.W * ZDim + ADC_ZW.Z) * YDim + YPos) * XDim + XPos;
