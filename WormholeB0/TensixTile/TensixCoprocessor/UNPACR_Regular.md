@@ -170,6 +170,12 @@ if (IsUncompressed) {
     YPos = ADC_XY.Y & 0xff;
     XEnd = ADCs[WhichADC].Unpacker[WhichUnpacker].Channel[1].X;
   }
+  // X reaches the input address generator as a 13-bit value, which then gets scaled into a
+  // nibble offset held in a 14-bit field, i.e. 8192 bytes of datums.
+  unsigned XLimit = 8192 / max(1., DatumSizeBytes);
+  if ((XPos >= XLimit) || (XEnd > XLimit)) {
+    UndefinedBehavior(); // Hardware wraps around within the 14-bit field
+  }
   if (XEnd < XPos) {
     UndefinedBehavior(); // Hardware searches for an end address that it has already passed
   }
