@@ -179,11 +179,11 @@ if (IsUncompressed) {
   if (XEnd < XPos) {
     UndefinedBehavior(); // Hardware searches for an end address that it has already passed
   }
-  FirstDatum = ((ADC_ZW.W * ZDim + ADC_ZW.Z) * YDim + YPos) * XDim + XPos;
+  FirstDatum = (((ADC_ZW.W & 0xff) * ZDim + (ADC_ZW.Z & 0xff)) * YDim + YPos) * XDim + XPos;
   InputNumDatums = XEnd - XPos;
 } else {
   if (RowSearch && ConfigDescriptor.BlobsPerXYPlane) YDim = ConfigDescriptor.BlobsPerXYPlane;
-  InAddr_RowStart += (ADC_ZW.W * ZDim + ADC_ZW.Z) * YDim;
+  InAddr_RowStart += ((ADC_ZW.W & 0xff) * ZDim + (ADC_ZW.Z & 0xff)) * YDim;
   FirstDatum = InAddr_RowStart[ADC_XY.Y & 0xff];
   if (RowSearch) {
     InputNumDatums = InAddr_RowStart[(ADC_XY.X & 0xff) + 1] - FirstDatum;

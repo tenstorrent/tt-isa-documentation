@@ -15,6 +15,8 @@ struct {
 } ADCs[3];
 ```
 
+On Blackhole (`TTArchitecture == Blackhole`), the `Z`, `Z_Cr`, `W` and `W_Cr` fields are `uint13_t` rather than `uint8_t`. The extra bits are not visible everywhere: the unpackers' input address generator receives only the low eight bits of channel 0's `Z` and `W`, and the [debug daisychain](../DebugDaisychain.md#adcs) presents only the low eight bits of any of them. They do however take full effect when an unpacker forms its output address from channel 1, and when a packer forms its `Dst` input address from channel 0.
+
 The `[3]` is _usually_ indexed as `[CurrentThread]`, meaning that each Tensix thread _can_ have its own set of ADCs, but software can instead use arbitrary indexing if it so wishes.
 
 Each unpacker gets its own set of X/Y/Z/W values, which are used in various ways to form input and output addresses:
