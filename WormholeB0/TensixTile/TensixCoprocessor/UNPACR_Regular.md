@@ -360,6 +360,9 @@ for (unsigned i = 0; i < InputNumDatums && DecompressNumDatums; ) {
     if (ConfigState.THCON_SEC[WhichUnpacker].REG2_Force_shared_exp) {
       ExpBits = ConfigState.UNP[WhichUnpacker].FORCED_SHARED_EXP_shared_exp;
     } else {
+      if (FirstDatum + i > 65536) {
+        UndefinedBehavior(); // The datum index addressing the exponents is only 16 bits wide
+      }
       ExpBits = ReadL1Bytes(floor(InAddr_Exponents), 1);
       InAddr_Exponents += 1 / 16.;
       if (InAddr_Exponents == floor(InAddr_Exponents / 16.) * 16.) {
