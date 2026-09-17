@@ -192,6 +192,25 @@ local diagrams = {
       {24, 8, "0x41"},
     }
   end,
+  PACR_BH = function()
+    return Bits32{
+      {0, 1, "Last", y = 1, edge = "right"},
+      {1, 1, "Flush", y = 2},
+      {2, 2, "CtxtCtrl", y = 3},
+      {4, 1, "Concat", y = 1},
+      {5, 2, "0"},
+      {7, 1, "OvrdThreadId", y = 2},
+      {8, 4, "ReadIntfSel", y = 1},
+      {12, 1, "ZeroWrite", y = 2, edge = "right"},
+      {13, 2, "AddrCntContext", y = 3},
+      {15, 2, "AddrMod", y = 1},
+      {17, 1, "DstAccessMode", y = 2, edge = "right"},
+      {18, 3, "RowPadZero", y = 1, edge = "right"},
+      {21, 2, "CfgContext", y = 3},
+      {23, 1, "0"},
+      {24, 8, "0x41"},
+    }
+  end,
   PACR_SETREG = function()
     return Bits32{
       {1, 1, "1"},
