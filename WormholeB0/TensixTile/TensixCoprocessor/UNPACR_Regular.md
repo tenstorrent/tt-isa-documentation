@@ -127,7 +127,8 @@ if (!IsUncompressed) {
 }
 
 double InAddr_Exponents = undefined;
-if (IsBFPFormat(InDataFormat) && !ConfigState.THCON_SEC[WhichUnpacker].REG2_Force_shared_exp) {
+bool BfpExpStream = IsBFPFormat(InDataFormat) && !ConfigState.THCON_SEC[WhichUnpacker].REG2_Force_shared_exp;
+if (BfpExpStream) {
   InAddr_Exponents = InAddr;
   if (InDataFormat == BFP8 || InDataFormat == BFP8a || !ConfigDescriptor.NoBFPExpSection) {
     auto NumElements = XDim * YDim * ZDim * WDim;
@@ -295,7 +296,7 @@ if (UpsampleZeroes || UpsampleInterleave || ColShift) {
 }
 
 // Check that various settings are compatible with each other:
-if (Transpose || DiscontiguousInputRows) {
+if (Transpose || DiscontiguousInputRows || BfpExpStream) {
   // These modes require that InAddr_Datums start at an aligned 16 byte boundary.
   if (InAddr_Datums != floor(InAddr_Datums / 16.) * 16.) {
     UndefinedBehavior();
