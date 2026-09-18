@@ -18,6 +18,12 @@ There is also support for broadcasting a 1x16 row of `SrcB`, albeit in a slightl
 
 ![](../../../Diagrams/Out/CrossLane_MVMUL.svg)
 
+The broadcast mode also has an unusual interaction with the `Dst` valid bits (see [`ZEROACC`](ZEROACC.md)): the set of rows whose valid bit is updated is _not_ the set of rows written. Hardware marks the whole upper half of the aligned 8x16 block of `Dst` as valid, plus the single row `DstRow`. The consequences are:
+* `DstRow + 2` is written, but its valid bit is not updated, so it continues to read as zero if it was undefined beforehand.
+* The two rows of the upper half which are _not_ written become defined, so they read back whatever they happened to contain beforehand, which is `UnpredictableValue()` if they have never been written.
+
+Software which wants a single well-defined result row should therefore read it from `DstRow`, `DstRow + 4`, or `DstRow + 6`, and should not assume anything about the contents of the other rows of the block. Unlike the data path, this valid bit update is sensitive to bits 2 and 1 of `DstRow`, so a `DstRow` with either of those bits set is `UnsupportedFunctionality`.
+
 **Backend execution unit:** [Matrix Unit (FPU)](MatrixUnit.md)
 
 ## Syntax
@@ -90,6 +96,12 @@ uint6_t SrcARow = RWCs[CurrentThread].SrcA & 0x38;
 uint6_t SrcBRow = RWCs[CurrentThread].SrcB & (BroadcastSrcBRow ? 0x3f : 0x38);
 DstRow += ThreadConfig[CurrentThread].DEST_TARGET_REG_CFG_MATH_Offset;
 DstRow += RWCs[CurrentThread].Dst + ConfigState.DEST_REGW_BASE_Base;
+if (BroadcastSrcBRow && (DstRow & 6)) {
+  // The data path masks bits 2 and 1 of DstRow away, but the DstRowValid update below does not:
+  // it instead marks row (DstRow & 0x3f8) + (DstRow & 3) as valid, or, if bit 2 of DstRow is set,
+  // marks no row of the lower half of the block as valid at all.
+  UnsupportedFunctionality();
+}
 DstRow &= (0x400 - NumRows);
 
 // Determine the fidelity phase.
@@ -142,7 +154,8 @@ for (unsigned i = 0; i < NumRows; ++i) {
   }
 }
 
-// Add the matrix product to Dst.
+// Add the matrix product to Dst. Note that, unusually, these writes do not themselves update
+// DstRowValid; that is done as a separate step below.
 for (unsigned i = 0; i < NumRows; i += BroadcastSrcBRow ? 2 : 1) {
   for (unsigned j = 0; j < 16; ++j) {
     if (SrcAStyle == INT8) {
@@ -165,6 +178,23 @@ for (unsigned i = 0; i < NumRows; i += BroadcastSrcBRow ? 2 : 1) {
         Dst16b[DstRow + i][j] = WriteDstBF16(x);
       }
     }
+  }
+}
+
+// Mark rows of Dst as valid. Without BroadcastSrcBRow, this is exactly the set of rows written
+// above. With BroadcastSrcBRow, it is instead the whole upper half of the aligned 8x16 block of
+// Dst, plus the single row DstRow, which is neither a subset nor a superset of the rows written
+// above.
+if (BroadcastSrcBRow) {
+  for (unsigned i = 0; i < 8; ++i) {
+    uint10_t Row = (DstRow & 0x3f8) + i;
+    if (i >= 4 || Row == DstRow) {
+      DstRowValid[UseDst32b ? Adj32(Row) : Row] = true;
+    }
+  }
+} else {
+  for (unsigned i = 0; i < NumRows; ++i) {
+    DstRowValid[UseDst32b ? Adj32(DstRow + i) : DstRow + i] = true;
   }
 }
 
