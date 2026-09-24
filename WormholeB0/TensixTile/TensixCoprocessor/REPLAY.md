@@ -28,16 +28,18 @@ async def ReplayExpander():
     elif Instruction.Load:
       Index = Instruction.Index
       Exec = Instruction.Exec
-      for i in range(Instruction.Count or 64):
+      for i in range(Instruction.Count or 32):
         Instruction = await GetNextIncomingInstruction()
         ReplayBuffer[(Index + i) % 32] = Instruction
         if Exec:
           yield Instruction
     else:
       Index = Instruction.Index
-      for i in range(Instruction.Count or 64):
+      for i in range(Instruction.Count or 32):
         yield ReplayBuffer[(Index + i) % 32]
 ```
+
+A `Count` of zero behaves as 32, as per the above functional model. Values of `Count` greater than 32 are not supported: hardware does not follow the above functional model for them, and the number of instructions loaded or replayed can differ from `Count`.
 
 ## Performance
 
