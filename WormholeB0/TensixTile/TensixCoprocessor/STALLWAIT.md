@@ -26,6 +26,8 @@ WaitGate[CurrentThread].LatchedWaitInstruction.SemaphoreMask = 0;
 
 The Wait Gate will then continuously re-evaluate the latched wait instruction until all of the selected conditions are simultaneously met, at which point the latched wait instruction will be forgotten, and instructions will no longer be blocked. The new latched wait instruction takes effect immediately, so it will influence whether or not the instruction immediately after `STALLWAIT` can pass through the Wait Gate. There is a one cycle lag between the condition(s) being met and the block mask being removed - in particular this means that the instruction immediately after `STALLWAIT` will always be subject to the block mask for at least one cycle, even if the condition(s) are met immediately.
 
+If a thread presents a `STALLWAIT` instruction whilst it already has a latched wait instruction, then `STALLWAIT` does not execute until the previously latched wait instruction has been forgotten, so a `STALLWAIT` never replaces a latched wait instruction. Instructions after the `STALLWAIT` wait behind it. [`SEMWAIT`](SEMWAIT.md) does _not_ behave this way; see its description for details.
+
 ## Block mask
 
 The block mask consists of nine bits, named B0 (least significant bit) through B8 (most significant bit). The approximate meaning of each bit is:
