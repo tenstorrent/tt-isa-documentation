@@ -42,6 +42,8 @@ Note that `Config` in the above functions refers to Tensix backend configuration
 
 Each of the valid bits is indexed by physical row: an access to `Dst32b[Row]` consults `DstRowValid[Adj32(Row)]` (and does not consult `Adj32(Row) + 8`), whereas an access to `Dst16b[Row]` consults `DstRowValid[Adj16(Row)]`.
 
+If a `ZEROACC` executes in the same cycle as a Vector Unit or unpacker write to `Dst`, the write's update of `DstRowValid` is lost, even if the `ZEROACC` targets other rows (e.g. the other half of a double-buffered `Dst`). Software must not let such writes race with another thread's `ZEROACC`.
+
 ## Data types
 
 Each datum in `Dst16b` is up to 16 bits wide, holding one of:
