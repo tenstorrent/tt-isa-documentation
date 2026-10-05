@@ -22,6 +22,8 @@ The encoding of `.ttinsn IMM32` is very simple: it is just `IMM32` rotated left 
 
 For the purposes of [RISCV memory ordering](MemoryOrdering.md), a `.ttinsn` instruction is _exactly_ identical to an `sw` instruction. If fusion is performed, a fused sequence of up to four `.ttinsn` instructions still behaves like a single store instruction for ordering purposes, albeit storing up to 128 bits rather than just 32 bits (similar to the vector stores performable by RISCV T2, and also similar to coalesced stores to L1).
 
+If fusion is enabled (`DisTriscCache` in [`cfg0`](CSRs.md) is clear) and any of the instructions that a [`REPLAY`](../TensixCoprocessor/REPLAY.md) instruction with `Load` set and `Exec` clear is loading into the replay buffer are pushed as part of a fused sequence, the Tensix-TRISC sync unit's tracking of in-flight instructions becomes inconsistent; this is `UndefinedBehavior`. As fusion only takes effect when a sequence of `.ttinsn` instructions is executed for a second or subsequent time, the problem typically appears only inside loops. Software which loads the replay buffer using `.ttinsn` instructions should disable fusion.
+
 ## Memory ordering
 
 `sw` (or `.ttinsn`) instructions to push Tensix instructions follow the usual [RISCV memory ordering](MemoryOrdering.md) rules for stores, with the added twist that the instruction's write-request counts as processed once the instruction has been pushed onto a FIFO in the coprocessor's frontend. If a RISCV core wants to wait for an instruction to have finished executing, rather than just wait for it to have been pushed, then additional mechanisms are required, for example [Auto TTSync](AutoTTSync.md) or [Manual TTSync](ManualTTSync.md).
