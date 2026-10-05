@@ -25,18 +25,23 @@ async def ReplayExpander():
     Instruction = await GetNextIncomingInstruction()
     if Instruction.Opcode != REPLAY:
       yield Instruction # Just pass through everything other than REPLAY
-    elif Instruction.Load:
-      Index = Instruction.Index
+      continue
+    Index = Instruction.Index
+    Count = Instruction.Count
+    if Count == 0 or Index + Count > 32:
+      UndefinedBehavior()
+    if Instruction.Load:
       Exec = Instruction.Exec
-      for i in range(Instruction.Count or 64):
+      for i in range(Count):
         Instruction = await GetNextIncomingInstruction()
-        ReplayBuffer[(Index + i) % 32] = Instruction
+        if Instruction.Opcode == REPLAY:
+          UndefinedBehavior() # A REPLAY cannot be one of the instructions loaded
+        ReplayBuffer[Index + i] = Instruction
         if Exec:
           yield Instruction
     else:
-      Index = Instruction.Index
-      for i in range(Instruction.Count or 64):
-        yield ReplayBuffer[(Index + i) % 32]
+      for i in range(Count):
+        yield ReplayBuffer[Index + i]
 ```
 
 ## Performance
