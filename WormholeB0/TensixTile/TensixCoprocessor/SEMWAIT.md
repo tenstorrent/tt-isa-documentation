@@ -34,7 +34,7 @@ The Wait Gate will then continuously re-evaluate the latched wait instruction un
 
 The block mask consists of nine bits, named B0 (least significant bit) through B8 (most significant bit). Their meaning is exactly the same [as for `STALLWAIT`](STALLWAIT.md#block-mask).
 
-If _any_ `SEMWAIT` instructions are used, it is highly recommended that _all_ `STALLWAIT` and `SEMWAIT` instructions include bit B1 ("Block thread from starting new Sync Unit instructions") in their block mask. Otherwise, a `SEMWAIT` instruction can execute whilst there is still a latched wait instruction in place, and latching of the new `SEMWAIT` will cause the previous wait to be forgotten.
+If _any_ `SEMWAIT` instructions are used, it is highly recommended that _all_ `STALLWAIT` and `SEMWAIT` instructions include bit B1 ("Block thread from starting new Sync Unit instructions") in their block mask. Otherwise, a `SEMWAIT` instruction can execute whilst there is still a latched wait instruction in place, and latching of the new `SEMWAIT` will cause the previous wait to be forgotten. This applies only to `SEMWAIT`: a [`STALLWAIT`](STALLWAIT.md) does not execute until any previously latched wait instruction has been forgotten.
 
 ## Condition mask
 

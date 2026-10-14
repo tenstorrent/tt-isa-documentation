@@ -37,6 +37,8 @@ WaitGate[CurrentThread].LatchedWaitInstruction.BlockMask = BlockMask ? BlockMask
 
 The Wait Gate will then continuously re-evaluate the latched wait instruction until the selected condition is met, at which point the latched wait instruction will be forgotten, and instructions will no longer be blocked. The new latched wait instruction takes effect immediately, so it will influence whether or not the instruction immediately after `STREAMWAIT` can pass through the Wait Gate. There is a one cycle lag between the condition(s) being met and the block mask being removed - in particular this means that the instruction immediately after `STREAMWAIT` will always be subject to the block mask for at least one cycle, even if the condition is met immediately.
 
+If a thread presents a `STREAMWAIT` instruction whilst it already has a latched wait instruction, then `STREAMWAIT` does not execute until the previously latched wait instruction has been forgotten. This applies equally to [`STALLWAIT`](STALLWAIT.md), [`SEMWAIT`](SEMWAIT.md), and [`STREAMWAIT`](STREAMWAIT.md), so a new wait instruction never replaces a latched wait instruction. Instructions after the new wait instruction wait behind it.
+
 ## Block mask
 
 The block mask consists of nine bits, named B0 (least significant bit) through B8 (most significant bit). Their meaning is exactly the same [as for `STALLWAIT`](STALLWAIT.md#block-mask).
