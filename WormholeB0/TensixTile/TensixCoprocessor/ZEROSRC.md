@@ -61,3 +61,5 @@ for (unsigned Bank = 0; Bank < 2; ++Bank) {
 ## Instruction scheduling
 
 If clearing just a single bank, software may wish to use [`STALLWAIT`](STALLWAIT.md) (with block bit B6 and some of condition codes C8 through C11) prior to using `ZEROSRC`.
+
+If an Unpacker's [`UNPACR_NOP`](UNPACR_NOP_ZEROSRC.md) clears a bank in the same cycle as a `ZEROSRC` with `SingleBankMatrixUnit` or `BothBanks` set, the `UNPACR_NOP` clears the Matrix Unit's current bank of its register (or both banks, for `BothBanks`) rather than the Unpacker's own bank, even if this `ZEROSRC` does not clear that register; see [`UNPACR_NOP`'s instruction scheduling](UNPACR_NOP_ZEROSRC.md#instruction-scheduling).
