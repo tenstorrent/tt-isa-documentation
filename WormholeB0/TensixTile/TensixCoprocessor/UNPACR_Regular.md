@@ -332,6 +332,9 @@ if (UnpackToDst) {
 }
 
 uint2_t ThrottleMode = ConfigState.THCON_SEC[WhichUnpacker].REG2_Throttle_mode;
+// Blackhole unpacks BFP4a/BFP4 at x4 with ThrottleMode == 2 or by default, which changes two BFP4a results.
+bool BFP4AtX4 = (TTArchitecture == Blackhole) && (DatumSizeBytes == 0.5) &&
+                (ThrottleMode == 2 || !ConfigState.THCON_SEC[0].REG1_ovrd_default_throttle_mode);
 if ((TTArchitecture == Wormhole) && (ThrottleMode > 2)) {
   UndefinedBehavior(); // x8 ThrottleMode is illegal on Wormhole
 }
@@ -408,7 +411,7 @@ for (unsigned i = 0; i < InputNumDatums && DecompressNumDatums; ) {
     }
   }
   // Do the format conversion:
-  uint32_t Datum = FormatConversion(InDataFormat, OutDataFormat, DatumBits, ExpBits, WhichUnpacker, UnpackToDst, Exponent4b);
+  uint32_t Datum = FormatConversion(InDataFormat, OutDataFormat, DatumBits, ExpBits, WhichUnpacker, UnpackToDst, Exponent4b, BFP4AtX4);
   if (AllDatumsAreZero) {
     Datum = 0;
     DecompressionZeroes = 0;
@@ -524,7 +527,7 @@ uint32_t ReadL1Bytes(double Addr, double NumBytes) {
   return Result;
 }
 
-uint32_t FormatConversion(uint4_t InDataFormat, uint4_t OutDataFormat, uint32_t DatumBits, uint8_t ExpBits, uint1_t WhichUnpacker, bool UnpackToDst, bool Exponent4b) {
+uint32_t FormatConversion(uint4_t InDataFormat, uint4_t OutDataFormat, uint32_t DatumBits, uint8_t ExpBits, uint1_t WhichUnpacker, bool UnpackToDst, bool Exponent4b, bool BFP4AtX4) {
   if (InDataFormat == FP32) {
     // Conversions are possible from FP32 to a few other types.
     switch (OutDataFormat) {
@@ -574,9 +577,20 @@ uint32_t FormatConversion(uint4_t InDataFormat, uint4_t OutDataFormat, uint32_t 
     case BFP8: DatumBits = BFP8ToBF16(DatumBits     , ExpBits); InDataFormat = BF16; break;
     case BFP4: DatumBits = BFP8ToBF16(DatumBits << 4, ExpBits); InDataFormat = BF16; break;
     case BFP2: DatumBits = BFP8ToBF16(DatumBits << 6, ExpBits); InDataFormat = BF16; break;
-    case BFP8a: DatumBits = BFP8aToFP16(DatumBits     , ExpBits); InDataFormat = FP16; break;
-    case BFP4a: DatumBits = BFP8aToFP16(DatumBits << 4, ExpBits); InDataFormat = FP16; break;
-    case BFP2a: DatumBits = BFP8aToFP16(DatumBits << 6, ExpBits); InDataFormat = FP16; break;
+    case BFP8a: case BFP4a: case BFP2a: {
+      unsigned Shift = InDataFormat == BFP8a ? 0 : InDataFormat == BFP4a ? 4 : 6;
+      uint8_t Bits = DatumBits << Shift;
+      if ((TTArchitecture == Blackhole) &&
+          (Bits == 0x80 || ((ExpBits == 31) && ((Bits | ((1u << Shift) - 1)) & 0x7f) == 0x7f))) {
+        // Blackhole: the negative zero, whatever ExpBits, and a datum whose magnitude bits are all ones
+        // with ExpBits == 31 become exponent 31 with an all-ones mantissa, except BFP4a at x4, where the
+        // mantissa is 0x380.
+        DatumBits = ((Bits & 0x80) << 8) | (InDataFormat == BFP4a && BFP4AtX4 ? 0x7f80 : 0x7fff);
+      } else {
+        DatumBits = BFP8aToFP16(Bits, ExpBits);
+      }
+      InDataFormat = FP16;
+      break; }
     case INT8: {
       // INT8 is either uint8_t or 8 bit sign-magnitude, and becomes "Integer 8", which is
       // then overlaid onto FP16.
