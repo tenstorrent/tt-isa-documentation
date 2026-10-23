@@ -42,9 +42,11 @@ Note that this pattern is the exact inverse of [`SFPSTORE`](SFPSTORE.md).
 The `SFPLOAD` part of `SFPLOADMACRO` executes as per the [`SFPLOAD` functional model](SFPLOAD.md#functional-model), using this pair of definitions:
 
 ```c
-uint4_t VD = (0 << 3) | (VDHi << 2) | VDLo;
 uint10_t Imm10 = (Imm9 << 1) | VDHi;
+uint4_t VD = (0 << 3) | ((Addr & 1) << 2) | VDLo;
 ```
+
+Where `Addr` is the `Dst` address which the `SFPLOAD` functional model computes from `Imm10` (before it uses `VD`). The low bit of `Addr` equals `VDHi` as long as everything added to `Imm10` (`DEST_TARGET_REG_CFG_MATH_Offset`, `DEST_REGW_BASE_Base` and the `Dst` RWC, or for `MOD0_FMT_INT32_ALL` the low two bits of the latter two's sum) sums to an even number; if it sums to an odd number, `VD` ends up being 4 more or 4 less than intended.
 
 The remaining part of `SFPLOADMACRO` assumes the following state, which is written via [`SFPCONFIG`](SFPCONFIG.md):
 
@@ -68,8 +70,9 @@ for (auto [i, SubUnit] in enumerate({SimpleSubUnit, MADSubUnit, RoundSubUnit, St
   uint3_t Delay = (SequenceBits >> 3) & 7;
 
   // Forget any pre-existing scheduled instruction which would execute at the same point
-  // in time as the instruction we're about to schedule:
-  if (Delay != 7) {
+  // in time as the instruction we're about to schedule (even if nothing is about to be
+  // scheduled, except for Delay == 0):
+  if (Delay != 0 || (SequenceBits & 7) != 0) {
     SubUnit.ForgetFutureInstructionWhoseDelayIs(Delay);
   }
 
@@ -132,7 +135,7 @@ for (auto [i, SubUnit] in enumerate({SimpleSubUnit, MADSubUnit, RoundSubUnit, St
   SubUnit.ScheduleInstructionForFutureExecution(Insn, Delay, DelayKind);
 }
 ```
-An instruction scheduled with a delay of 0 will execute on the cycle immediately after `SFPLOADMACRO`, whereas an instruction scheduled with a delay greater than zero will gradually count down, and then execute on the cycle _after_ the cycle on which it counts down from 1 to 0. If _any_ outstanding instruction (on any sub-unit) scheduled for future execution has a delay kind of `WaitForElapsedInstructions`, then _all_ outstanding instructions (on all sub-units) have their delay counter decremented by one every time a thread issues an instruction to the Vector Unit (SFPU). On the other hand, if all outstanding instructions have a delay kind of `WaitForElapsedCycles`, then all outstanding instructions have their delay counter decremented by one every cycle. The `WaitForElapsedInstructions` delay kind is useful when a scheduled instruction consumes an input which is produced by a future instruction (it is not required when the producing instruction and the consuming instruction come from the same `SFPLOADMACRO`, but it generally is required in other cases).
+An instruction scheduled with a delay of 0 will execute on the cycle immediately after `SFPLOADMACRO`, whereas an instruction scheduled with a delay greater than zero will gradually count down, and then execute on the cycle _after_ the cycle on which it counts down from 1 to 0. If _any_ outstanding instruction (on any sub-unit) scheduled for future execution has a delay kind of `WaitForElapsedInstructions`, then _all_ outstanding instructions (on all sub-units) have their delay counter decremented by one every time a thread issues an instruction to the Vector Unit (SFPU). On the other hand, if all outstanding instructions have a delay kind of `WaitForElapsedCycles`, then all outstanding instructions have their delay counter decremented by one every cycle. The `WaitForElapsedInstructions` delay kind is useful when a scheduled instruction consumes an input which is produced by a future instruction (it is not required when the producing instruction and the consuming instruction come from the same `SFPLOADMACRO`, but it generally is required in other cases). Outstanding instructions whose countdown is waiting for elapsed instructions only make progress as instructions are issued to the Vector Unit (SFPU), and until they have all executed, the Vector Unit (SFPU) does not become idle, so software should issue enough further instructions (for example `SFPNOP`) after the last `SFPLOADMACRO` for them all to execute.
 
 There are some extra considerations for `StoreSubUnit`:
 * In theory, `LoadMacroConfig` can differ between lanes (though this is not encouraged). If _any_ lane invokes `ScheduleInstructionForFutureExecution` on `StoreSubUnit`, then _all_ lanes must do so.
@@ -153,3 +156,9 @@ If an instruction scheduled via `SFPLOADMACRO` arrives at a sub-unit on the same
 At least three unrelated Tensix instructions need to execute after a Matrix Unit (FPU) instruction which writes (or accumulates) to `Dst` and an `SFPLOADMACRO` instruction which wants to read that same region of `Dst`. If software lacks useful instructions to fill the gap, any kind of Tensix NOP instruction can be used for this purpose. Software can also use [`STALLWAIT`](STALLWAIT.md) (with block bit B8 and condition code C7), though the recommendation (in this context) is to insert three unrelated Tensix instructions rather than using `STALLWAIT`.
 
 If scheduling Vector Unit (SFPU) instructions for future execution, software should ensure that it doesn't subsequently issue a regular Vector Unit (SFPU) instruction to the same sub-unit for the same cycle.
+
+If [`SFPCONFIG`](SFPCONFIG.md) is used to change `LoadMacroConfig.Sequence` or `LoadMacroConfig.Misc`, and the very next Vector Unit (SFPU) instruction is `SFPLOADMACRO`, then that `SFPLOADMACRO` might observe either the old value or the new value. Similarly, if `SFPCONFIG` is used to change `LoadMacroConfig.InstructionTemplate[i]`, an instruction scheduled via `SFPLOADMACRO` from that template which executes on the very next cycle might be either the old or the new instruction. In both cases, software should insert an [`SFPNOP`](SFPNOP.md) instruction immediately after `SFPCONFIG`.
+
+If `SFPCONFIG` is used to change `LoadMacroConfig.InstructionTemplate[i]` and the very next Vector Unit (SFPU) instruction is written to `InstructionTemplate[j]` by way of `VD ≥ 12` (see `LaneConfig.DISABLE_BACKDOOR_LOAD`), then `InstructionTemplate[i]` might end up containing either the value from `SFPCONFIG` or the instruction bits of that next instruction. Software should insert an [`SFPNOP`](SFPNOP.md) instruction between them.
+
+For the purpose of writing to `InstructionTemplate[VD - 12]` via `VD ≥ 12`, the `VD` field of [`SFPLOAD`](SFPLOAD.md), [`SFPLOADI`](SFPLOADI.md), [`SFPSTORE`](SFPSTORE.md) and [`SFPLUT`](SFPLUT.md) is in bits 23:20 of the instruction, and that of every other instruction is in bits 7:4.
