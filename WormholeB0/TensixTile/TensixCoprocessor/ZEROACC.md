@@ -43,13 +43,19 @@ On Blackhole, `AddrMod` is a `u3` rather than a `u2`, `UseDst32b` is no longer p
 On Blackhole, the 16-row mode's `Imm10` is relative to the half of `Dst` that the instruction addresses, unless `DEST_ACCESS_CFG_zeroacc_absolute_tile_mode` is set. Hardware picks the half using the row that the one-row mode would clear, i.e. `Imm10` plus `DEST_TARGET_REG_CFG_MATH_Offset` plus the `Dst` RWC plus `DEST_REGW_BASE_Base`, with `Imm10` added in as a row number even though this mode treats it as a face number; the upper half is rows 512 and up, or rows 256 and up with `UseDst32b`. Software double-buffering `Dst` normally keeps the base of the current half in `DEST_TARGET_REG_CFG_MATH_Offset`, so `Imm10` should then be the face number within that half. Note that the sum can reach the upper half even when `DEST_TARGET_REG_CFG_MATH_Offset` is in the lower half (e.g. `DEST_TARGET_REG_CFG_MATH_Offset == 496` and `Imm10 == 20`), and that an `Imm10` which already includes the half (e.g. 32 or more for the upper half of a 16-bit `Dst`) is out of bounds once the half is added again. On Wormhole, `Imm10` is always absolute.
 
 ```c
-if (Revert) {
-  // If this branch is taken, then in the below, the assignments of DstRowValid set it
-  // to true instead of to false. Don't use this unless you really know what you're doing.
-  UndefinedBehavior();
-}
 if (TTArchitecture == Blackhole && Mode >= 4) {
   UndefinedBehavior();
+}
+if (Revert) {
+  if (TTArchitecture == Blackhole) {
+    NonContractualBehavior {
+      // Current silicon behavior (not architecturally guaranteed): in the below, the assignments of
+      // DstRowValid set it to true instead of to false, so those rows again read as what they hold
+      // (UnpredictableValue if never written since reset). Revert has no other effect.
+    }
+  } else {
+    UndefinedBehavior();
+  }
 }
 uint1_t StateID = ThreadConfig[CurrentThread].CFG_STATE_ID_StateID;
 auto& ConfigState = Config[StateID];
