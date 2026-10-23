@@ -128,3 +128,5 @@ ApplyAddrMod(AddrMod);
 ## Instruction scheduling
 
 If `MOVA2D` is used, then for the next three cycles, software should avoid reading from the region of `Dst` which was written to. To partially enforce this, if a thread presents an instruction from the following list (regardless of where in `Dst` it might access), hardware will automatically stall the thread for an appropriate number of cycles: `MOVD2A`, `MOVD2B`, `ELWMUL`, `MVMUL`, `DOTPV`, `GMPOOL`, `GAPOOL`, `MFCONV3S1`, `CONV3S1`, `MPOOL3S1`, `APOOL3S1`, `CONV3S2`, `MPOOL3S2`, `APOOL3S2`.
+
+[`PACR`](PACR.md) and [`SFPLOAD`](SFPLOAD.md) are not in this list, and if the Matrix Unit (FPU) is still working on earlier instructions from the thread when the thread issues `MOVA2D`, its write to `Dst` can happen later than three cycles after the thread issues it. Software can use [`STALLWAIT`](STALLWAIT.md) (with condition code C7, and block bit B2 for `PACR` or B8 for `SFPLOAD`) to wait for it; see [`Dst`](Dst.md#instruction-scheduling) and [`SFPLOAD`](SFPLOAD.md#instruction-scheduling).
