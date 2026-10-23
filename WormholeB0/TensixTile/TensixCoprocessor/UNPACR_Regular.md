@@ -373,6 +373,16 @@ if (!UnpackToDst && (WhichUnpacker == 0) && (InputNumDatums > 16)) { // check fo
     // Pseudocode below does not describe the exact SrcA burst drop behavior. Software must not
     // depend on the precise behavior; do not write software that triggers SrcA burst drops.
   }
+  if (TTArchitecture == Blackhole) {
+    // When the datums don't start at an aligned 16 byte boundary, the groups in which they reach SrcA
+    // straddle rows, and a group that straddles a 16-row set boundary loses its datums past the
+    // boundary, at every throttle mode (e.g. Int16 at x1 from 2 bytes into a 16 byte word, written to
+    // rows 16 to 37, leaves the first 7 datums of row 32 unwritten).
+    uint32_t EndRow = (OutAddr + InputNumDatums - 1) / 16 - 4;
+    if (InAddr_Datums != floor(InAddr_Datums / 16.) * 16. && (StartRow / 16) != (EndRow / 16)) {
+      UndefinedBehavior();
+    }
+  }
 }
 
 // Main unpack loop:
