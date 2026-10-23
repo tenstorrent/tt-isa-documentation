@@ -122,8 +122,19 @@ struct FlagStackEntry {
   bool LaneFlags;
   bool UseLaneFlagsForLaneEnable;
 };
-Stack<FlagStackEntry> FlagStack[32];
+struct {
+  FlagStackEntry Entries[8] = UnpredictableValue(); // no power-on reset value
+  uint4_t Ptr = 0; // Number of entries in use (see below for values above 8)
+
+  bool IsEmpty() { return Ptr == 0; }
+  unsigned Size() { return Ptr; }
+  FlagStackEntry Top() { return Entries[(Ptr + 7) % 8]; }       // Not used when Ptr == 0
+  void Push(FlagStackEntry e) { Entries[Ptr % 8] = e; Ptr += 1; } // Ptr == 15 wraps to 0
+  void Pop() { Ptr -= 1; }                                        // Ptr == 0 wraps to 15
+} FlagStack[32];
 ```
+
+Each lane's stack holds eight entries. Software must not push onto a full stack or pop from an empty one; the instruction descriptions mark each of these as `NonContractualBehavior`, and current hardware does what the definitions above say: a push onto a full stack overwrites `Entries[Ptr % 8]` and leaves `Ptr` above 8, and a pop from an empty stack leaves `Ptr` at 15. While `Ptr` is above 8, everything [`SFPPUSHC`](SFPPUSHC.md), [`SFPPOPC`](SFPPOPC.md) and [`SFPCOMPC`](SFPCOMPC.md) do with the stack is likewise `NonContractualBehavior`, as defined above.
 
 Software is encouraged to set `UseLaneFlagsForLaneEnable` to `true` and then always leave it as `true`, though it doesn't have to.
 

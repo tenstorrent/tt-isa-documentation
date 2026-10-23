@@ -1,6 +1,6 @@
 # `SFPPOPC` (Pop or peek vector conditional execution stack)
 
-**Summary:** In its simplest mode, `SFPPOPC` pops from the vector conditional execution stack, replacing `LaneFlags` and `UseLaneFlagsForLaneEnable` with values popped from the stack. In its more complex modes, `SFPPOPC` peeks from the vector conditional execution stack, mutating `LaneFlags` and `UseLaneFlagsForLaneEnable` in various ways based on the contents of the top of the stack. The simple mode must not be used when the stack is empty. Due to a hardware bug, the complex modes should not be used when the stack is full.
+**Summary:** In its simplest mode, `SFPPOPC` pops from the vector conditional execution stack, replacing `LaneFlags` and `UseLaneFlagsForLaneEnable` with values popped from the stack. In its more complex modes, `SFPPOPC` peeks from the vector conditional execution stack, mutating `LaneFlags` and `UseLaneFlagsForLaneEnable` in various ways based on the contents of the top of the stack. The simple mode must not be used when the stack is empty (what current hardware then does is a `NonContractualBehavior`; see [the flag stack](VectorUnit.md#lane-predication-masks)). Due to a hardware bug, the complex modes should not be used when the stack is full.
 
 **Backend execution unit:** [Vector Unit (SFPU)](VectorUnit.md), simple sub-unit
 
@@ -32,13 +32,17 @@ lanewise {
       // Plain pop from stack.
       if (FlagStack.IsEmpty()) {
         // Software should avoid using `Mod1 == 0` when the stack is empty.
-        UndefinedBehavior();
+        NonContractualBehavior {
+          // The pop below leaves Size() at 15.
+        }
       }
       FlagStack.Pop();
-    } else if (FlagStack.Size() == 8) {
-      // This assignment is a hardware bug; to avoid hitting it, software
-      // should not use `Mod1 != 0` when the stack is full.
-      FlagStack.Bottom() = Top;
+    } else {
+      // When the stack is full, this assignment overwrites the bottom entry, which is a hardware
+      // bug; to avoid hitting it, software should not use `Mod1 != 0` when the stack is full.
+      // Otherwise it writes an entry above the top, which nothing reads before a push overwrites it
+      // (unless the stack is later popped whilst empty).
+      FlagStack.Entries[FlagStack.Size() % 8] = Top;
     }
 
     if (Mod1 == 0) {
