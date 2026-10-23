@@ -43,7 +43,7 @@ TT_SFP_STOCH_RND(/* u2 */ RoundingMode, 0, 9,
 if (Mod1 != SFPSTOCHRND_MOD1_FP32_TO_FP16A
  && Mod1 != SFPSTOCHRND_MOD1_FP32_TO_FP16B) {
   // Is some other flavour of SFPSTOCHRND; see other pages for details.
-  UndefinedBehavior();
+  return;
 }
 
 lanewise {

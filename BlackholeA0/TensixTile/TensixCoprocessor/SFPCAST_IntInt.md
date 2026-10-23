@@ -33,7 +33,7 @@ if (Mod1 > 3) { // Reserved instruction modifiers
 }
 if ((Mod1 & 3) != SFPCAST_MOD1_INT32_SM32) {
   // Is some other flavour of SFPCAST; see other pages for details.
-  UndefinedBehavior();
+  return;
 }
 
 if (VD < 8 || VD == 16) {
