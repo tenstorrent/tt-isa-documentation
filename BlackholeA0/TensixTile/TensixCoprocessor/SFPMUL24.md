@@ -1,6 +1,6 @@
 # `SFPMUL24` (Vectorized multiply of 23-bit integers)
 
-**Summary:** Performs lanewise multiplication of two 23-bit integers, returning either the low 23 bits or high 23 bits of their product. In some modes, the `VA` and/or `VD` indices from the instruction bits are ignored, and instead come from the low four bits of `LReg[7]` (which allows these bits to potentially differ between lanes). Due to how the floating-point datapath is reused for `SFPMUL24`, an exotic shift/add-like operation is performed after the multiply. This is a `NonContractualBehavior` and software is strongly encouraged to turn this operation into a no-op by always setting `VC == 9` (which refers to the constant zero; see the definition of [`LReg[9]`](LReg.md)).
+**Summary:** Performs lanewise multiplication of two 23-bit integers, returning either the low 23 bits or high 23 bits of their product. In some modes, the `VA` and/or `VD` indices from the instruction bits are ignored, and instead come from the low four bits of `LReg[7]` (which allows these bits to potentially differ between lanes). Due to how the floating-point datapath is reused for `SFPMUL24`, an exotic shift/add-like operation is seen after the multiply when the exponent field of `LReg[VC]` is not zero. This is `UndefinedBehavior`, so software should turn this operation into a no-op by always setting `VC == 9` (which refers to the constant zero; see the definition of [`LReg[9]`](LReg.md)).
 
 **Backend execution unit:** [Vector Unit (SFPU)](VectorUnit.md), MAD sub-unit
 
@@ -33,10 +33,10 @@ lanewise {
       } else {
         d = (a * b) & 0x7fffff;
       }
-      if (c) {
-        NonContractualBehavior {
-          d = Mul24ShiftAdd(d, c); // Adjustment from reuse of floating-point datapath (not architecturally guaranteed)
-        }
+      if ((c >> 23) & 0xff) {
+        // Current silicon is seen to give d = Mul24ShiftAdd(d, c) (from reuse of the floating-point datapath), but this
+        // is not verified
+        UndefinedBehavior();
       }
       unsigned vd;
       if ((Mod1 & SFPMUL24_MOD1_INDIRECT_VD) && VD != 16) {
