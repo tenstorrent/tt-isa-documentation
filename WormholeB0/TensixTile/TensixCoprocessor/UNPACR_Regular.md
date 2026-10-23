@@ -332,9 +332,10 @@ if (UnpackToDst) {
 }
 
 uint2_t ThrottleMode = ConfigState.THCON_SEC[WhichUnpacker].REG2_Throttle_mode;
-// Blackhole unpacks BFP4a/BFP4 at x4 with ThrottleMode == 2 or by default, which changes two BFP4a results.
-bool BFP4AtX4 = (TTArchitecture == Blackhole) && (DatumSizeBytes == 0.5) &&
-                (ThrottleMode == 2 || !ConfigState.THCON_SEC[0].REG1_ovrd_default_throttle_mode);
+// BFP4a/BFP4 unpack at x4 with ThrottleMode == 2, and on Blackhole also by default, which changes some BFP4a results.
+bool BFP4AtX4 = (DatumSizeBytes == 0.5) &&
+                (ThrottleMode == 2 || ((TTArchitecture == Blackhole) &&
+                                       !ConfigState.THCON_SEC[0].REG1_ovrd_default_throttle_mode));
 if ((TTArchitecture == Wormhole) && (ThrottleMode > 2)) {
   UndefinedBehavior(); // x8 ThrottleMode is illegal on Wormhole
 }
@@ -596,6 +597,11 @@ uint32_t FormatConversion(uint4_t InDataFormat, uint4_t OutDataFormat, uint32_t 
         // with ExpBits == 31 become exponent 31 with an all-ones mantissa, except BFP4a at x4, where the
         // mantissa is 0x380.
         DatumBits = ((Bits & 0x80) << 8) | (InDataFormat == BFP4a && BFP4AtX4 ? 0x7f80 : 0x7fff);
+      } else if ((TTArchitecture == Wormhole) && !UnpackToDst && BFP8aExpOutOfRange(Bits, ExpBits)) {
+        NonContractualBehavior {
+          // Wormhole: the exponent keeps its low five bits, or all eight bits for BFP4a at x4
+          return BFP8aToSrcWrapped(Bits, ExpBits, InDataFormat == BFP4a && BFP4AtX4);
+        }
       } else {
         DatumBits = BFP8aToFP16(Bits, ExpBits);
       }
@@ -667,6 +673,22 @@ uint16_t BFP8aToFP16(uint8_t DatumBits, uint8_t ExpBits) {
     if (ExpBits & 0xe0) UndefinedBehavior();
     return (Sign << 15) | (ExpBits << 10) | ((Mag & 0x7e) << 3);
   }
+}
+
+bool BFP8aExpOutOfRange(uint8_t DatumBits, uint8_t ExpBits) {
+  // Whether BFP8aToFP16's exponent leaves the five bits FP16 has
+  uint8_t Mag = DatumBits << 1;
+  return Mag != 0 && (uint8_t(ExpBits - stdc_leading_zeros_uc(Mag)) & 0xe0);
+}
+
+uint19_t BFP8aToSrcWrapped(uint8_t DatumBits, uint8_t ExpBits, bool KeepEightBits) {
+  // BFP8aToFP16 followed by WriteSrcFP16, with the exponent's low five bits (or all eight bits) kept
+  uint19_t Sign = DatumBits >> 7;
+  uint8_t Mag = DatumBits << 1;
+  unsigned LZ = stdc_leading_zeros_uc(Mag);
+  Mag <<= LZ;
+  ExpBits -= LZ;
+  return (Sign << 18) | (((Mag & 0x7e) << 3) << 8) | (KeepEightBits ? ExpBits : ExpBits & 31);
 }
 
 uint16_t FP32ToFP16(uint32_t x) {
