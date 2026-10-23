@@ -153,8 +153,22 @@ case SFPSHFT2_MOD1_SHFT_IMM:
     }
   }
   break;
-default:
-  UndefinedBehavior();
+default: // Mod1 7 - 15
+  NonContractualBehavior {
+    // Current silicon behavior (not architecturally guaranteed): as SFPSHFT2_MOD1_SHFT_LREG.
+    if (VD < 8 || VD == 16) {
+      lanewise {
+        if (LaneEnabled) {
+          int32_t vc = LReg[VC].i32;
+          if (vc >= 0) {
+            LReg[VD].u32 = LReg[VB].u32 << (vc & 31);
+          } else {
+            LReg[VD].u32 = LReg[VB].u32 >> ((-vc) & 31);
+          }
+        }
+      }
+    }
+  }
 }
 ```
 
@@ -195,7 +209,7 @@ If `SFPSHFT2_MOD1_SUBVEC_SHFLROR1_AND_COPY4` or `SFPSHFT2_MOD1_SUBVEC_SHFLROR1` 
 * `SFPSETMAN`
 * `SFPSETSGN`
 * `SFPSHFT`
-* `SFPSHFT2` with `Mod1` being any of `SFPSHFT2_MOD1_COPY4`, `SFPSHFT2_MOD1_SUBVEC_CHAINED_COPY4`, `SFPSHFT2_MOD1_SHFT_LREG`, `SFPSHFT2_MOD1_SHFT_IMM`.
+* `SFPSHFT2` with `Mod1` being any of `SFPSHFT2_MOD1_COPY4`, `SFPSHFT2_MOD1_SUBVEC_CHAINED_COPY4`, `SFPSHFT2_MOD1_SHFT_LREG`, `SFPSHFT2_MOD1_SHFT_IMM`, or 7 - 15.
 * `SFPSTOCHRND`
 * `SFPXOR`
 
