@@ -53,6 +53,8 @@ async def ReplayExpander():
 
 Bits 2-3, 10-13 and 19-23 of a `REPLAY` instruction are ignored, and so is `Exec` when `Load` is clear; setting any of these is `NonContractualBehavior`.
 
+On Blackhole, a `REPLAY` with `Load` set and `Exec` clear is further restricted by the tracking of in-flight instructions pushed by RISCV T0 / T1 / T2; see [Push Tensix Instruction](../../../BlackholeA0/TensixTile/BabyRISCV/PushTensixInstruction.md).
+
 ## Performance
 
 While not processing `REPLAY` instructions, or processing a `REPLAY` instruction with both `Load` and `Exec` set, each Replay Expander can ingest one instruction per cycle and emit one instruction per cycle.
