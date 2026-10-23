@@ -40,11 +40,18 @@ uint10_t Adj32(uint10_t r) {
 
 Note that `Config` in the above functions refers to Tensix backend configuration. In addition to their usage in these two functions, `Config.DEST_ACCESS_CFG_remap_addrs` and `Config.DEST_ACCESS_CFG_swizzle_32b` also affect how packers address `Dst`. `Config.DEST_ACCESS_CFG_zeroacc_absolute_tile_mode` affects only [`ZEROACC`](ZEROACC.md).
 
-Each of the valid bits is indexed by physical row: an access to `Dst32b[Row]` consults `DstRowValid[Adj32(Row)]` (and does not consult `Adj32(Row) + 8`), whereas an access to `Dst16b[Row]` consults `DstRowValid[Adj16(Row)]`.
+Each of the valid bits is indexed by physical row, as the row would be placed without `DEST_ACCESS_CFG_swizzle_32b`: an access to `Dst32b[Row]` consults `DstRowValid[Adj32NoSwizzle(Row)]` (and does not consult `Adj32NoSwizzle(Row) + 8`), whereas an access to `Dst16b[Row]` consults `DstRowValid[Adj16(Row)]`. `Adj32NoSwizzle` is `Adj32` with its `swizzle_32b` step left out:
+```c
+uint10_t Adj32NoSwizzle(uint10_t r) {
+  r = Adj16(r);
+  return ((r & 0x1f8) << 1) | (r & 0x207);
+}
+```
+So with `swizzle_32b` set, a `Dst32b` row's valid bit is not the valid bit of the 16-bit row that holds its high half; software that switches widths over data written with `swizzle_32b` set should not rely on rows that `ZEROACC` marked undefined in between.
 
 Not every client consults them; [`ZEROACC`](ZEROACC.md) says how each reads an undefined row. In particular, `ZEROACC` doesn't give the Vector Unit (SFPU) zeros: [`SFPLOAD`](SFPLOAD.md) of an undefined row is `UndefinedBehavior`, so software that wants zeros in `Dst` for the Vector Unit to read must write them, e.g. with [`SFPSTORE`](SFPSTORE.md).
 
-If a `ZEROACC` executes in the same cycle as a Vector Unit or unpacker write to `Dst`, the write's update of `DstRowValid` is lost, even if the `ZEROACC` targets other rows (e.g. the other half of a double-buffered `Dst`). Software must not let such writes race with another thread's `ZEROACC`.
+If a `ZEROACC` executes in the same cycle as a Vector Unit or unpacker write to `Dst`, the write's update of `DstRowValid` is lost, even if the `ZEROACC` targets other rows (e.g. the other half of a double-buffered `Dst`). Likewise, if writes to `Dst` from different clients (Matrix Unit, Vector Unit, unpacker, RISCV T) execute in the same cycle and would set the valid bits of physical rows in the same 256-row group that are congruent modulo 8, only one valid bit is set: that of the row whose number is the bitwise OR of theirs, which can be none of them. Software must not let such writes race with another thread's `ZEROACC` or with each other.
 
 ## Data types
 
