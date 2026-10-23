@@ -28,21 +28,30 @@ async def ReplayExpander():
       continue
     Index = Instruction.Index
     Count = Instruction.Count
-    if Count == 0 or Index + Count > 32:
+    if Count == 0:
       UndefinedBehavior()
+    if TTArchitecture == Wormhole and Count > 32:
+      if Count == 33 and not Instruction.Load:
+        UndefinedBehavior() # Current silicon emits either 33 instructions or 1, depending on timing
+      NonContractualBehavior() # Current silicon uses only the low 5 bits of Count (not architecturally guaranteed)
+      Count -= 32
+    if Index + Count > 32:
+      NonContractualBehavior() # Current silicon wraps Index + i around modulo 32 (not architecturally guaranteed)
     if Instruction.Load:
       Exec = Instruction.Exec
       for i in range(Count):
         Instruction = await GetNextIncomingInstruction()
         if Instruction.Opcode == REPLAY:
           UndefinedBehavior() # A REPLAY cannot be one of the instructions loaded
-        ReplayBuffer[Index + i] = Instruction
+        ReplayBuffer[(Index + i) % 32] = Instruction
         if Exec:
           yield Instruction
     else:
       for i in range(Count):
-        yield ReplayBuffer[Index + i]
+        yield ReplayBuffer[(Index + i) % 32]
 ```
+
+Bits 2-3, 10-13 and 19-23 of a `REPLAY` instruction are ignored, and so is `Exec` when `Load` is clear; setting any of these is `NonContractualBehavior`.
 
 ## Performance
 
