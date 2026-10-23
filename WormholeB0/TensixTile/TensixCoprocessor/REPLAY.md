@@ -29,7 +29,9 @@ async def ReplayExpander():
     Index = Instruction.Index
     Count = Instruction.Count
     if Count == 0:
-      UndefinedBehavior()
+      # Current silicon treats a Count of 0 as 32 on Wormhole and as 64 on Blackhole (not architecturally guaranteed)
+      NonContractualBehavior()
+      Count = 32 if TTArchitecture == Wormhole else 64
     if TTArchitecture == Wormhole and Count > 32:
       if Count == 33 and not Instruction.Load:
         UndefinedBehavior() # Current silicon emits either 33 instructions or 1, depending on timing
