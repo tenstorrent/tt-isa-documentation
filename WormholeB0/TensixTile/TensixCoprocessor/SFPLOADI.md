@@ -44,7 +44,18 @@ if (VD < 8) {
       case SFPLOADI_MOD0_SHORT:  LReg[VD].u32 = SignExtend(Imm16); break;
       case SFPLOADI_MOD0_UPPER:  LReg[VD].u32 = (Imm16 << 16) | (LReg[VD].u32 & 0x0000ffff); break;
       case SFPLOADI_MOD0_LOWER:  LReg[VD].u32 = (LReg[VD].u32 & 0xffff0000) | Imm16; break;
-      default: UndefinedBehavior(); break;
+      default:
+        NonContractualBehavior {
+          // Current silicon behavior (not architecturally guaranteed)
+          uint32_t Value = (Mod0 & 4) ? SignExtend(Imm16) : (Mod0 & 2) ? ZeroExtend(Imm16)
+                         : (Mod0 & 1) ? FP16toFP32(Imm16) : BF16toFP32(Imm16);
+          if ((Mod0 & 10) == 10) {
+            LReg[VD].u32 = (LReg[VD].u32 & 0xffff0000) | (Value & 0xffff);
+          } else {
+            LReg[VD].u32 = Value;
+          }
+        }
+        break;
       }
     }
   }
