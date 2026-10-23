@@ -62,9 +62,8 @@ for (unsigned Lane = 0; Lane < 32; ++Lane) {
     }
     break; }
   case 9: case 10:
-    NonContractualBehavior {
-      // Does nothing (current silicon behavior, not architecturally guaranteed)
-    }
+    // Current silicon is seen to do nothing, but this is not verified
+    UndefinedBehavior();
     break;
   case 11: case 12: case 13: case 14: {
     // Write to LReg[VD].
