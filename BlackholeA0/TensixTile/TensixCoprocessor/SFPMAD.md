@@ -76,6 +76,7 @@ A [bit-perfect software model](../../../Miscellaneous/FMA/README.md) is provided
 > Due to hardware bugs, a handful of cases are not detected by the automatic stalling logic:
 > * `SFPAND` when `SFPAND_MOD1_USE_VB` is used: the stalling logic ignores `SFPAND_MOD1_USE_VB`, and therefore thinks that `SFPAND` always reads from `VD` and never reads from `VB`.
 > * `SFPOR` when `SFPOR_MOD1_USE_VB` is used: the stalling logic ignores `SFPOR_MOD1_USE_VB`, and therefore thinks that `SFPOR` always reads from `VD` and never reads from `VB`.
+> * `SFPARECIP` when `SFPARECIP_MOD1_COND_RECIP` is used: the stalling logic thinks that `SFPARECIP` reads from `VD` in this mode, whereas it actually reads from `VB`.
 > * `SFPIADD`: the stalling logic does not realize that `SFPIADD` reads from `VD`.
 > * `SFPSHFT`: the stalling logic does not realize that `SFPSHFT` reads from `VD`.
 > * `SFPCONFIG`: the stalling logic does not realize that `SFPCONFIG` can read from `LReg[0]`.

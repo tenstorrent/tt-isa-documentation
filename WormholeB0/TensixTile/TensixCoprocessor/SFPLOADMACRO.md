@@ -8,7 +8,7 @@
 
 (†) If a Simple instruction and a Round instruction execute on the same cycle, then one of them needs to have `VD == 16` and the other needs to have `VD != 16`.
 
-(‡) If `SFPSWAP` is scheduled to the Simple sub-unit, then `SFPNOP` needs to be scheduled to the MAD sub-unit for the same time, and both of the Simple and Round sub-units either need to be idle on the next cycle or have `SFPNOP` scheduled for then.
+(‡) If `SFPSWAP` is scheduled to the Simple sub-unit, then the MAD sub-unit must not execute anything other than `SFPNOP` on the same cycle (it can be idle, or have `SFPNOP` scheduled for then), and both of the Simple and Round sub-units either need to be idle on the next cycle or have `SFPNOP` scheduled for then. On that next cycle, the scheduled `SFPSWAP` reads `VC` and `VD` again and then writes them, so an instruction which writes to `VC` or `VD` on the same cycle as the `SFPSWAP` (for example `SFPLOAD`) changes the values which get moved, but not the outcome of the comparison.
 
 The Vector Unit (SFPU) is capable of executing up to five instructions per cycle: one load-style instruction (`SFPLOAD` or `SFPLOADI` or `SFPLOADMACRO` or `SFPNOP`), and then one instruction from each of the above four columns. However, `SFPLOADMACRO` is the only mechanism for attaining more than one instruction per cycle, and some pre-configuration is required (via [`SFPCONFIG`](SFPCONFIG.md)).
 
