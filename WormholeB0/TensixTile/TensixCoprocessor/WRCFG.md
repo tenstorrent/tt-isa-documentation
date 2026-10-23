@@ -17,7 +17,11 @@ TT_WRCFG(/* u6 */ InputReg, /* bool */ Is128Bit, /* u11 */ CfgIndex)
 ## Functional model
 
 ```c
-if (CfgIndex >= (CFG_STATE_SIZE*4)) UndefinedBehavior(); // Cannot index out of bounds.
+if (CfgIndex >= (CFG_STATE_SIZE*4)) {
+  NonContractualBehavior {
+    return; // Current silicon writes nothing and has no other effect (not architecturally guaranteed)
+  }
+}
 
 uint1_t StateID = ThreadConfig[CurrentThread].CFG_STATE_ID_StateID;
 

@@ -17,7 +17,21 @@ TT_SETC16(/* u8 */ CfgIndex, /* u16 */ NewValue)
 ## Functional model
 
 ```c
-if (CfgIndex >= THD_STATE_SIZE) UndefinedBehavior(); // Cannot index out of bounds.
+if (CfgIndex >= THD_STATE_SIZE) {
+  if (CfgIndex == 128) {
+    // Writes CFG_STATE_ID_StateID, but Auto TTSync does not see the change.
+    UndefinedBehavior();
+  }
+  NonContractualBehavior {
+    // Current silicon behavior (not architecturally guaranteed): CfgIndex 129 through 128 + THD_STATE_SIZE - 1
+    // write ThreadConfig[CurrentThread][CfgIndex - 128], but without the immediate effects that a write of that
+    // index has (see "Special cases" in BackendConfiguration.md); other values write nothing.
+    if (CfgIndex > 128 && CfgIndex < 128 + THD_STATE_SIZE) {
+      ThreadConfig[CurrentThread][CfgIndex - 128].Value = NewValue;
+    }
+    return;
+  }
+}
 
 ThreadConfig[CurrentThread][CfgIndex].Value = NewValue;
 ```

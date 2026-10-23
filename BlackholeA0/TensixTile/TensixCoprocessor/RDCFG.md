@@ -17,9 +17,16 @@ TT_RDCFG(/* u6 */ ResultReg, /* u11 */ CfgIndex)
 ## Functional model
 
 ```c
-if (CfgIndex >= (CFG_STATE_SIZE*4)) UndefinedBehavior(); // Cannot index out of bounds.
-
 uint1_t StateID = ThreadConfig[CurrentThread].CFG_STATE_ID_StateID;
+if (CfgIndex >= (CFG_STATE_SIZE*4)) {
+  NonContractualBehavior {
+    // Current silicon uses only the low 8 bits of CfgIndex, and reads 0 where that is still
+    // out of bounds (not architecturally guaranteed)
+    CfgIndex &= 0xFF;
+    GPRs[CurrentThread][ResultReg] = CfgIndex < (CFG_STATE_SIZE*4) ? Config[StateID][CfgIndex] : 0;
+    return;
+  }
+}
 GPRs[CurrentThread][ResultReg] = Config[StateID][CfgIndex];
 ```
 

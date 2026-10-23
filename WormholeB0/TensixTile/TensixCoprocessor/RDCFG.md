@@ -17,7 +17,12 @@ TT_RDCFG(/* u6 */ ResultReg, /* u11 */ CfgIndex)
 ## Functional model
 
 ```c
-if (CfgIndex >= (CFG_STATE_SIZE*4)) UndefinedBehavior(); // Cannot index out of bounds.
+if (CfgIndex >= (CFG_STATE_SIZE*4)) {
+  NonContractualBehavior {
+    GPRs[CurrentThread][ResultReg] = 0; // Current silicon reads 0 (not architecturally guaranteed)
+    return;
+  }
+}
 
 uint1_t StateID = ThreadConfig[CurrentThread].CFG_STATE_ID_StateID;
 GPRs[CurrentThread][ResultReg] = Config[StateID][CfgIndex];
