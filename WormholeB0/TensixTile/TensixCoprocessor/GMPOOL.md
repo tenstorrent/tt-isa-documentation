@@ -192,6 +192,8 @@ if (FlipSrcB) {
 ApplyAddrMod(AddrMod);
 ```
 
+On Blackhole, when `SrcAFmt` is `TF32`, `ArgMax` is false and `UseDst32b` is true, bits 12 through 10 of each value written to `Dst32b[DstRow][j]` are a copy of bits 15 through 13 (the low three mantissa bits of the result), rather than zero.
+
 Supporting definitions:
 ```c
 Datum ReadDst(uint32_t DstVal, uint4_t DstStyle) {

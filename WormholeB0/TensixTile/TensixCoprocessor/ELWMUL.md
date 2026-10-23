@@ -156,3 +156,5 @@ ApplyAddrMod(AddrMod);
 ```
 
 For floating-point computation, the functional model should be taken as a rough guide rather than an exact description: operations might be performed in a different order to that shown, various operations might be fused together, and precision could be either lower or higher than what is shown. Denormals will be flushed to zero, and handling of NaN/infinity does _not_ conform to IEEE754.
+
+On Blackhole, if bit 2 of `DstRow` is set before it is aligned down to a multiple of 8, rows 0 through 3 of the aligned 8x16 block of `Dst` are handled differently: they are read as whatever they contain even when `DstRowValid` marks them as undefined (rather than as zero), and their `DstRowValid` bits are left unchanged after they are written. Rows 4 through 7 behave as described above. Software should keep bit 2 of `DstRow` clear.

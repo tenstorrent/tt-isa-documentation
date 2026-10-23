@@ -96,7 +96,7 @@ if (!FlushDenormals) {
 
 // Determine the row range.
 unsigned NumRows = BroadcastSrcBRow ? 7 : 8;
-uint6_t SrcARow = RWCs[CurrentThread].SrcA & 0x38;
+uint6_t SrcARow = RWCs[CurrentThread].SrcA & (TTArchitecture == Blackhole ? 0x30 : 0x38);
 uint6_t SrcBRow = RWCs[CurrentThread].SrcB & (BroadcastSrcBRow ? 0x3f : 0x38);
 DstRow += ThreadConfig[CurrentThread].DEST_TARGET_REG_CFG_MATH_Offset;
 DstRow += RWCs[CurrentThread].Dst + ConfigState.DEST_REGW_BASE_Base;
@@ -221,3 +221,5 @@ ApplyAddrMod(AddrMod);
 ```
 
 For floating-point computation, the functional model should be taken as a rough guide rather than an exact description: operations might be performed in a different order to that shown, various operations might be fused together, and precision could be either lower or higher than what is shown. Denormals will be flushed to zero, and handling of NaN/infinity does _not_ conform to IEEE754.
+
+On Blackhole, if bit 2 of `DstRow` is set before it is aligned down to a multiple of 8 (and `BroadcastSrcBRow` is not used), rows 0 through 3 of the aligned 8x16 block of `Dst` are handled differently: they are read as whatever they contain even when `DstRowValid` marks them as undefined (rather than as zero), and their `DstRowValid` bits are left unchanged after they are written. Rows 4 through 7 behave as described above. Software should keep bit 2 of `DstRow` clear.
