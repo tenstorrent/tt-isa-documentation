@@ -23,7 +23,12 @@ if (ConditionMask) {
   WaitGate[CurrentThread].LatchedWaitInstruction.ConditionMask = ConditionMask;
   WaitGate[CurrentThread].LatchedWaitInstruction.SemaphoreMask = SemaphoreMask;
 } else {
-  UndefinedBehavior();
+  NonContractualBehavior {
+    // Current silicon waits as STALLWAIT with ConditionMask 0 does (not architecturally guaranteed)
+    WaitGate[CurrentThread].LatchedWaitInstruction.Opcode = STALLWAIT;
+    WaitGate[CurrentThread].LatchedWaitInstruction.ConditionMask = 0x0F;
+    WaitGate[CurrentThread].LatchedWaitInstruction.SemaphoreMask = 0;
+  }
 }
 WaitGate[CurrentThread].LatchedWaitInstruction.BlockMask = BlockMask ? BlockMask : (1u << 6);
 ```

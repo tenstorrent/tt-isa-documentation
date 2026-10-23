@@ -23,10 +23,17 @@ if (ConditionMask) {
   WaitGate[CurrentThread].LatchedWaitInstruction.ConditionMask = ConditionMask;
   WaitGate[CurrentThread].LatchedWaitInstruction.SemaphoreMask = SemaphoreMask;
 } else {
-  UndefinedBehavior();
+  NonContractualBehavior {
+    // Current silicon waits as STALLWAIT with ConditionMask 0 does (not architecturally guaranteed)
+    WaitGate[CurrentThread].LatchedWaitInstruction.Opcode = STALLWAIT;
+    WaitGate[CurrentThread].LatchedWaitInstruction.ConditionMask = 0x7F;
+    WaitGate[CurrentThread].LatchedWaitInstruction.SemaphoreMask = 0;
+  }
 }
 WaitGate[CurrentThread].LatchedWaitInstruction.BlockMask = BlockMask ? BlockMask : (1u << 6);
 ```
+
+Like any `SEMWAIT`, one with `ConditionMask` of zero can replace a latched wait instruction (see "Block mask" below).
 
 The Wait Gate will then continuously re-evaluate the latched wait instruction until all of the selected conditions are simultaneously met, at which point the latched wait instruction will be forgotten, and instructions will no longer be blocked. The new latched wait instruction takes effect immediately, so it will influence whether or not the instruction immediately after `SEMWAIT` can pass through the Wait Gate. There is a one cycle lag between the condition(s) being met and the block mask being removed - in particular this means that the instruction immediately after `SEMWAIT` will always be subject to the block mask for at least one cycle, even if the condition(s) are met immediately.
 
