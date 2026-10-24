@@ -67,7 +67,7 @@ for (unsigned Lane = 0; Lane < 32; ++Lane) {
           uint32_t VCAVal = LReg[VCA][Lane].u32;
           uint32_t VDAVal = LReg[VDA][Lane].u32;
           LReg[VCA][Lane].u32 = VDAVal;
-          LReg[VDA][Lane].u32 = VCAVal;
+          if (VD < 8) LReg[VDA][Lane].u32 = VCAVal; // Rides on the write of VD, which VD >= 8 doesn't make
         } else {
           // Unconditional swap or write min+max results.
           if (VC < 8) LReg[VC][Lane].u32 = VDVal;
