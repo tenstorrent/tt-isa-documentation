@@ -27,7 +27,7 @@ The four hardware IRQs are:
 |0|NoC Overlay when [`STREAM_BLOB_AUTO_CFG_DONE_REG_INDEX`](../NoC/Overlay/LoadConfigurationFromL1.md) non-zero|
 |1|NoC #0 NIU when any `NIU_MST_REQS_OUTSTANDING_ID(i)` counter changes from positive to zero ([subject to appropriate NIU configuration](../NoC/Interrupts.md))|
 |2|NoC #1 NIU when any `NIU_MST_REQS_OUTSTANDING_ID(i)` counter changes from positive to zero ([subject to appropriate NIU configuration](../NoC/Interrupts.md))|
-|3|The watchdog timer, when it hits zero or when software sets its soft interrupt bit, or the tile's ECC and parity checking, when it detects an error: a single-bit or double-bit error on any L1 read (by a RISCV core, the Tensix coprocessor, the NoC or the ECC scrubber), a parity error in a RISCV core's local data memory or instruction memory, or a parity or ECC error in a NoC NIU (in all cases subject to appropriate configuration)|
+|3|The watchdog timer, when it hits zero or when software sets its soft interrupt bit, or the tile's ECC and parity checking, when it detects an error: a single-bit or double-bit error on any L1 access that reads the stored data (a read, partial write or atomic by a RISCV core, the Tensix coprocessor or the NoC, or the ECC scrubber's own accesses), a parity error in a RISCV core's local data memory or instruction memory, or a parity or ECC error in a NoC NIU (in all cases subject to appropriate configuration)|
 
 Each of these hardware IRQs has a 32-bit MMIO register associated with it:
 * Writing to the register has no effect.
@@ -37,7 +37,7 @@ Each of these hardware IRQs has a 32-bit MMIO register associated with it:
 Each hardware IRQ has a different way of clearing it, which will involve software addressing the underlying reason for the hardware IRQ having been raised.
 
 > [!CAUTION]
-> Due to a hardware bug, the ECC scrubber's row counter wraps at 4096 rather than at 3072, the last populated row, so the scrubber also reads rows 3072 to 4095, which have no memory behind them, and reports false single-bit and double-bit errors from them on every Tensix tile. A NoC read of L1 addresses `0x180000` to `0x1FFFFF` reports the same false errors. A handler for hardware IRQ 3 should therefore ignore errors whose row is 3072 or above.
+> Due to a hardware bug, the ECC scrubber's row counter wraps after row 4095 rather than after row 3071, the last populated row, so the scrubber also reads rows 3072 to 4095, which have no memory behind them, and reports false single-bit and double-bit errors from them on every Tensix tile. Row `r` is the 512 bytes of L1 at addresses `r * 512` to `r * 512 + 511`, so rows 3072 to 4095 are addresses `0x180000` to `0x1FFFFF`, and a NoC read of those addresses reports the same false errors. A handler for hardware IRQ 3 should therefore ignore errors whose row is 3072 or above.
 
 ## Memory Map
 
@@ -69,7 +69,7 @@ If a particular IRQ is enabled for both RISCV B and RISCV NC, then raising that 
 
 Interrupt handlers do not nest: once one has been invoked, another will not be invoked until the previous one executes `mret`. When there are multiple enabled raised IRQs, fair round-robin arbitration is used to choose which handler to invoke.
 
-Soft reset does not end an interrupt handler. If RISCV B is put in soft reset while it is running an interrupt handler, `BRISC_INT_NO` keeps its value, and as soon as RISCV B leaves soft reset it is interrupted again, with `pc` set to the relevant entry of `SW_INT_PC` or `HW_INT_PC`. Setting that entry to the address of code that executes `mret` before releasing RISCV B from soft reset lets it return from the handler and continue from its reset `pc`.
+Soft reset does not end an interrupt handler. If RISCV B is put in soft reset while it is running an interrupt handler, `BRISC_INT_NO` keeps its value, and as soon as RISCV B leaves soft reset it is interrupted again, with `pc` set to the relevant entry of `SW_INT_PC` or `HW_INT_PC`. Soft reset does clear `BRISC_SW_INT_EN` and `BRISC_HW_INT_EN`, but leaves `SW_INT_PC` and `HW_INT_PC` unchanged, so setting that entry to the address of code that executes `mret` before releasing RISCV B from soft reset lets it return from the handler and continue from its reset `pc` without being interrupted again. The same applies to RISCV NC, with its own soft reset, `NCRISC_INT_NO`, `NCRISC_SW_INT_EN` and `NCRISC_HW_INT_EN`.
 
 > [!CAUTION]
 > Due to a hardware bug, interrupt handlers cannot write to CSRs: `csrrw` / `csrrs` / `csrrc` / `csrrwi` / `csrrsi` / `csrrci` instructions can be used by a handler to _read_ from CSRs, but cannot write to CSRs.
