@@ -1,6 +1,6 @@
 # `SEMGET` (Decrement the `Value` of some semaphores)
 
-**Summary:** Various semaphores are selected using a bitmask, and the selected semaphores have their `Value` decremented (unless their `Value` is already zero, in which case it remains at zero).
+**Summary:** Various semaphores are selected using a bitmask, and the selected semaphores have their `Value` decremented. Software should not decrement a semaphore whose `Value` is already zero; what current hardware then does (the `Value` remains at zero) is a `NonContractualBehavior`.
 
 **Backend execution unit:** [Sync Unit](SyncUnit.md)
 
@@ -19,8 +19,14 @@ TT_SEMGET(/* u8 */ SemaphoreMask)
 ```c
 atomic {
   for (unsigned i = 0; i < 8; ++i) {
-    if (SemaphoreMask.Bit[i] && Semaphores[i].Value > 0) {
-      Semaphores[i].Value -= 1;
+    if (SemaphoreMask.Bit[i]) {
+      if (Semaphores[i].Value == 0) {
+        NonContractualBehavior {
+          // Current silicon leaves the Value at zero (not architecturally guaranteed)
+        }
+      } else {
+        Semaphores[i].Value -= 1;
+      }
     }
   }
 }

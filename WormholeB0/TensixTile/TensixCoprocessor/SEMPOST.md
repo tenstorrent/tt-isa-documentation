@@ -1,6 +1,6 @@
 # `SEMPOST` (Increment the `Value` of some semaphores)
 
-**Summary:** Various semaphores are selected using a bitmask, and the selected semaphores have their `Value` incremented (unless their `Value` is already 15, in which case it remains at 15).
+**Summary:** Various semaphores are selected using a bitmask, and the selected semaphores have their `Value` incremented. Software should not increment a semaphore whose `Value` is already at or above its `Max`; what current hardware then does (increment, unless the `Value` is 15, in which case it remains at 15) is a `NonContractualBehavior`.
 
 **Backend execution unit:** [Sync Unit](SyncUnit.md)
 
@@ -19,8 +19,17 @@ TT_SEMPOST(/* u8 */ SemaphoreMask)
 ```c
 atomic {
   for (unsigned i = 0; i < 8; ++i) {
-    if (SemaphoreMask.Bit[i] && Semaphores[i].Value < 15) {
-      Semaphores[i].Value += 1;
+    if (SemaphoreMask.Bit[i]) {
+      if (Semaphores[i].Value >= Semaphores[i].Max) {
+        NonContractualBehavior {
+          // Current silicon ignores Max, and stops at 15 (not architecturally guaranteed)
+          if (Semaphores[i].Value < 15) {
+            Semaphores[i].Value += 1;
+          }
+        }
+      } else {
+        Semaphores[i].Value += 1;
+      }
     }
   }
 }

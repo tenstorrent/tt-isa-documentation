@@ -1,6 +1,6 @@
 # `SEMINIT` (Set the `Value` and `Max` of some semaphores)
 
-**Summary:** Various semaphores are selected using a bitmask, and the selected semaphores have their `Value` and `Max` set to the provided values. Note that `Max` is only subsequently used by [`SEMWAIT`](SEMWAIT.md); it has no effect on [`SEMPOST`](SEMPOST.md).
+**Summary:** Various semaphores are selected using a bitmask, and the selected semaphores have their `Value` and `Max` set to the provided values. `Max` is subsequently used by [`SEMWAIT`](SEMWAIT.md), and software should not [`SEMPOST`](SEMPOST.md) a semaphore whose `Value` is at or above its `Max` (current hardware ignores `Max` in `SEMPOST`; this is a `NonContractualBehavior`). Software should also not set a `Value` above the `Max` (current hardware stores both as given; this is a `NonContractualBehavior`).
 
 **Backend execution unit:** [Sync Unit](SyncUnit.md)
 
@@ -20,6 +20,11 @@ TT_SEMINIT(/* u4 */ NewMax, /* u4 */ NewValue, /* u8 */ SemaphoreMask)
 atomic {
   for (unsigned i = 0; i < 8; ++i) {
     if (SemaphoreMask.Bit[i]) {
+      if (NewValue > NewMax) {
+        NonContractualBehavior {
+          // Current silicon stores both as given, as below (not architecturally guaranteed)
+        }
+      }
       Semaphores[i].Value = NewValue;
       Semaphores[i].Max = NewMax;
     }

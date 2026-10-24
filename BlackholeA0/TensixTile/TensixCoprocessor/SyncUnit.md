@@ -63,12 +63,23 @@ Writes to `SemaphoreAccess[i] = new_val` behave as:
 atomic {
   if (new_val & 1) {
     // This is like a SEMGET instruction.
-    if (Semaphores[i].Value > 0) {
+    if (Semaphores[i].Value == 0) {
+      NonContractualBehavior {
+        // Current silicon leaves the Value at zero (not architecturally guaranteed)
+      }
+    } else {
       Semaphores[i].Value -= 1;
     }
   } else {
     // This is like a SEMPOST instruction.
-    if (Semaphores[i].Value < 15) {
+    if (Semaphores[i].Value >= Semaphores[i].Max) {
+      NonContractualBehavior {
+        // Current silicon ignores Max, and stops at 15 (not architecturally guaranteed)
+        if (Semaphores[i].Value < 15) {
+          Semaphores[i].Value += 1;
+        }
+      }
+    } else {
       Semaphores[i].Value += 1;
     }
   }
