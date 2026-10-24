@@ -27,7 +27,7 @@ The four hardware IRQs are:
 |0|NoC Overlay when [`STREAM_BLOB_AUTO_CFG_DONE_REG_INDEX`](../NoC/Overlay/LoadConfigurationFromL1.md) non-zero|
 |1|NoC #0 NIU when any `NIU_MST_REQS_OUTSTANDING_ID(i)` counter changes from positive to zero ([subject to appropriate NIU configuration](../NoC/Interrupts.md))|
 |2|NoC #1 NIU when any `NIU_MST_REQS_OUTSTANDING_ID(i)` counter changes from positive to zero ([subject to appropriate NIU configuration](../NoC/Interrupts.md))|
-|3|The watchdog timer, when it hits zero, or the ECC scrubber, when it detects a bit flip (in both cases subject to appropriate configuration)|
+|3|The watchdog timer, when it hits zero or when software sets its soft interrupt bit, or the tile's ECC and parity checking, when it detects an error: a single-bit or double-bit error on any L1 read (by a RISCV core, the Tensix coprocessor, the NoC or the ECC scrubber), a parity error in a RISCV core's local data memory or instruction memory, or a parity or ECC error in a NoC NIU (in all cases subject to appropriate configuration)|
 
 Each of these hardware IRQs has a 32-bit MMIO register associated with it:
 * Writing to the register has no effect.
