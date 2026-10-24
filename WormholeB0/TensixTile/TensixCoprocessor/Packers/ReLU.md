@@ -64,6 +64,8 @@ Note that `STACC_RELU_ReluThreshold` can be interpreted as either BF16 or FP16. 
 
 On Blackhole, with `IntermediateFormat` FP16 and `PCK_DEST_RD_CTRL_Round_10b_mant` set (the early format conversion from FP32 or BF16 to FP16; see [format conversion](FormatConversion.md)), `ReLUStage` operates on the 8-bit-exponent value before its exponent is narrowed, and `STACC_RELU_ReluThreshold` is interpreted as BF16 rather than FP16.
 
+On Wormhole, with `IntermediateFormat` FP16 and both `PCK_DEST_RD_CTRL_Read_32b_data` and `PCK_DEST_RD_CTRL_Round_10b_mant` clear, `MIN_THRESHOLD_RELU` keeps a datum equal to `Threshold` in columns 0 through 3 and 8 through 11 of `Dst` (rather than replacing it with zero) if the low three bits of `STACC_RELU_ReluThreshold` are not all zero.
+
 On Blackhole, `MIN_THRESHOLD_RELU` does not always replace a datum equal to `Threshold` with zero in columns 0 through 7 of `Dst`:
 * With `IntermediateFormat` FP16 and `PCK_DEST_RD_CTRL_Round_10b_mant` clear, such a datum is kept if the low three bits of `STACC_RELU_ReluThreshold` are not all zero.
 * With `IntermediateFormat` FP16, `PCK_DEST_RD_CTRL_Round_10b_mant` set and `PCK_DEST_RD_CTRL_Read_32b_data` clear, whether such a datum is kept depends on other contents of `Dst`.
