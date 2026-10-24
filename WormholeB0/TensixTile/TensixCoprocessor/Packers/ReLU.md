@@ -67,3 +67,5 @@ On Blackhole, with `IntermediateFormat` FP16 and `PCK_DEST_RD_CTRL_Round_10b_man
 On Blackhole, `MIN_THRESHOLD_RELU` does not always replace a datum equal to `Threshold` with zero in columns 0 through 7 of `Dst`:
 * With `IntermediateFormat` FP16 and `PCK_DEST_RD_CTRL_Round_10b_mant` clear, such a datum is kept if the low three bits of `STACC_RELU_ReluThreshold` are not all zero.
 * With `IntermediateFormat` FP16, `PCK_DEST_RD_CTRL_Round_10b_mant` set and `PCK_DEST_RD_CTRL_Read_32b_data` clear, whether such a datum is kept depends on other contents of `Dst`.
+
+With `PCK_DEST_RD_CTRL_Read_32b_data` set and `IntermediateFormat` FP32, `MAX_THRESHOLD_RELU` compares only the high 16 bits of each datum with `Threshold`: a datum whose high 16 bits equal `Threshold` and whose low 16 bits are not all zero is greater than `Threshold`, but it stays as it is rather than becoming `Threshold` (for example, with `Threshold` 1.0, the FP32 datum `0x3F800001` stays `0x3F800001`).
