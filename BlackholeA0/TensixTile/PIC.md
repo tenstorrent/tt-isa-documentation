@@ -66,6 +66,8 @@ If a particular IRQ is enabled for both RISCV B and RISCV NC, then raising that 
 
 Interrupt handlers do not nest: once one has been invoked, another will not be invoked until the previous one executes `mret`. When there are multiple enabled raised IRQs, fair round-robin arbitration is used to choose which handler to invoke.
 
+Soft reset does not end an interrupt handler. If RISCV B is put in soft reset while it is running an interrupt handler, `BRISC_INT_NO` keeps its value, and as soon as RISCV B leaves soft reset it is interrupted again, with `pc` set to the relevant entry of `SW_INT_PC` or `HW_INT_PC`. Setting that entry to the address of code that executes `mret` before releasing RISCV B from soft reset lets it return from the handler and continue from its reset `pc`.
+
 > [!CAUTION]
 > Due to a hardware bug, interrupt handlers cannot write to CSRs: `csrrw` / `csrrs` / `csrrc` / `csrrwi` / `csrrsi` / `csrrci` instructions can be used by a handler to _read_ from CSRs, but cannot write to CSRs.
 
