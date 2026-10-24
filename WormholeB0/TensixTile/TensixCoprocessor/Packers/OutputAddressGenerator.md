@@ -116,6 +116,8 @@ for (unsigned i = 0; i < 3; ++i) {
 
 Note the `(Addr & 0x1ffff) << 4` as part of all the assignments to `ByteAddress`: packer output is always done as aligned 16-byte writes to L1. Individual datums are at most 4 bytes, so datums get buffered up at the bottom of the packer pipeline, and then written out to L1 once 16 bytes have been buffered up. These buffers persist between consecutive pack instructions, so the output of an _individual_ pack instruction needn't be aligned, but the output of a _group_ of pack instructions will be. If these buffers are forcibly flushed before they are full, then they will be padded with zeroes to make them full.
 
+On Wormhole, the flush at a pack instruction with `Last` or `Flush` set first completes the packer's input: if the datums the packer took from `Dst` since its tile began end partway into a 16-byte word of `In_data_format`, it writes the output for the rest of that word, each datum zero, and then pads to 16 bytes as above. This only shows when the late format conversion widens: 2 FP16 datums packed as FP32 are 8 bytes followed by 24 bytes of zeros (the output of 8 datums), and 4 BFP8 datums packed as FP32 are 16 bytes followed by 48 bytes of zeros, where padding alone would give 8 and 0 bytes of zeros. For outputs as wide as or narrower than `In_data_format`, the completion ends within the padding.
+
 When one of these buffers writes 16 bytes to L1, `ByteAddress` will be incremented by 16.
 
 ## Exponent section

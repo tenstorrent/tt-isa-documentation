@@ -71,6 +71,8 @@ struct TilePositionGenerator {
 };
 ```
 
+On Wormhole, the tile position generator counts the 16-byte words of `In_data_format` that the packer reads from `Dst`, not datums: `Advance` runs once per word, and `X` reaches the end of a row after 4 words for FP32, TF32 and INT32, 2 words for FP16 and BF16, and 1 word for every other format, INT16 included. So an INT16 pack moves on to the next `Y` every 8 datums, and a word the packer reads only part of (a run of datums that starts or ends inside a word) counts as a whole word. Every datum of a word gets the `EdgeMask` in effect when the word is read, at the datum's column in `Dst`.
+
 On Wormhole, a pack instruction with `Last` set does not reset the tile position generator: `X`, `Y` and `Z` run on from one tile to the next, `Y` wrapping to 0 at `pack_reads_per_xy_plane` as above. A tile whose number of rows is not a multiple of `pack_reads_per_xy_plane` therefore leaves the next tile starting partway through `TILE_ROW_SET_MAPPING`. On Blackhole, the first pack instruction after one with `Last` set starts the tile position generator again from position 0.
 
 To use the same `EdgeMask` for all rows of `Dst`, regardless of the tile position generator, set all four of `PCK_EDGE_OFFSET_SEC[c].mask` to the same value.
