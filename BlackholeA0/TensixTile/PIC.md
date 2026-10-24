@@ -36,6 +36,9 @@ Each of these hardware IRQs has a 32-bit MMIO register associated with it:
 
 Each hardware IRQ has a different way of clearing it, which will involve software addressing the underlying reason for the hardware IRQ having been raised.
 
+> [!CAUTION]
+> Due to a hardware bug, the ECC scrubber's row counter wraps at 4096 rather than at 3072, the last populated row, so the scrubber also reads rows 3072 to 4095, which have no memory behind them, and reports false single-bit and double-bit errors from them on every Tensix tile. A NoC read of L1 addresses `0x180000` to `0x1FFFFF` reports the same false errors. A handler for hardware IRQ 3 should therefore ignore errors whose row is 3072 or above.
+
 ## Memory Map
 
 |Name|Address|Software access|Purpose|
