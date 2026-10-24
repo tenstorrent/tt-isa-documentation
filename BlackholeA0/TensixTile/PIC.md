@@ -68,3 +68,6 @@ Interrupt handlers do not nest: once one has been invoked, another will not be i
 
 > [!CAUTION]
 > Due to a hardware bug, interrupt handlers cannot write to CSRs: `csrrw` / `csrrs` / `csrrc` / `csrrwi` / `csrrsi` / `csrrci` instructions can be used by a handler to _read_ from CSRs, but cannot write to CSRs.
+
+> [!CAUTION]
+> Due to a hardware bug, an `mret` can be skipped: if the branch predictor holds an entry that matches the address of the `mret` and predicts it taken, the `mret` is treated as a mispredicted non-branch instruction and execution continues at the following instruction, still inside the interrupt handler. Following the `mret` with a jump back to it (for example `1: mret; j 1b`) avoids this: the first attempt removes the predictor entry, so the second `mret` returns.
