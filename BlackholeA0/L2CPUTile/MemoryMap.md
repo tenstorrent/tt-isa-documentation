@@ -25,17 +25,17 @@ All four x280 cores see the same 47-bit physical address space:
 |`0x0000_2010_0000` to `0x0000_2FFF_FFFF`|255x 1 MiB|Reserved, though in practice 255 copies of previous (512 KiB + 4 KiB + 127x 4 KiB)|
 |`0x0000_3000_0000` to `0x0001_2FFF_FFFF`|4 GiB|Contents of local GDDR6 tile, uncached|
 |`0x0001_3000_0000` to `0x0004_2FFF_FFFF`|3x 4 GiB|Reserved, though in practice 3 copies of previous 4 GiB|
-|`0x0004_3000_0000` to `0x0004_3DFF_FFFF`|224x 2 MiB|[Small TLB windows to NoC](TLBWindows.md), uncached|
-|`0x0004_3E00_0000` to `0x0004_3FFF_FFFF`|32x 2 MiB|Undefined|
-|`0x0004_4000_0000` to `0x0804_2FFF_FFFF`|16383x&nbsp;512&nbsp;MiB|Reserved, though in practice 16,383 copies of previous (224x 2 MiB + 32x 2 MiB)|
+|`0x0004_3000_0000` to `0x0004_4BFF_FFFF`|224x 2 MiB|[Small TLB windows to NoC](TLBWindows.md), uncached|
+|`0x0004_4C00_0000` to `0x0004_4FFF_FFFF`|32x 2 MiB|Undefined|
+|`0x0004_5000_0000` to `0x0804_2FFF_FFFF`|16383x&nbsp;512&nbsp;MiB|Reserved, though in practice 16,383 copies of previous (224x 2 MiB + 32x 2 MiB)|
 |`0x0804_3000_0000` to `0x0C04_2FFF_FFFF`|32x 128 GiB|[Large TLB windows to NoC](TLBWindows.md), uncached|
 |`0x0C04_3000_0000` to `0x1004_2FFF_FFFF`|32x 128 GiB|Reserved, though in practice copy of previous 32x 128 GiB|
 |`0x1004_3000_0000` to `0x4000_2FFF_FFFF`|~3x 16 TiB|Reserved, though in practice 3 copies of previous 16 TiB (albeit final copy is 16 GiB short)|
 |`0x4000_3000_0000` to `0x4001_2FFF_FFFF`|4 GiB|Contents of local GDDR6 tile, [cached](Caches.md)|
 |`0x4001_3000_0000` to `0x4004_2FFF_FFFF`|3x 4 GiB|Reserved, though in practice 3 copies of previous 4 GiB|
-|`0x4004_3000_0000` to `0x4004_3DFF_FFFF`|224x 2 MiB|[Small TLB windows to NoC](TLBWindows.md), [cached](Caches.md)|
-|`0x4004_3E00_0000` to `0x4004_3FFF_FFFF`|32x 2 MiB|Undefined|
-|`0x4004_4000_0000` to `0x4804_2FFF_FFFF`|16383x 512 MiB|Reserved, though in practice 16,383 copies of previous (224x 2 MiB + 32x 2 MiB)|
+|`0x4004_3000_0000` to `0x4004_4BFF_FFFF`|224x 2 MiB|[Small TLB windows to NoC](TLBWindows.md), [cached](Caches.md)|
+|`0x4004_4C00_0000` to `0x4004_4FFF_FFFF`|32x 2 MiB|Undefined|
+|`0x4004_5000_0000` to `0x4804_2FFF_FFFF`|16383x 512 MiB|Reserved, though in practice 16,383 copies of previous (224x 2 MiB + 32x 2 MiB)|
 |`0x4804_3000_0000` to `0x4C04_2FFF_FFFF`|32x 128 GiB|[Large TLB windows to NoC](TLBWindows.md), [cached](Caches.md)|
 |`0x4C04_3000_0000` to `0x5004_2FFF_FFFF`|32x 128 GiB|Reserved, though in practice copy of previous 32x 128 GiB|
 |`0x5004_3000_0000`&nbsp;to&nbsp;`0x7FFF_FFFF_FFFF`|~3x 16 TiB|Reserved, though in practice 3 copies of previous 16 TiB (albeit final copy is 16¾ GiB short)|

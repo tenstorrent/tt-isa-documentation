@@ -10,12 +10,14 @@ The relevant physical addresses are:
 |---|--:|---|
 |`0x0000_2??0_0000` to `0x0000_2??0_0DFF` (†)|224x 16 B|Small TLB window configuration|
 |`0x0000_2??0_0E00` to `0x0000_2??0_0F7F` (†)|32x 12 B|Large TLB window configuration|
-|`0x0004_3000_0000` to `0x0004_3DFF_FFFF`|224x 2 MiB|Small TLB windows to NoC, uncached|
+|`0x0004_3000_0000` to `0x0004_4BFF_FFFF`|224x 2 MiB|Small TLB windows to NoC, uncached|
 |`0x0804_3000_0000` to `0x0C04_2FFF_FFFF`|32x 128 GiB|Large TLB windows to NoC, uncached|
-|`0x4004_3000_0000` to `0x4004_3DFF_FFFF`|224x 2 MiB|Small TLB windows to NoC, [cached](Caches.md)|
+|`0x4004_3000_0000` to `0x4004_4BFF_FFFF`|224x 2 MiB|Small TLB windows to NoC, [cached](Caches.md)|
 |`0x4804_3000_0000` to `0x4C04_2FFF_FFFF`|32x 128 GiB|Large TLB windows to NoC, [cached](Caches.md)|
 
 > (†) The `??` can be filled in with any 8-bit value. Typically either `0x00` or `0xFF` is used.
+
+Small TLB window `i` (for `0 ≤ i < 224`) has its configuration at `0x0000_2??0_0000 + i * 16`, and occupies the 2 MiB starting at `0x0004_3000_0000 + i * 2 MiB` (uncached) and the 2 MiB starting at `0x4004_3000_0000 + i * 2 MiB` (cached). Large TLB window `i` (for `0 ≤ i < 32`) has its configuration at `0x0000_2??0_0E00 + i * 12`, and occupies the 128 GiB starting at `0x0804_3000_0000 + i * 128 GiB` (uncached) and the 128 GiB starting at `0x4804_3000_0000 + i * 128 GiB` (cached). See the [memory map](MemoryMap.md#x280-physical-address-space) for the addresses beyond these which alias them.
 
 ## Configuration
 

@@ -8,12 +8,12 @@ Instruction fetch is always performed through the L1 instruction cache, which is
 * The L2 or L3 caches (i.e. all data-cacheable addresses are executable, and executing from them will load the cache line into all of L1I and L2 and L3 if not present in L1I). For reference, the data-cacheable physical address ranges are:
   * Zero Device, cached: `0x0000_0A00_0000` to `0x0000_0A1F_FFFF`
   * Contents of local GDDR6 tile, cached: `0x4000_3000_0000` to `0x4001_2FFF_FFFF`
-  * [Small TLB windows to NoC](TLBWindows.md), cached: `0x4004_3000_0000` to `0x4004_3DFF_FFFF`
+  * [Small TLB windows to NoC](TLBWindows.md), cached: `0x4004_3000_0000` to `0x4004_4BFF_FFFF`
   * [Large TLB windows to NoC](TLBWindows.md), cached: `0x4804_3000_0000` to `0x4C04_2FFF_FFFF`
 * The uncached variants of the above (execution from which _will_ be cached in L1I, but not in L2 nor in L3):
   * L3 as uncached scratchpad (LIM): `0x0000_0800_0000` to `0x0000_081F_FFFF`
   * Contents of local GDDR6 tile, uncached: `0x0000_3000_0000` to `0x0001_2FFF_FFFF`
-  * [Small TLB windows to NoC](TLBWindows.md), uncached: `0x0004_3000_0000` to `0x0004_3DFF_FFFF`
+  * [Small TLB windows to NoC](TLBWindows.md), uncached: `0x0004_3000_0000` to `0x0004_4BFF_FFFF`
   * [Large TLB windows to NoC](TLBWindows.md), uncached: `0x0804_3000_0000` to `0x0C04_2FFF_FFFF`
 * External peripherals (execution from which _will_ be cached in L1I, but not in L2 nor in L3):
   * General purpose scratch memory: `0x0000_2001_0100` to `0x0000_2001_013F`
@@ -26,7 +26,7 @@ The L1 instruction cache is not coherent with any higher level caches (it can fe
 Each hart has its own L1 data cache, which is a 32 KiB 4-way virtually-indexed physically-tagged cache with 64-byte lines. The data-cacheable physical address ranges are:
 * Zero Device, cached: `0x0000_0A00_0000` to `0x0000_0A1F_FFFF`
 * Contents of local GDDR6 tile, cached: `0x4000_3000_0000` to `0x4001_2FFF_FFFF`
-* Small TLB windows to NoC, cached: `0x4004_3000_0000` to `0x4004_3DFF_FFFF`
+* Small TLB windows to NoC, cached: `0x4004_3000_0000` to `0x4004_4BFF_FFFF`
 * Large TLB windows to NoC, cached: `0x4804_3000_0000` to `0x4C04_2FFF_FFFF`
 
 The L1 data cache is coherent with the higher level L2 and L3 caches, and also inclusive of them: fetching data to L1D will also populate it in L2 and L3. Evicting modified data from L1D will write it back to L2.
