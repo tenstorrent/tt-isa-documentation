@@ -310,6 +310,14 @@ if (BfpExpStream) {
   if (Misalignment != 0 && ((FirstDatum % 16) != 0 || Misalignment + InputNumDatums * DatumSizeBytes > 16)) {
     UndefinedBehavior();
   }
+} else if (IsBFPFormat(InDataFormat) && DatumSizeBytes < 1) {
+  // With REG2_Force_shared_exp there is no exponent stream, but BFP4 and BFP2 datums still arrive in 16 byte
+  // words: a run that starts partway into a word must also end within that word. Otherwise, hardware garbles
+  // or drops some of the datums.
+  double Misalignment = InAddr_Datums - floor(InAddr_Datums / 16.) * 16.;
+  if (Misalignment != 0 && Misalignment + InputNumDatums * DatumSizeBytes > 16) {
+    UndefinedBehavior();
+  }
 }
 if (IsUncompressed && DatumSizeBytes == 0.25 && (InputNumDatums & 1)) {
   // BFP2a/BFP2 datums are unpacked in pairs, so an odd count also writes the position after the last datum.
