@@ -2,7 +2,7 @@
 
 Edge masking is performed on datums coming from `Dst`, which can selectively replace datums with 0 or with -∞, based on their _position_ within the tile being packed. This can be useful when manipulating tiles smaller than 16x16 which have been padded up to 16x16, or for keeping only the row, column or datum of a tile that holds a reduction's result: everything else can be forced back to 0 or to -∞ as part of a pack operation.
 
-The mechanism is the same as [on Wormhole](../../../../WormholeB0/TensixTile/TensixCoprocessor/Packers/EdgeMasking.md), except that Blackhole has a single packer: the 2-bit selectors are indexed by the `PACR` instruction's `CfgContext` rather than by packer index, the tile position advances once per `Dst` row read rather than once per datum, and the tile row at which each `PACR` starts depends on the packer's `Dst` offset.
+The mechanism is the same as [on Wormhole](../../../../WormholeB0/TensixTile/TensixCoprocessor/Packers/EdgeMasking.md), except that Blackhole has a single packer: the 2-bit selectors are indexed by the `PACR` instruction's [configuration context](../PACR.md#configuration-contexts) (usually its `CfgContext`) rather than by packer index, the tile position advances once per `Dst` row read rather than once per datum, and the tile row at which each `PACR` starts depends on the packer's `Dst` offset.
 
 ## Functional model
 
@@ -13,7 +13,7 @@ uint1_t StateID = ThreadConfig[CurrentThread].CFG_STATE_ID_StateID;
 auto& ConfigState = Config[StateID];
 
 uint16_t RowEdgeMask(unsigned k) {
-  uint2_t Ctx = CurrentInstruction.CfgContext;
+  uint2_t Ctx = PacrConfigContext(); // CfgContext, or the context counter (see PACR)
   auto& TPG = Packer.TilePositionGenerator;
   uint4_t Y = TPG.Y + TPG.YStart + k;
   uint4_t Z = Config.DEST_TARGET_REG_CFG_PACK_SEC[Ctx].ZOffset + TPG.Z;
@@ -53,7 +53,7 @@ struct TilePositionGenerator {
 
   // At the start of each PACR instruction:
   void Start() {
-    uint2_t Ctx = CurrentInstruction.CfgContext;
+    uint2_t Ctx = PacrConfigContext(); // CfgContext, or the context counter (see PACR)
     if (ConfigState.THCON_SEC0_REG1_pack_dis_y_pos_start_offset) {
       YStart = 0;
     } else {
@@ -67,7 +67,7 @@ struct TilePositionGenerator {
 
   // After each group of Dst rows a PACR reads, NumEnabled being its number of enabled read interfaces:
   void Advance(unsigned NumEnabled) {
-    uint2_t Ctx = CurrentInstruction.CfgContext;
+    uint2_t Ctx = PacrConfigContext(); // CfgContext, or the context counter (see PACR)
     if (Y == (uint8_t)(ConfigState.PACK_COUNTERS_SEC[Ctx].pack_reads_per_xy_plane - NumEnabled)) {
       Y = 0;
       Z += 1;
@@ -84,7 +84,7 @@ struct TilePositionGenerator {
 };
 ```
 
-The `THCON_SEC0_REG1` fields shown are those of `CfgContext` 0. `Ystride` is in bytes of the packer's input format, so `YStrideRows` is the Y stride in `Dst` rows for the usual formats. With a Y stride of one row and a `Dst` offset that is a multiple of four rows, `YStart` is `pack_start_intf_pos`, normally zero.
+The `THCON_SEC0_REG1` fields shown are those of configuration context 0; context `Ctx` reads its own `pack_dis_y_pos_start_offset` and `In_data_format`, and the `pack_start_intf_pos` of its register section (see [`PACR`](../PACR.md#configuration-contexts)). `Ystride` is in bytes of the packer's input format, so `YStrideRows` is the Y stride in `Dst` rows for the usual formats. With a Y stride of one row and a `Dst` offset that is a multiple of four rows, `YStart` is `pack_start_intf_pos`, normally zero.
 
 `Y` returns to zero only when advancing it lands exactly on `pack_reads_per_xy_plane`: if `NumEnabled` does not divide `pack_reads_per_xy_plane`, `Y` steps over it and `Z` never advances. When `Dst` is read as 32 bits per datum, each row takes two reads, and the position still advances once per row. This model assumes `pack_yz_transposed` is false and no downsampling.
 
