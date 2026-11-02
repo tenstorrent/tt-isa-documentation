@@ -38,7 +38,7 @@ uint10_t Adj32(uint10_t r) {
 }
 ```
 
-Note that `Config` in the above functions refers to Tensix backend configuration. In addition to their usage in these two functions, `Config.DEST_ACCESS_CFG_remap_addrs` and `Config.DEST_ACCESS_CFG_swizzle_32b` also affect how packers address `Dst`. `Config.DEST_ACCESS_CFG_zeroacc_absolute_tile_mode` affects only [`ZEROACC`](ZEROACC.md).
+Note that `Config` in the above functions refers to Tensix backend configuration. In addition to their usage in these two functions, `Config.DEST_ACCESS_CFG_remap_addrs` and `Config.DEST_ACCESS_CFG_swizzle_32b` also affect how packers address `Dst`: a packer reads `Dst16b` and `Dst32b` rows through these functions too, `remap_addrs` sets the row spacing of [`PACR`](PACR.md)'s strided reads, and a strided 32-bit read needs `swizzle_32b`. `Config.DEST_ACCESS_CFG_zeroacc_absolute_tile_mode` affects only [`ZEROACC`](ZEROACC.md).
 
 Each of the valid bits is indexed by physical row, as the row would be placed without `DEST_ACCESS_CFG_swizzle_32b`: an access to `Dst32b[Row]` consults `DstRowValid[Adj32NoSwizzle(Row)]` (and does not consult `Adj32NoSwizzle(Row) + 8`), whereas an access to `Dst16b[Row]` consults `DstRowValid[Adj16(Row)]`. `Adj32NoSwizzle` is `Adj32` with its `swizzle_32b` step left out:
 ```c

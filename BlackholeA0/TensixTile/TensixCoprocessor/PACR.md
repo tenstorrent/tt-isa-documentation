@@ -64,6 +64,29 @@ The L1 address of a tile is computed by its first `PACR` (see the [output addres
 
 The tile position used for [edge masking](Packers/EdgeMasking.md) advances by the number of enabled read interfaces per `PACR`, not by the number of datums each of them read, with the `k`'th enabled read interface (counting only enabled interfaces) using tile row position `TilePosition + YStart + k`, where `YStart` (usually zero) depends on the packer's `Dst` offset. `TilePosition` is an 8 bit counter whose low four bits give the tile row; it returns to zero, starting the next xy plane, only when advancing it lands exactly on `PACK_COUNTERS_SEC0_pack_reads_per_xy_plane`, so if the number of enabled read interfaces does not divide the configured rows per xy plane, the counter steps over that value and keeps incrementing instead.
 
+### Strided reads (`DstAccessMode`)
+
+With `DstAccessMode` set, the read interfaces read rows 8 apart instead of adjacent rows, or 16 apart when `DEST_ACCESS_CFG_remap_addrs` is set. Read interface `i` reads the row whose bits 4:3 (bits 5:4 with `remap_addrs`, which moves them to bits 4:3 of the address `Dst` sees) are `i`, the other bits taken from `StartRow`, and `ReadIntfSel` is shifted left by the start row's own interface, as it is by `StartRow & 3` in the normal mode:
+
+```c
+unsigned Stride = Config.DEST_ACCESS_CFG_remap_addrs ? 16 : 8;
+unsigned Pos = (StartRow / Stride) & 3; // the read interface of StartRow itself
+uint4_t ReadIntfMask = CurrentInstruction.ReadIntfSel;
+if (ReadIntfMask == 0) ReadIntfMask = 0b1111;
+if ((ReadIntfMask << Pos) > 0b1111) {
+  UndefinedBehavior(); // every enabled read interface has to stay within the group of four
+}
+for (unsigned k = 0; k < 4; ++k) {
+  if (ReadIntfMask & (1 << k)) {
+    CurrentPacker.ReadDstRow(StartRow + k * Stride); // appended to the packed output
+  }
+}
+```
+
+Each row is then read as in the normal mode: a `Dst16b` row through `Adj16`, a `Dst32b` row through `Adj32`, each with its valid bit as described in [`Dst`](Dst.md). Everything else (the ADC X range, edge masking and the tile position, which advances by the number of enabled read interfaces, conversion and the output) is as in the normal mode. For example, with `remap_addrs` set, a `PACR` with `ReadIntfSel` of `0b0011` and a `StartRow` of `64 + r` packs row `r` of the 16-row faces at rows 64 and 80, one after the other, which is how an untilize pack gathers a row of a tile.
+
+A strided read of 32-bit data (`PCK_DEST_RD_CTRL_Read_32b_data`) assumes the `DEST_ACCESS_CFG_swizzle_32b` layout: with `swizzle_32b` clear it reads other datums, not described here. Strided 16-bit reads work under either value of `swizzle_32b`. `DstAccessMode` has no effect on a `PACR` with `ZeroWrite`, which reads nothing from `Dst`.
+
 ### Output held until the next `PACR`
 
 A `PACR` with `Last` clear, an `IntermediateFormat` of FP32 or INT32 and three or four enabled read interfaces (e.g. `ReadIntfSel` of `0b0111`, `0b1111` or `0`) keeps its output inside the packer until the next `PACR` starts, and until then the instruction counts as still being in the packer pipeline. A [`STALLWAIT`](STALLWAIT.md) on the same thread that waits for the packer (wait condition C3) between the two is therefore UndefinedBehavior: in practice it never finishes. Ending the sequence with a `PACR` that has `Last` set avoids it.
@@ -81,7 +104,7 @@ A `PACR` with `Flush` set is UndefinedBehavior on Blackhole if any `PACR` has ru
 * `Concat`: if [compression](../../../WormholeB0/TensixTile/TensixCoprocessor/Packers/Compression.md) is enabled, setting this to `true` causes the _next_ `PACR` instruction to continue the current compression row rather than starting a new compression row. If compression is disabled, then there is no inherent concept of compression row, and this field only has an effect via `RowPadZero`.
 * `Flush`: UndefinedBehavior after any earlier `PACR` (see above).
 * `Last`: used by the output address generator (flushes the output buffers sitting before L1 and causes the _next_ `PACR` instruction to start at fresh output addresses).
-* `DstAccessMode`: selects the strided `Dst` read mode, in which the enabled read interfaces read rows 16 apart rather than adjacent rows. This mode is intended for use with `DEST_ACCESS_CFG_swizzle_32b` and `DEST_ACCESS_CFG_remap_addrs`; its interaction with `ReadIntfSel` is not yet documented.
+* `DstAccessMode`: selects the strided `Dst` read mode, in which the enabled read interfaces read rows 8 apart (16 apart with `DEST_ACCESS_CFG_remap_addrs`) rather than adjacent rows; see above.
 * `RowPadZero`: pads the packed data with zeroes, either every row or up to the next 16 datum boundary, optionally conditional on `Concat` or `Last`. Not yet documented in detail.
 * `CtxtCtrl`, `AddrCntContext`, `CfgContext`: select which context's counters and configuration the instruction uses. Not yet documented in detail.
 
