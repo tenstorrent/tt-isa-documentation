@@ -352,9 +352,10 @@ if (BfpExpStream && (DatumSizeBytes == 0.5) && (TTArchitecture == Wormhole ? Thr
     UndefinedBehavior();
   }
 }
-if (!UnpackToDst && (WhichUnpacker == 0) && (InputNumDatums > 16)) { // check for SrcA burst drop cases
+if (!UnpackToDst && (WhichUnpacker == 0 || TTArchitecture == Blackhole) && (InputNumDatums > 16)) { // check for SrcA (and on Blackhole SrcB) burst drop cases
   // This logic is mildly simplified and conservative vs. exact (rather complex) silicon behavior
-  uint32_t StartRow = OutAddr / 16 - 4;
+  uint32_t RowOffset = (WhichUnpacker == 0) ? 4 : 0;
+  uint32_t StartRow = OutAddr / 16 - RowOffset;
   if (DatumSizeBytes == 0.25) {
     ThrottleMode = 0; // BFP2a/BFP2 always run at x1
   } else if (DiscontiguousInputRows) {
@@ -370,16 +371,16 @@ if (!UnpackToDst && (WhichUnpacker == 0) && (InputNumDatums > 16)) { // check fo
   BurstRows = std::max(BurstRows, 1u);
   BurstRows = std::min(BurstRows, 8u);
   if (StartRow & (BurstRows - 1)) {
-    UnsupportedFunctionality(); // SrcA bursts may span 16-row set boundaries and drop writes
-    // Pseudocode below does not describe the exact SrcA burst drop behavior. Software must not
-    // depend on the precise behavior; do not write software that triggers SrcA burst drops.
+    UnsupportedFunctionality(); // Src bursts may span 16-row set boundaries and drop writes
+    // Pseudocode below does not describe the exact burst drop behavior. Software must not
+    // depend on the precise behavior; do not write software that triggers burst drops.
   }
   if (TTArchitecture == Blackhole) {
-    // When the datums don't start at an aligned 16 byte boundary, the groups in which they reach SrcA
-    // straddle rows, and a group that straddles a 16-row set boundary loses its datums past the
+    // When the datums don't start at an aligned 16 byte boundary, the groups in which they reach SrcA or
+    // SrcB straddle rows, and a group that straddles a 16-row set boundary loses its datums past the
     // boundary, at every throttle mode (e.g. Int16 at x1 from 2 bytes into a 16 byte word, written to
-    // rows 16 to 37, leaves the first 7 datums of row 32 unwritten).
-    uint32_t EndRow = (OutAddr + InputNumDatums - 1) / 16 - 4;
+    // SrcA rows 16 to 37, leaves the first 7 datums of row 32 unwritten).
+    uint32_t EndRow = (OutAddr + InputNumDatums - 1) / 16 - RowOffset;
     if (InAddr_Datums != floor(InAddr_Datums / 16.) * 16. && (StartRow / 16) != (EndRow / 16)) {
       UndefinedBehavior();
     }
