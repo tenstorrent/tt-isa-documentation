@@ -131,9 +131,10 @@ bool BfpExpStream = IsBFPFormat(InDataFormat) && !ConfigState.THCON_SEC[WhichUnp
 if (BfpExpStream) {
   InAddr_Exponents = InAddr;
   if (InDataFormat == BFP8 || InDataFormat == BFP8a || !ConfigDescriptor.NoBFPExpSection) {
-    auto NumElements = XDim * YDim * ZDim * WDim;
-    auto NumExponents = ceil(NumElements / 16.);
-    InAddr += ceil(NumExponents / 16.) * 16;
+    // The hardware counts the rows and the 16-byte units of exponents in 16 bits each, wrapping.
+    uint16_t NumRows = YDim * ZDim * WDim;
+    uint16_t NumExponentUnits = ceil(XDim * NumRows / 256.);
+    InAddr += NumExponentUnits * 16;
   }
 }
 
