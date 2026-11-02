@@ -54,7 +54,7 @@ The baby RISCV cores recognize the following CSRs:
 |--:|--:|---|---|
 |0|1|`DisLdBufByp`|If set, load instructions will wait (in EX1) for the store queue to be empty before entering the Load/Store Unit (if the tail of the store queue is a store to L1, the duration of this wait can depend on `StMergeTimer`)|
 |1|1|`DisBp`|If set, the branch predictor is disabled|
-|2|1|`DisIcPrefetch`|If set, the instruction cache prefetchers are disabled|
+|2|1|`DisIcPrefetch`|If set, this core's instruction cache prefetcher is disabled even if `RISC_PREFETCH_CTRL` enables it. If clear, the prefetcher is on only if [`RISC_PREFETCH_CTRL`](../../../WormholeB0/TensixTile/BabyRISCV/InstructionCache.md#prefetcher) enables it, which it does not at reset|
 |3|1|`DisLowCash`|If set, the L0 data cache is disabled|
 |4|1|`DisableDataEcc`||
 |5|2|Reserved|Mutable, but no effect on execution|
