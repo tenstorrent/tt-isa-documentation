@@ -131,6 +131,8 @@ for (unsigned Lane = 0; Lane < 32; ++Lane) {
 ApplyPartialAddrMod(AddrMod);
 ```
 
+When it writes `Dst`, an `SFPSTORE` marks all four rows of its group (`Addr & ~3` through `(Addr & ~3) + 3`) as defined (see [`ZEROACC`](ZEROACC.md)), including a row for which no lane is enabled, and even when no lane is enabled at all. The cells it doesn't write keep their previous contents, so a row that [`ZEROACC`](ZEROACC.md) marked undefined then reads as whatever it held before the `ZEROACC`, not as zero. Software storing under lane flags to rows that may be undefined should store to every column of the group's rows, or write them first.
+
 See [RWCs](RWCs.md) for the definition of `ApplyPartialAddrMod`.
 
 Supporting definitions:
