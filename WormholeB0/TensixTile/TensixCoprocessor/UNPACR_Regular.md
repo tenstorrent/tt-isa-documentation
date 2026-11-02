@@ -392,6 +392,34 @@ if (!UnpackToDst && (WhichUnpacker == 0 || TTArchitecture == Blackhole) && (Inpu
     UndefinedBehavior();
   }
 }
+if (FlipSrc && !UnpackToDst && DatumSizeBytes >= 1 && InAddr_Datums != floor(InAddr_Datums / 16.) * 16.) {
+  // When the datums don't start at an aligned 16 byte boundary, they reach SrcA or SrcB shifted, and whatever
+  // the last group read from L1 doesn't fit in that group's write to SrcA or SrcB is written once more after
+  // the unpack is done. With FlipSrc, that write comes after the bank is handed to the Matrix Unit: those
+  // datums (the first few of the last row's final 16 byte group) are missing from the bank handed over, on
+  // Wormhole they are written into the other bank instead, and the unpacker waits until the other bank is
+  // free for the unpackers. Only x4 read groups (and on Blackhole x8 ones) can overflow.
+  uint32_t GroupThrottle = ConfigState.THCON_SEC[WhichUnpacker].REG2_Throttle_mode;
+  if ((TTArchitecture == Blackhole) && !ConfigState.THCON_SEC[0].REG1_ovrd_default_throttle_mode) {
+    GroupThrottle = (DatumSizeBytes == 1) ? 3 : 2;
+  }
+  uint32_t GroupBytes = 0; // L1 bytes per read group, which is also the size of its write to SrcA or SrcB
+  if (TTArchitecture == Wormhole) {
+    if (GroupThrottle == 2) GroupBytes = 64;
+  } else if (GroupThrottle >= 2) {
+    GroupBytes = (DatumSizeBytes == 1) ? 64 : 128;
+  }
+  double OutPerInBytes = (InDataFormat == FP32 && (OutDataFormat == FP16 || OutDataFormat == BF16)) ? 0.5 : 1;
+  uint32_t StartByte = InAddr_Datums - floor(InAddr_Datums / 16.) * 16.;
+  uint32_t EndByte = StartByte + InputNumDatums * DatumSizeBytes;
+  if (GroupBytes && EndByte > GroupBytes) {
+    uint32_t LastGroupBytes = (EndByte - 1) % GroupBytes + 1;
+    uint32_t Shift = (16 - StartByte * OutPerInBytes) % 16;
+    if (Shift + LastGroupBytes * OutPerInBytes > GroupBytes) {
+      UndefinedBehavior(); // On Blackhole this is conservative for 8-bit input into SrcB
+    }
+  }
+}
 
 // Main unpack loop:
 for (unsigned i = 0; i < InputNumDatums && DecompressNumDatums; ) {
