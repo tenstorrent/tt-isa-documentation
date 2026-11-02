@@ -123,6 +123,24 @@ Context `Ctx` reads these fields:
 
 `THCON_SEC0_REG8` and `THCON_SEC1_REG8` hold the same per-packer fields as a `REG1`, at the same bit positions, except that `Add_tile_header_size` and `pack_dis_y_pos_start_offset` sit at bits 17 and 18 of their third word (bits 22 and 23 in a `REG1`). Everything else the packer reads is shared by the four contexts, including the ADC strides (`PCK0_ADDR_CTRL_*`, `PCK0_ADDR_BASE_*`), `PCK_DEST_RD_CTRL`, the ReLU and format fields outside `THCON`, and the edge-mask tables, masks, mode and `PCK_EDGE_TILE_FACE_SET_SELECT_enable`.
 
+### `RowPadZero`
+
+`RowPadZero` pads the packed data with zero datums. Its low two bits say when an instruction pads, and its high bit says what:
+
+|`RowPadZero & 3`|The instruction pads|
+|---|---|
+|`0`|Never|
+|`1`|Always|
+|`2`|When `Concat` is `false` or `Last` is `true` (a `PACR` with `Last` set always has `Concat` cleared)|
+|`3`|When `Last` is `true`|
+
+* `RowPadZero & 4` clear: each row the instruction packs (one per enabled read interface) is followed by zero datums up to 16 datums. With an ADC X range of 3 to 7, for example, each row packs its five datums and then eleven zeros. For a BFP output format, the row's datums occupy the first positions of its block and the zeros the rest.
+* `RowPadZero & 4` set: after all of the instruction's rows, the packer adds zero datums up to the next multiple of 16 of a running count. The count is of every datum the packer has packed since reset or since the last such padding, in every `PACR` and every tile, padding included, so it carries over from one tile to the next. When the count is already a multiple of 16, no zeros are added, with one exception: on a `PACR` with `Last` set whose tile so far (padding included) amounts to a multiple of 128 bytes of `In_data_format` data, counting a datum of an 8-bit or BFP format as 2 bytes, the packer adds 128 bytes' worth of zero datums (32 datums of 32 bits, or 64 of the others).
+
+The padding datums go through the rest of the packer as datums read from `Dst` with a value of zero would: they are converted to `Out_data_format`, and they count as part of the tile for the end-of-tile rules above (the completion of a 32-byte unit and the groups of 128 bytes). Padding does not change which `Dst` rows are read or the tile position used for edge masking.
+
+The following are not yet characterized: `RowPadZero` with `ZeroWrite`, and whether the datums of a `PACR` with `ZeroWrite` count toward the running count; `RowPadZero & 4` with a BFP `Out_data_format`; and padding rows of 32-bit datums (an `In_data_format` of FP32, TF32 or INT32) whose X range starts at 12 or later.
+
 ### Output held until the next `PACR`
 
 A `PACR` with `Last` clear, an `IntermediateFormat` of FP32 or INT32 and three or four enabled read interfaces (e.g. `ReadIntfSel` of `0b0111`, `0b1111` or `0`) keeps its output inside the packer until the next `PACR` starts, and until then the instruction counts as still being in the packer pipeline. A [`STALLWAIT`](STALLWAIT.md) on the same thread that waits for the packer (wait condition C3) between the two is therefore UndefinedBehavior: in practice it never finishes. Ending the sequence with a `PACR` that has `Last` set avoids it.
@@ -141,7 +159,7 @@ A `PACR` with `Flush` set is UndefinedBehavior on Blackhole if any `PACR` has ru
 * `Flush`: UndefinedBehavior after any earlier `PACR` (see above).
 * `Last`: used by the output address generator (flushes the output buffers sitting before L1 and causes the _next_ `PACR` instruction to start at fresh output addresses).
 * `DstAccessMode`: selects the strided `Dst` read mode, in which the enabled read interfaces read rows 8 apart (16 apart with `DEST_ACCESS_CFG_remap_addrs`) rather than adjacent rows; see above.
-* `RowPadZero`: pads the packed data with zeroes, either every row or up to the next 16 datum boundary, optionally conditional on `Concat` or `Last`. Not yet documented in detail.
+* `RowPadZero`: pads the packed data with zeros, every row or up to the next multiple of 16 datums; see above.
 * `CfgContext`, `CtxtCtrl`: select the configuration context; see above.
 * `AddrCntContext`: with `OvrdThreadId` set, the instruction uses the ADCs of thread `AddrCntContext` (0, 1 or 2) rather than those of the issuing thread.
 
