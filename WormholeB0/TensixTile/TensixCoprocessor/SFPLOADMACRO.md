@@ -161,4 +161,6 @@ If [`SFPCONFIG`](SFPCONFIG.md) is used to change `LoadMacroConfig.Sequence` or `
 
 If `SFPCONFIG` is used to change `LoadMacroConfig.InstructionTemplate[i]` and the very next Vector Unit (SFPU) instruction is written to `InstructionTemplate[j]` by way of `VD ≥ 12` (see `LaneConfig.DISABLE_BACKDOOR_LOAD`), then `InstructionTemplate[i]` might end up containing either the value from `SFPCONFIG` or the instruction bits of that next instruction. Software should insert an [`SFPNOP`](SFPNOP.md) instruction between them.
 
+If an [`SFPSWAP`](SFPSWAP.md) is written to `InstructionTemplate[VD - 12]` by way of `VD ≥ 12`, the very next Vector Unit (SFPU) instruction is executed twice (e.g. `SFPIADD` adds its immediate twice, `SFPPUSHC` pushes twice, `SFPPOPC` pops twice). Software should insert an [`SFPNOP`](SFPNOP.md) instruction immediately after such an `SFPSWAP`. Other instructions written to `InstructionTemplate` this way don't do this.
+
 For the purpose of writing to `InstructionTemplate[VD - 12]` via `VD ≥ 12`, the `VD` field of [`SFPLOAD`](SFPLOAD.md), [`SFPLOADI`](SFPLOADI.md), [`SFPSTORE`](SFPSTORE.md) and [`SFPLUT`](SFPLUT.md) is in bits 23:20 of the instruction, and that of every other instruction is in bits 7:4.
