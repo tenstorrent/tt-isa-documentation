@@ -331,7 +331,7 @@ if (UnpackToDst && (ColShift || Transpose)) {
 }
 if (UnpackToDst) {
   if (ThreadConfig[CurrentThread].SRCA_SET_SetOvrdWithAddr) {
-    UndefinedBehavior(); // Silicon behavior is likely "Row &= 0x3CF", which is not useful; do not use this mode
+    UndefinedBehavior(); // Silicon behavior is "Row &= 0x3CF", which is not useful; do not use this mode
   }
 } else {
   if (!ThreadConfig[CurrentThread].SRCA_SET_SetOvrdWithAddr) {
@@ -764,6 +764,12 @@ bool IsBFPFormat(uint4_t x) {
   return x in {BFP8, BFP8a, BFP4, BFP4a, BFP2, BFP2a};
 }
 ```
+
+## Instruction scheduling
+
+An `UNPACR` with `UnpackToDst` uses `ThreadConfig[CurrentThread].SRCA_SET_SetOvrdWithAddr` at each of its writes to `Dst`, not only when it starts. If a `SETC16` sets `SetOvrdWithAddr` back to `true` while the `UNPACR` is still writing, its remaining writes go to `Row & 0x3CF` (as in the `UndefinedBehavior` case above): datums meant for rows 16 to 63 of each group of 64 overwrite rows 0 to 15 of that group. E.g. an unpack of 1024 FP32 datums followed directly by that `SETC16` leaves the last 256 datums in rows 0 to 15 and nothing in rows 16 to 63. Software must not issue that `SETC16` until the `UNPACR` has finished: a `STALLWAIT` with block mask B7 and condition C1 before it orders them, as does any earlier instruction in the thread that waits for C1 (e.g. a `SEMPOST` behind `STALLWAIT` B1 with C1).
+
+On Blackhole, an `UNPACR` on Unpacker 0 that writes to `SrcA` must not start while an earlier `UNPACR` on the same unpacker with `UnpackToDst` is still writing to `Dst`. Otherwise one or two of the earlier instruction's last 16-datum writes to `Dst` are also written to `SrcA` (at the row number their `Dst` address would give, modulo 64), overwriting whatever the second `UNPACR` or earlier ones left in those rows. The unpacker does not wait for this by itself, and neither does a configuration write in between (e.g. the `WRCFG` or `RMWCIB` that clears `Unpack_if_sel`), even with a `STALLWAIT` that blocks only the Configuration Unit. A `STALLWAIT` with block mask B3 (or B0) and condition C1 before the second `UNPACR` orders them, as does any earlier instruction in the thread that waits for C1 (e.g. a `SEMPOST` behind `STALLWAIT` B1 with C1). Wormhole doesn't need this.
 
 ## Performance
 
