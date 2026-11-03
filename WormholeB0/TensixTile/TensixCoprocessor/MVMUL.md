@@ -222,4 +222,6 @@ ApplyAddrMod(AddrMod);
 
 For floating-point computation, the functional model should be taken as a rough guide rather than an exact description: operations might be performed in a different order to that shown, various operations might be fused together, and precision could be either lower or higher than what is shown. Denormals will be flushed to zero, and handling of NaN/infinity does _not_ conform to IEEE754.
 
+On Blackhole, `DstRowValid` is indexed as described in [`Dst.md` in the Blackhole tree](../../../BlackholeA0/TensixTile/TensixCoprocessor/Dst.md): the valid bit of `Row` is `DstRowValid[UseDst32b ? Adj32NoSwizzle(Row) : Adj16(Row)]`. This differs from the indices in the functional model only when `DEST_ACCESS_CFG_remap_addrs` or `DEST_ACCESS_CFG_swizzle_32b` is set, and it holds for every Matrix Unit instruction that reads or writes `Dst`.
+
 On Blackhole, if bit 2 of `DstRow` is set before it is aligned down to a multiple of 8 (and `BroadcastSrcBRow` is not used), rows 0 through 3 of the aligned 8x16 block of `Dst` are handled differently: they are read as whatever they contain even when `DstRowValid` marks them as undefined (rather than as zero), and their `DstRowValid` bits are left unchanged after they are written. Rows 4 through 7 behave as described above. Software should keep bit 2 of `DstRow` clear.
