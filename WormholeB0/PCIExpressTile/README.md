@@ -45,7 +45,7 @@ Adjacent diagrams: [ARC to PCI Express](../ARCTile/README.md#tofrom-pci-express-
 
 **DMA Engines:** Fixed-function hardware for efficiently copying data between the host and the device (in either direction). Supports full 64-bit addressing on the host side.
 
-**Host IOMMU:** If present and enabled, maps a 64-bit address space (from the Outbound iATU and the DMA Engines) to the host's physical address space. Otherwise, the 64-bit address space is exactly the host's physical address space.
+**Host IOMMU:** If present and enabled, maps a 64-bit address space (from the Outbound iATU and the DMA Engines) to the host's physical address space. Otherwise, the 64-bit address space is exactly the host's physical address space. See [Security and Isolation at the System Level](../../SystemSecurity.md) for why the IOMMU should be enabled.
 
 ### Clock domains
 

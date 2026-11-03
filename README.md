@@ -21,6 +21,8 @@ At the moment, two architectures are covered in this repository:
 
 See also [ttsim](https://github.com/tenstorrent/ttsim), the official simulator and golden reference implementation of the Tenstorrent ISA.
 
+For what device code can reach on these architectures, and how to build secure systems around them, see [Security and Isolation at the System Level](SystemSecurity.md).
+
 -----
 
 > [!NOTE]

@@ -51,7 +51,7 @@ This tile is too complex to show on a single diagram, though some components are
 
 **DMA Engines:** Fixed-function hardware for efficiently copying data between the host and the device (in either direction). Supports full 64-bit addressing on the host side.
 
-**Host IOMMU:** If present and enabled, maps a 64-bit address space (from the Outbound iATU and the DMA Engines) to the host's physical address space. Otherwise, the 64-bit address space is exactly the host's physical address space.
+**Host IOMMU:** If present and enabled, maps a 64-bit address space (from the Outbound iATU and the DMA Engines) to the host's physical address space. Otherwise, the 64-bit address space is exactly the host's physical address space. See [Security and Isolation at the System Level](../../SystemSecurity.md) for why the IOMMU should be enabled.
 
 **Interrupt Receiver:** The PCI Express Controller is capable of operating as a "Root Port (RP)", although in current products it is instead configured to operate as an "Endpoint (EP)". When it is operating as a Root Port (RP), the Interrupt Receiver translates PCI Express interrupts into small NoC transactions, allowing a tile on the NoC to be notified of interrupts and subsequently service them.
 
