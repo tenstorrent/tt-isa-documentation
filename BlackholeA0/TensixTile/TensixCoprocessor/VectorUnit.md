@@ -186,4 +186,22 @@ uint32_t AdvancePRNG(unsigned Lane) {
 }
 ```
 
+Writing to `Config.PRNG_SEED_Seed_Val_ADDR32` (see [backend configuration](BackendConfiguration.md#special-cases)) seeds every lane's PRNG, though each lane ends up with a different state:
+
+```c
+void SeedPRNGs(uint32_t Seed) {
+  for (unsigned Lane = 0; Lane < 32; ++Lane) {
+    unsigned Steps = 97 - 16 * (Lane / 8) - 2 * (Lane % 8);
+    uint32_t S = Seed;
+    for (unsigned i = 0; i < Steps; ++i) {
+      uint32_t Taps = __builtin_popcount(S & 0x80200003);
+      S = (~Taps << 31) | (S >> 1);
+    }
+    State[Lane] = S;
+  }
+}
+```
+
+The seeding is not instantaneous: the hardware hands out the lanes' seeds one at a time, lane 31 first, about 280 cycles after the write, and lane 0 last, about 780 cycles after it. Until a lane's seed arrives, `AdvancePRNG` returns values from that lane's old state, and the seed then replaces whatever state that left, so software must wait at least 800 cycles after writing `PRNG_SEED_Seed_Val` before any instruction that uses the PRNG. The same write also seeds the PRNGs used for stochastic rounding outside the Vector Unit, the last of them about 1800 cycles after the write; writing `PRNG_SEED_Seed_Val` again before then leaves every PRNG's state as an `UnpredictableValue()`.
+
 The statistical properties of this PRNG are poor, so software is encouraged to build its own PRNG if high quality randomness is required.

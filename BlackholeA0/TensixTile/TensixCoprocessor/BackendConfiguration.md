@@ -38,7 +38,7 @@ Writes to `Config[i][j]` with `j >= GLOBAL_CFGREG_BASE_ADDR32` will write to _bo
 
 In most cases, writes to `Config` or `ThreadConfig` will be picked up by a subsequent Tensix instruction which (either implicitly or explicitly) reads from `Config` or `ThreadConfig`. However, in a few cases writes cause an immediate effect:
   * Writing _anything_ to `Config[i][STATE_RESET_EN_ADDR32]` (except via `RMWCIB`) is equivalent to an instantaneous `for (unsigned j = 0; j < GLOBAL_CFGREG_BASE_ADDR32; ++j) Config[i][j] = 0;`.
-  * Writing a value to `Config.PRNG_SEED_Seed_Val_ADDR32` will use that value to (re-)seed all the PRNGs.
+  * Writing a value to `Config.PRNG_SEED_Seed_Val_ADDR32` will use that value to (re-)seed all the PRNGs, over the following 1800 or so cycles (see [the Vector Unit's PRNG](VectorUnit.md#prng)). This happens for writes by RISCV store instructions and by [`WRCFG`](WRCFG.md), but not for [`RMWCIB`](RMWCIB.md): it changes the stored value without seeding anything, which software should not rely on (`NonContractualBehavior`).
   * Writing a mask to `Config.RISCV_IC_INVALIDATE_InvalidateAll` will invalidate the instruction caches of the baby RISCV cores identified by the mask (bit 0 for RISCV B, bit 1 for RISCV T0, bit 2 for RISCV T1, bit 3 for RISCV T2, bit 4 for RISCV NC).
   * Writing to `ThreadConfig[i][UNPACK_MISC_CFG_CfgContextCntReset_0_ADDR32]` or `ThreadConfig[i][UNPACK_MISC_CFG_CfgContextCntReset_1_ADDR32]` (using `SETC16`) will reset the unpacker configuration context counters associated with thread `i`.
 
