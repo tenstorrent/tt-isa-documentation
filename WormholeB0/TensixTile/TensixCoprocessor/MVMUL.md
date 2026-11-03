@@ -220,7 +220,7 @@ if (FlipSrcB) {
 ApplyAddrMod(AddrMod);
 ```
 
-For floating-point computation, the functional model should be taken as a rough guide rather than an exact description: operations might be performed in a different order to that shown, various operations might be fused together, and precision could be either lower or higher than what is shown. Denormals will be flushed to zero, and handling of NaN/infinity does _not_ conform to IEEE754.
+For floating-point computation, the functional model should be taken as a rough guide rather than an exact description: operations might be performed in a different order to that shown, various operations might be fused together, and precision could be either lower or higher than what is shown. Denormals will be flushed to zero, and handling of NaN/infinity does _not_ conform to IEEE754. The exact arithmetic is given in [Matrix Unit floating-point arithmetic](MatrixUnitArithmetic.md).
 
 On Blackhole, `DstRowValid` is indexed as described in [`Dst.md` in the Blackhole tree](../../../BlackholeA0/TensixTile/TensixCoprocessor/Dst.md): the valid bit of `Row` is `DstRowValid[UseDst32b ? Adj32NoSwizzle(Row) : Adj16(Row)]`. This differs from the indices in the functional model only when `DEST_ACCESS_CFG_remap_addrs` or `DEST_ACCESS_CFG_swizzle_32b` is set, and it holds for every Matrix Unit instruction that reads or writes `Dst`.
 

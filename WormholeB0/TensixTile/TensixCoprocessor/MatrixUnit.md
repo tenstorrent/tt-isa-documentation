@@ -76,6 +76,10 @@ For integer types, the performance numbers are the same (just replace "TFLOP/s" 
 
 To calculate the performance of an entire Wormhole ASIC, multiply the above numbers by the number of Tensix tiles on the Wormhole ASIC, which depending on the product will be either 64 or 72 or 80. To then calculate the performance of an entire product, multiply by the number of Wormhole ASICs in the product (an n150 board will have 1 ASIC with 72 tiles, an n300 board will have 2 ASICs with 64 tiles each, and a Galaxy server will have 32 ASICs with 80 tiles each).
 
+## Floating-point arithmetic
+
+The instruction pages describe floating-point arithmetic with C `float` operations, as a rough guide. The exact arithmetic of `ELWADD`, `ELWSUB`, `ELWMUL`, `MVMUL`, `DOTPV` and `GAPOOL`, bit for bit, is in [Matrix Unit floating-point arithmetic](MatrixUnitArithmetic.md).
+
 ## Pseudocode helpers
 
 The following pseudocode routines are shared across the various opcodes in the matrix unit.
