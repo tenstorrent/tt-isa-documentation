@@ -28,7 +28,7 @@ Different instructions are used to access these variables:
 
 ## RISCV writes to `Config`
 
-On Wormhole, the programmer had to take care to avoid race conditions when mixing writes to `Config` with writes to push Tensix instructions. On Blackhole, Auto TTSync should cause any such mixing to be fine: the hardware will automatically stall any problematic writes whilst it waits for earlier conflicting writes to complete.
+On Wormhole, the programmer had to take care to avoid race conditions when mixing writes to `Config` with writes to push Tensix instructions. On Blackhole, [Auto TTSync](../BabyRISCV/AutoTTSync.md), once enabled, causes any such mixing by RISCV T0 / T1 / T2 to be fine: the hardware will automatically stall any problematic writes whilst it waits for earlier conflicting writes to complete. Auto TTSync does not cover RISCV B or RISCV NC, and no `STALLWAIT` condition tracks their stores either, so their writes to `Config` need the same care as on Wormhole: either push a Tensix instruction (such as [`WRCFG`](WRCFG.md) or [`RMWCIB`](RMWCIB.md)) to perform the write, or read the written value back and consume it before pushing the instruction that needs it (see [memory ordering](../BabyRISCV/MemoryOrdering.md#enforcing-stronger-ordering)).
 
 ## Special cases
 
