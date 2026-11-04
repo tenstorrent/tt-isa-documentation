@@ -43,7 +43,9 @@ lanewise {
       uint64_t Mag  = c & 0x7fffffffu;
       Mag <<= 23;
       Mag >>= UseImm5 ? Imm5 : (LReg[VB].u32 & 31);
-      Mag = (Mag >> 23) + ((Mag & 0x7fffff) >= PRNGBits);
+      if (c != 0) { // +0 is never rounded up, even when PRNGBits is 0 (-0 can be)
+        Mag = (Mag >> 23) + ((Mag & 0x7fffff) >= PRNGBits);
+      }
       if (Mod1 == SFPSTOCHRND_MOD1_INT32_TO_UINT8) {
         if (Mag > 255) Mag = 255;
         Sign = 0;
