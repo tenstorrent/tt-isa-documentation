@@ -230,6 +230,8 @@ Read_unsigned  is ConfigState.PCK_DEST_RD_CTRL_Read_unsigned;
 
 if (ConfigState.ALU_FORMAT_SPEC_REG_Dstacc_override) {
   IntermediateFormat is ConfigState.ALU_FORMAT_SPEC_REG_Dstacc_val;
+} else if (TTArchitecture == Blackhole) {
+  IntermediateFormat is CurrentPacker.Config[StateID].In_data_format; // ALU_FORMAT_SPEC_REG2_Dstacc has no effect on Blackhole
 } else {
   IntermediateFormat is ConfigState.ALU_FORMAT_SPEC_REG2_Dstacc;
 }
