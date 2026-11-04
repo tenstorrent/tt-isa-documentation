@@ -9,6 +9,7 @@ struct {
   uint6_t SrcB, SrcB_Cr;
   uint2_t FidelityPhase;
   uint1_t ExtraAddrModBit;
+  uint10_t Sp; // Blackhole only: the SFPLOAD / SFPSTORE stack pointer
 } RWCs[3];
 ```
 
