@@ -6,6 +6,12 @@ A single write request packet or read response packet will involve reading some 
 
 For writes to L1, the write will be decomposed into two separate streams by the receiving NIU: byte addresses which are between `0 mod 32` and `15 mod 32` (inclusive) will go to stream 0, whereas byte addresses which are between `16 mod 32` and `31 mod 32` (inclusive) will go to stream 1. Within each stream, ordering is guaranteed: the writes from a single packet will happen in ascending address order.
 
+### Source and destination in the same L1
+
+A write request addressed to the tile that issues it (or a broadcast with `NOC_CMD_BRCST_SRC_INCLUDE` whose rectangle contains the issuing tile, for the issuing tile's copy), or a read request whose source is the tile that issues it, reads and writes the same tile's L1. Nothing orders that packet's reads against its writes, so if the source and destination byte ranges overlap without being identical, then each destination byte whose source byte lies within the destination range receives an [UnpredictableValue](../../Glossary.md#unpredictablevalue): either the value its source byte had before the request, or a value that this same request has already written to that source byte, depending on timing. Every other destination byte receives the value its source byte had before the request, no byte outside the destination range is written, and the request completes as normal. If the ranges are identical, every byte keeps its value.
+
+Software wanting to move data between overlapping ranges of one L1 should split the move into requests whose source and destination ranges do not overlap, for example by using requests of at most the distance between the two ranges, issued from the highest addresses down when moving data up (and from the lowest addresses up when moving data down), waiting for each request to complete before issuing the next.
+
 ## Ordering properties of two packets
 
 If two unicast packets have the same source and destination, and travel on the same NoC, then both packets will take the same route from source to destination. If two broadcast packets have the same source and same destination rectangle and same value of `NOC_CMD_BRCST_XY` and travel on the same NoC, then both packets will use the same tree of routes from source to destinations.
