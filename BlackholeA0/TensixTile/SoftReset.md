@@ -19,7 +19,7 @@
 |7|[Unpacker soft reset](#unpacker-soft-reset)|
 |8|[TDMA-RISC soft reset](#tdma-risc-soft-reset) and [glue soft reset](#glue-soft-reset)|
 |9|[THCON configuration soft reset](#thcon-configuration-soft-reset) and [Scalar Unit (ThCon) soft reset](#scalar-unit-thcon-soft-reset)|
-|10|[Matrix Unit (FPU) soft reset](#matrix-unit-fpu-soft-reset) and [Vector Unit (SFPU) soft reset](#vector-unit-sfpu-soft-reset) and [SrcA data soft reset](#srca-data-soft-reset) (all columns)|
+|10|[Matrix Unit (FPU) soft reset](#matrix-unit-fpu-soft-reset) and [Vector Unit (SFPU) soft reset](#vector-unit-sfpu-soft-reset) and [SrcA data soft reset](#srca-data-soft-reset) (all columns) and [SrcB data soft reset](#srcb-data-soft-reset)|
 |11|[RISCV B soft reset](#riscv-soft-reset)|
 |12|[RISCV T0 soft reset](#riscv-soft-reset)|
 |13|[RISCV T1 soft reset](#riscv-soft-reset)|
@@ -134,7 +134,7 @@ All columns of `SrcA` data can be held in reset as part of bit 10, or groups of 
 
 ## `SrcB` data soft reset
 
-All columns of `SrcB` data can be held in reset as part of bit 16. Software is encouraged to use [`ZEROSRC`](TensixCoprocessor/ZEROSRC.md) rather than relying heavily on `SrcB` data soft reset.
+All columns of `SrcB` data can be held in reset as part of bit 10 or bit 16. Software is encouraged to use [`ZEROSRC`](TensixCoprocessor/ZEROSRC.md) rather than relying heavily on `SrcB` data soft reset.
 
 **Upon entering soft reset:** The relevant columns of `SrcB` (all banks, all rows) will have their data set to zero.
 
@@ -199,6 +199,9 @@ SrcB[1].AllowedClient = SrcClient::Unpackers;
 <tr><th><code>LReg[16]</code></th><td>Zero</td></tr></table>
 
 ## Matrix Unit (FPU) soft reset
+
+> [!CAUTION]
+> Software should not use bit 10. If it is asserted while a Matrix Unit (FPU) instruction is just starting, the thread that issued that instruction can be left waiting for it forever. Pulsing it can also leave the Matrix Unit discarding its writes to some columns of `Dst` until the next chip reset (Vector Unit and unpacker writes to `Dst` are not affected). Bit 10 only takes effect on cycles where the Matrix Unit's clock is running, so if clock gating is enabled and the Matrix Unit is idle, a pulse of bit 10 might have no effect at all, including on `SrcA` and `SrcB`.
 
 **Upon entering soft reset:** Any in-flight [Matrix Unit (FPU)](TensixCoprocessor/MatrixUnit.md) instructions will be aborted.
 
