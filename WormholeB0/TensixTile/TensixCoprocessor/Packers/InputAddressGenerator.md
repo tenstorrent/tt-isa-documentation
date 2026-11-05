@@ -51,7 +51,12 @@ for (unsigned i = 0; i < 4; ++i) {
     // If In_data_format specifies a BFP format, then signs and mantissas are fetched
     // from L1, but the shared exponent is always taken as zero.
   } else {
-    Addr = ((Addr / BytesPerDatum) & ~ADC_X_Mask) + (ADC.X & ADC_X_Mask);
+    if (TTArchitecture == Blackhole) {
+      // The start column is the low four bits of ADC.X for every format; Addr only selects the row.
+      Addr = ((Addr / BytesPerDatum) & ~0xf) + (ADC.X & 0xf);
+    } else {
+      Addr = ((Addr / BytesPerDatum) & ~ADC_X_Mask) + (ADC.X & ADC_X_Mask);
+    }
     Addr += Config.DEST_TARGET_REG_CFG_PACK_SEC[i].Offset << 4;
     PackerI.InputSource = INPUT_SOURCE_Dst;
     PackerI.InputSourceAddr = Addr & 0x3fff; // Datum index into Dst; `>> 4` is row, `& 0xf` is column
