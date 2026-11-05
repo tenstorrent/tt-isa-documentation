@@ -16,6 +16,8 @@ Writes to `ConfigDualWrite[j]` are equivalent to simultaneously writing to both 
 
 See [`cfg_defines.h`](https://github.com/tenstorrent/tt-metal/blob/81989dcdb8f9b340c932ae7a71a346f4f08703eb/tt_metal/hw/inc/blackhole/cfg_defines.h) for all of the `Field_ADDR32`, `Field_MASK`, and `Field_SHAMT` values. Note that `cfg_defines.h` is divided up into multiple sections; the `// Registers for THREAD` section is for indexing into `ThreadConfig`, whereas all of the other sections are for indexing into `Config`.
 
+Only the bits which belong to some field in `cfg_defines.h` have storage. A write to `Config` or `ThreadConfig` (by any instruction, or by RISCV) keeps those bits and drops the others, which then read back as zero; setting a bit which belongs to no field is `NonContractualBehavior`.
+
 Different instructions are used to access these variables:
 
 ||Thread-agnostic configuration (`Config`)|Thread-specific configuration (`ThreadConfig`)|
