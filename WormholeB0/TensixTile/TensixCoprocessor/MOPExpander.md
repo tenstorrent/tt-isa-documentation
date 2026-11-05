@@ -88,6 +88,8 @@ async def ExpandTemplate1(Instruction, MopCfg):
         OuterCount += (1024 if TTArchitecture == Blackhole else 128) # Hardware bug
     else:
       OuterCount += 1 # Hardware bug
+  elif TTArchitecture == Blackhole and IsNop(StartOp) and InnerCount == 0 and not IsNop(EndOp1):
+    UnsupportedFunctionality() # Expands to nothing on its own, but straight after another MOP the inner loop runs anyway
   for j in range(OuterCount):
     if not IsNop(StartOp):
       yield StartOp
