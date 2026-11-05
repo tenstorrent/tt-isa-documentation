@@ -17,6 +17,11 @@ TT_SFPEXMAN(0, /* u4 */ VC, /* u4 */ VD, /* u4 */ Mod1)
 ## Functional model
 
 ```c
+if (Mod1 > 1) { // Reserved instruction modifiers
+  NonContractualBehavior {
+    Mod1 &= 1; // Current silicon behavior (not architecturally guaranteed)
+  }
+}
 uint32_t HiddenBit = Mod1 & SFPEXMAN_MOD1_PAD9 ? 0 : 1u << 23;
 if (VD < 8 || VD == 16) {
   lanewise {

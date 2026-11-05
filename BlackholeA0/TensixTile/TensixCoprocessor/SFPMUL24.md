@@ -20,6 +20,11 @@ TT_SFPMUL24(/* u4 */ VA, /* u4 */ VB, /* u4 */ VC, /* u4 */ VD, /* u4 */ Mod1)
 ## Functional model
 
 ```c
+if (Mod1 & 2) { // Reserved instruction modifier
+  NonContractualBehavior {
+    Mod1 &= ~2; // Current silicon behavior (not architecturally guaranteed)
+  }
+}
 lanewise {
   if (VD < 12 || LaneConfig[Lane].DISABLE_BACKDOOR_LOAD) {
     if (LaneEnabled) {

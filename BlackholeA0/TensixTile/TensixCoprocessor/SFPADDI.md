@@ -17,6 +17,11 @@ TT_SFPADDI(/* u16 */ Imm16, /* u4 */ VD, /* u4 */ Mod1)
 ## Functional model
 
 ```c
+if (Mod1 & 5) { // Reserved instruction modifiers
+  NonContractualBehavior {
+    Mod1 &= ~5; // Current silicon behavior (not architecturally guaranteed)
+  }
+}
 unsigned VC = VD;
 lanewise {
   if (VD < 12 || LaneConfig[Lane].DISABLE_BACKDOOR_LOAD) {

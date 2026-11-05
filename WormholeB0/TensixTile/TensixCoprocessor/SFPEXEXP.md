@@ -17,6 +17,11 @@ TT_SFPEXEXP(0, /* u4 */ VC, /* u4 */ VD, /* u4 */ Mod1)
 ## Functional model
 
 ```c
+if (Mod1 & 4) { // Reserved instruction modifier
+  NonContractualBehavior {
+    Mod1 &= ~4; // Current silicon behavior (not architecturally guaranteed)
+  }
+}
 int32_t Bias = Mod1 & SFPEXEXP_MOD1_NODEBIAS ? 0 : 127;
 if (VD < 8 || VD == 16) {
   lanewise {

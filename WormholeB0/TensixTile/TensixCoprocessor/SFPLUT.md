@@ -25,6 +25,11 @@ TT_SFPLUT(/* u4 */ VD, /* u4 */ Mod0, 0)
 ## Functional model
 
 ```c
+if (Mod0 & 3) { // Reserved instruction modifiers
+  NonContractualBehavior {
+    Mod0 &= ~3; // Current silicon behavior (not architecturally guaranteed)
+  }
+}
 lanewise {
   if (VD < 12 || LaneConfig[Lane].DISABLE_BACKDOOR_LOAD) {
     if (LaneEnabled) {

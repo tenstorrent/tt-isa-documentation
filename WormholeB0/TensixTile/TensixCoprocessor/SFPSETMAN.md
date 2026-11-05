@@ -17,6 +17,11 @@ TT_SFPSETMAN(/* u12 */ Imm12, /* u4 */ VC, /* u4 */ VD, /* u4 */ Mod1)
 ## Functional model
 
 ```c
+if (Mod1 > 1) { // Reserved instruction modifiers
+  NonContractualBehavior {
+    Mod1 &= 1; // Current silicon behavior (not architecturally guaranteed)
+  }
+}
 unsigned VB = VD;
 if (VD < 8 || VD == 16) {
   lanewise {
