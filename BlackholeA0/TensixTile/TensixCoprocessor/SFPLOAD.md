@@ -89,6 +89,9 @@ uint10_t DstOffset = RWCs[CurrentThread].Dst + ConfigState.DEST_REGW_BASE_Base;
 if (Mod0 == MOD0_FMT_INT32_ALL) {
   if (RWCs[CurrentThread].Sp != 0) {
     RWCs[CurrentThread].Sp -= ThreadConfig[CurrentThread].SFPU_STACK_Incr;
+  } else if (ConfigState.DEST_SP_BASE_Base >= 1024) {
+    // In practice the address still steps down by SFPU_STACK_Incr, though Sp stays 0.
+    UndefinedBehavior();
   }
   uint10_t SpOffset = RWCs[CurrentThread].Sp + ConfigState.DEST_SP_BASE_Base;
   Addr += SpOffset + (DstOffset & 3);
