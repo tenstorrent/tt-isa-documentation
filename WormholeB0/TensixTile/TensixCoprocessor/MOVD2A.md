@@ -56,6 +56,11 @@ DstRow += ThreadConfig[CurrentThread].DEST_TARGET_REG_CFG_MATH_Offset;
 DstRow += RWCs[CurrentThread].Dst + ConfigState.DEST_REGW_BASE_Base;
 SrcRow += RWCs[CurrentThread].SrcA;
 if (Move4Rows) {
+  if ((TTArchitecture == Blackhole) && (SrcRow & 3)) {
+    // On Blackhole, in practice the SrcA rows are not aligned down: the move writes SrcA rows
+    // starting at SrcRow, stopping at the end of the aligned group of 16 rows that contains SrcRow (the Dst rows are still aligned down).
+    UndefinedBehavior();
+  }
   NumRows = 4;
   DstRow &= 0x3fc;
   SrcRow &= 0x3c;

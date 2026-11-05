@@ -46,6 +46,11 @@ unsigned NumRows;
 SrcARow += RWCs[CurrentThread].SrcA;
 SrcBRow += RWCs[CurrentThread].SrcB;
 if (Move4Rows) {
+  if ((TTArchitecture == Blackhole) && (SrcARow & 3)) {
+    // On Blackhole, in practice the SrcA rows are not aligned down: the move writes SrcA rows
+    // starting at SrcARow (the SrcB rows are still aligned down).
+    UndefinedBehavior();
+  }
   NumRows = 4;
   SrcARow &= 0x3c;
   SrcBRow &= 0x3c;
@@ -56,6 +61,7 @@ if (Move4Rows) {
 }
 
 // Actually copy the row(s).
+unsigned FirstSrcARow = SrcARow;
 for (; NumRows; --NumRows, ++SrcARow, ++SrcBRow) {
   for (unsigned Column = 0; Column < 16; ++Column) {
     if (LaneConfig[Column / 2].BLOCK_DEST_MOV.Bit[Column & 1]) continue;
@@ -63,6 +69,17 @@ for (; NumRows; --NumRows, ++SrcARow, ++SrcBRow) {
     if (FlushDenormals && !(SrcVal & 0xff)) SrcVal = 0;
     SrcVal = TruncateSrc(SrcVal, SrcBFmt);
     SrcA[MatrixUnit.SrcABank][SrcARow][Column] = SrcVal;
+  }
+}
+if (TTArchitecture == Blackhole) {
+  // Blackhole erratum: SrcA rows FirstSrcARow + 4 through FirstSrcARow + 7 that are in the same
+  // aligned group of 16 rows as FirstSrcARow can also become zero, for one-row and four-row moves
+  // alike (in practice, after a four-row move they always do).
+  for (unsigned Row = FirstSrcARow + 4; Row < FirstSrcARow + 8 && (Row & ~15) == (FirstSrcARow & ~15); ++Row) {
+    for (unsigned Column = 0; Column < 16; ++Column) {
+      if (LaneConfig[Column / 2].BLOCK_DEST_MOV.Bit[Column & 1]) continue;
+      if (UnpredictableValue()) SrcA[MatrixUnit.SrcABank][Row][Column] = 0;
+    }
   }
 }
 

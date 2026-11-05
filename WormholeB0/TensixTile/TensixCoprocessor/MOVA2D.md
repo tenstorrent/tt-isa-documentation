@@ -84,9 +84,20 @@ if (Move8Rows) {
   DstRow &= 0x3f8;
   SrcRow &= 0x38;
 } else {
+  if ((TTArchitecture == Blackhole) && (AddrMod & 1)) {
+    // On Blackhole, the low bit of AddrMod also selects a four-row mode: in practice the move
+    // copies the aligned group of four rows of SrcA to the aligned group of four rows of Dst
+    // (and AddrMod still advances the RWCs).
+    UndefinedBehavior();
+  }
   NumRows = 1;
   DstRow &= 0x3ff;
   SrcRow &= 0x3f;
+  if ((TTArchitecture == Blackhole) && (SrcRow & 0x10)) {
+    // Blackhole erratum: in practice, SrcA rows 16 through 31 and 48 through 63 move as zeros.
+    // The eight-row form is unaffected.
+    UndefinedBehavior();
+  }
 }
 
 // Actually copy the row(s).
