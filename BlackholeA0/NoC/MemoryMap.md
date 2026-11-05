@@ -5,7 +5,7 @@ Each NIU ([NoC](README.md) interface unit) has an assortment of command and conf
 |Tile type|`NIU_BASE` for NoC #0|`NIU_BASE` for NoC #1|
 |---|---|---|
 |Tensix or Ethernet|`0x0000_0000_FFB2_0000`|`0x0000_0000_FFB3_0000`|
-|DRAM|`0x????_????_FFB2_0000`|`0x????_????_FFB3_0000`|
+|DRAM|`0x0000_0000_FFB2_0000`|`0x0000_0000_FFB3_0000`|
 |Empty, when accessed through NoC #0|`0x0000_0000_FFB2_0000` or<br/>`0x0000_0000_FFB3_0000`|Cannot access|
 |Empty, when accessed through NoC #1|Cannot access|`0x0000_0000_FFB2_0000` or<br/>`0x0000_0000_FFB3_0000`|
 |Other, when accessed through NoC #0|`0xFFFF_FFFF_FFB2_0000` or<br/>`0xFFFF_FFFF_FFB3_0000`|Cannot access|
