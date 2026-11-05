@@ -54,6 +54,9 @@ for (unsigned i = 0; i < 4; ++i) {
     if (TTArchitecture == Blackhole) {
       // The start column is the low four bits of ADC.X for every format; Addr only selects the row.
       Addr = ((Addr / BytesPerDatum) & ~0xf) + (ADC.X & 0xf);
+      // So is the end: only the low four bits of Channel[1].X count, so an X end of 16 to 31 packs the same
+      // datums as one of 0 to 15, from the same row (it never continues into the next row).
+      PackerI.InputNumDatums = (ADCs[WhichADC].Packers.Channel[1].X & 0xf) - ADC.X + 1;
     } else {
       Addr = ((Addr / BytesPerDatum) & ~ADC_X_Mask) + (ADC.X & ADC_X_Mask);
     }
