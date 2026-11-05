@@ -638,6 +638,11 @@ uint32_t FormatConversion(uint4_t InDataFormat, uint4_t OutDataFormat, uint32_t 
           // Wormhole: the exponent keeps its low five bits, or all eight bits for BFP4a at x4
           return BFP8aToSrcWrapped(Bits, ExpBits, InDataFormat == BFP4a && BFP4AtX4);
         }
+      } else if ((TTArchitecture == Blackhole) && BFP8aExpOutOfRange(Bits, ExpBits)) {
+        NonContractualBehavior {
+          // Blackhole, Src and Dst: the exponent keeps its low five bits, or in Src all eight bits for BFP4a at x4
+          return BFP8aWrappedBH(Bits, ExpBits, Shift, InDataFormat == BFP4a && BFP4AtX4, UnpackToDst);
+        }
       } else {
         DatumBits = BFP8aToFP16(Bits, ExpBits);
       }
@@ -725,6 +730,22 @@ uint19_t BFP8aToSrcWrapped(uint8_t DatumBits, uint8_t ExpBits, bool KeepEightBit
   Mag <<= LZ;
   ExpBits -= LZ;
   return (Sign << 18) | (((Mag & 0x7e) << 3) << 8) | (KeepEightBits ? ExpBits : ExpBits & 31);
+}
+
+uint32_t BFP8aWrappedBH(uint8_t DatumBits, uint8_t ExpBits, unsigned Shift, bool X4, bool UnpackToDst) {
+  // BFP8aToFP16 with the exponent wrapped, as Blackhole writes it to Src (WriteSrcFP16's layout) or Dst (DstEncodeFP16's)
+  uint32_t Sign = DatumBits >> 7;
+  uint8_t Mag = DatumBits << 1;
+  unsigned LZ = stdc_leading_zeros_uc(Mag);
+  Mag <<= LZ;
+  ExpBits -= LZ;
+  uint32_t Man = (Mag & 0x7e) << 3;
+  if ((ExpBits & 31) == 31 && ((DatumBits | ((1u << Shift) - 1)) & 0x7f) == 0x7f) {
+    // All magnitude bits ones (LZ is 0) with the low five bits of the block exponent all ones
+    Man = (X4 && ExpBits != 255) ? 0x380 : 0x3ff;
+  }
+  if (UnpackToDst) return (Sign << 15) | (Man << 5) | (ExpBits & 31);
+  return (Sign << 18) | (Man << 8) | (X4 ? ExpBits : ExpBits & 31);
 }
 
 uint16_t FP32ToFP16(uint32_t x) {
