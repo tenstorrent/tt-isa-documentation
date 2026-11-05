@@ -61,7 +61,8 @@ if (SetDvalid) {
   if (WhichUnpacker == 0 && ThreadConfig[CurrentThread].SRCA_SET_Base != 0) {
     UnsupportedFunctionality(); // No known usage
   }
-  // As UNPACR with FlipSrc set: the bank goes to the Matrix Unit, with the unpacker's output format as its implied format
+  // As UNPACR with FlipSrc set: the bank goes to the Matrix Unit, with the unpacker's output format as its implied format.
+  // Unlike FlipSrc, it leaves Unpackers[WhichUnpacker].SrcRow[CurrentThread] as it is.
   Src[UnpackBank].AllowedClient = SrcClient::MatrixUnit;
   (WhichUnpacker ? ImpliedSrcBFmt : ImpliedSrcAFmt)[UnpackBank] = ConfigState.THCON_SEC[WhichUnpacker].REG2_Out_data_format;
   Unpackers[WhichUnpacker].SrcBank ^= 1;
