@@ -189,7 +189,7 @@ Supporting definitions:
 
 If `SFPSHFT2_MOD1_SUBVEC_SHFLROR1_AND_COPY4` is used, software must ensure that on the next cycle, the Vector Unit (SFPU) does not execute an instruction which reads from `LReg[0]` or `LReg[1]` or `LReg[2]` or `LReg[3]`. An [`SFPNOP`](SFPNOP.md) instruction can be inserted to ensure this.
 
-If `SFPSHFT2_MOD1_SUBVEC_SHFLROR1_AND_COPY4` is used, software must ensure that on the next cycle, the Vector Unit (SFPU) does not execute an instruction which writes to `LReg[1]` or `LReg[2]` or `LReg[3]`. An [`SFPNOP`](SFPNOP.md) instruction can be inserted to ensure this.
+If `SFPSHFT2_MOD1_SUBVEC_SHFLROR1_AND_COPY4` is used, software must ensure that on the next cycle, the Vector Unit (SFPU) does not execute an instruction which writes to `LReg[0]` or `LReg[1]` or `LReg[2]` or `LReg[3]`. An [`SFPNOP`](SFPNOP.md) instruction can be inserted to ensure this.
 
 If `SFPSHFT2_MOD1_SUBVEC_SHFLROR1` or `SFPSHFT2_MOD1_SUBVEC_SHFLSHR1` are used with `VD < 8`, software must ensure that on the next cycle, the Vector Unit (SFPU) does not execute an instruction which reads from `LReg[VD]`. An [`SFPNOP`](SFPNOP.md) instruction can be inserted to ensure this.
 
@@ -215,4 +215,7 @@ If `SFPSHFT2_MOD1_SUBVEC_SHFLROR1_AND_COPY4` or `SFPSHFT2_MOD1_SUBVEC_SHFLROR1` 
 
 One simple way to comply with all of the above requirements is to always insert an `SFPNOP` instruction after any use of `SFPSHFT2_MOD1_SUBVEC_SHFLROR1_AND_COPY4` or `SFPSHFT2_MOD1_SUBVEC_SHFLROR1` or `SFPSHFT2_MOD1_SUBVEC_SHFLSHR1`.
 
-Violations of these scheduling restrictions result in `UndefinedBehavior`.
+Violations of these scheduling restrictions leave `UnpredictableValue()`s, in every lane, in the `LReg`s involved, and nowhere else:
+* An instruction which reads an `LReg` in violation of the first or third restriction writes an `UnpredictableValue()` wherever it writes.
+* After `SFPSHFT2_MOD1_SUBVEC_SHFLROR1_AND_COPY4`, a violation of the second or fourth restriction leaves an `UnpredictableValue()` in each of `LReg[0]` through `LReg[3]`.
+* After `SFPSHFT2_MOD1_SUBVEC_SHFLROR1` or `SFPSHFT2_MOD1_SUBVEC_SHFLSHR1`, an instruction from the list leaves an `UnpredictableValue()` in its own `LReg[VD]`, and in `LReg[VD & 3]` and `LReg[(VD & 3) + 4]` for the `VD` of the `SFPSHFT2`.
