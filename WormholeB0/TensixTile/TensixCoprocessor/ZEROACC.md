@@ -73,6 +73,12 @@ if (Mode == ZEROACC_MODE_ONE_ROW) {
     }
   } else if (ConfigState.ALU_ACC_CTRL_Fp32_enabled || ConfigState.ALU_ACC_CTRL_INT8_math_enabled) {
     DstRowValid[Adj32(Row)] = false;
+    if ((Adj32(Row) ^ Row) & 0x300) {
+      // Wormhole erratum: when Row and Adj32(Row) are in different quarters of Dst (256 rows each),
+      // the row numbered Row is marked as undefined too, e.g. Row == 132 also clears the valid bit of
+      // Dst32b[68] (as Adj32(68) == 132). Rows below 128 are unaffected.
+      DstRowValid[Row] = false;
+    }
   } else {
     DstRowValid[Row] = false;
   }
