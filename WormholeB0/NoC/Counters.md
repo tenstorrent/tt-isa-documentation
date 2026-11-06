@@ -20,7 +20,7 @@ Each NIU contains an array of counters, which software can use to monitor the st
 |13|`NIU_MST_POSTED_WR_REQ_STARTED`|32 bits (will eventually wrap around)|
 |14|`NIU_MST_RD_REQ_STARTED`|32 bits (will eventually wrap around)|
 |15|`NIU_MST_NONPOSTED_ATOMIC_STARTED`|32 bits (will eventually wrap around)|
-|16<br/>to&nbsp;31|`NIU_MST_REQS_OUTSTANDING_ID(i)`<br/>For `0 ≤ i ≤ 15`|8 bits each (gets both incremented and decremented, so will only overflow or underflow if software has too many outstanding requests)|
+|16<br/>to&nbsp;31|`NIU_MST_REQS_OUTSTANDING_ID(i)`<br/>For `0 ≤ i ≤ 15`|8 bits each, wrapping modulo 256 (gets incremented as requests are issued and decremented as responses arrive, so it overflows if software has too many outstanding requests, and it can also wrap below zero, or fail to return to zero, whenever the responses arriving at this NIU don't match the increments made here: see [the reasons for clearing these counters](#clear-niu-transaction-id-counters))|
 |32<br/>to&nbsp;47|`NIU_MST_WRITE_REQS_OUTGOING_ID(i)`<br/>For `0 ≤ i ≤ 15`|8 bits each (gets both incremented and decremented, so will only overflow or underflow if software has too many outstanding requests)|
 |48|`NIU_SLV_ATOMIC_RESP_SENT`|32 bits (will eventually wrap around)|
 |49|`NIU_SLV_WR_ACK_SENT`|32 bits (will eventually wrap around)|
