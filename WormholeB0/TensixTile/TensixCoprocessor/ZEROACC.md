@@ -6,7 +6,7 @@
   Setting `ALU_ACC_CTRL_Zero_Flag_disabled_dst` is `UnsupportedFunctionality`. On Blackhole, if `ALU_ACC_CTRL_Zero_Flag_disabled_dst` is set, they (`MOVD2A` and `MOVD2B` included) instead read undefined rows as whatever they contain; on Wormhole `MOVD2A` and `MOVD2B` do (the other instructions are not characterized there). The value of `ALU_ACC_CTRL_Zero_Flag_disabled_dst` an instruction uses is the one the previous instruction down the Matrix Unit's pipeline used (`MOVA2D`, `MOVB2D`, `MOVD2A`, `MOVD2B`, `MOVB2A` and the arithmetic instructions; not `ZEROACC`, `CLEARDVALID`, `SETRWC` or `INCRWC`), so the first such instruction after a change still reads undefined rows the old way. Relying on that delay is `NonContractualBehavior`: after changing `ALU_ACC_CTRL_Zero_Flag_disabled_dst`, software should not read an undefined row with the next such instruction.
 * The Vector Unit (SFPU) exhibits `UndefinedBehavior` when reading (i.e. `SFPLOAD` / `SFPLOADMACRO`) an undefined row. It also exhibits `UndefinedBehavior` if `SFPSTORE` writes to _some_ columns of an undefined row but leaves other columns unwritten. An `SFPSTORE` also marks rows of its four-row group that it writes no column of as defined, so they read as their old contents (see [`SFPSTORE`](SFPSTORE.md)).
 * Unpackers exhibit `UndefinedBehavior` if an unpack to `Dst` writes to _some_ columns of an undefined row but leaves other columns unwritten.
-* If a Vector Unit or unpacker write to `Dst` executes in the same cycle, rows in the same 256-row group as the written rows, and congruent to them modulo 8, may not be marked undefined. On Blackhole it is the other way around: the `ZEROACC` takes full effect and the write's update of `DstRowValid` is lost (see [`Dst.md` in the Blackhole tree](../../../BlackholeA0/TensixTile/TensixCoprocessor/Dst.md)).
+* If a Vector Unit or unpacker write to `Dst` executes in the same cycle, rows in the same 256-row group as the written rows, and congruent to them modulo 8, are not marked undefined (the write's update of `DstRowValid` takes effect instead). On Blackhole it is the other way around: the `ZEROACC` takes full effect and the write's update of `DstRowValid` is lost (see [`Dst.md` in the Blackhole tree](../../../BlackholeA0/TensixTile/TensixCoprocessor/Dst.md)).
 
 **Backend execution unit:** [Matrix Unit (FPU)](MatrixUnit.md)
 
@@ -71,16 +71,20 @@ if (Mode == ZEROACC_MODE_ONE_ROW) {
     } else {
       DstRowValid[Adj16(Row)] = false;
     }
-  } else if (ConfigState.ALU_ACC_CTRL_Fp32_enabled || ConfigState.ALU_ACC_CTRL_INT8_math_enabled) {
-    DstRowValid[Adj32(Row)] = false;
-    if ((Adj32(Row) ^ Row) & 0x300) {
-      // Wormhole erratum: when Row and Adj32(Row) are in different quarters of Dst (256 rows each),
-      // the row numbered Row is marked as undefined too, e.g. Row == 132 also clears the valid bit of
-      // Dst32b[68] (as Adj32(68) == 132). Rows below 128 are unaffected.
-      DstRowValid[Row] = false;
-    }
   } else {
-    DstRowValid[Row] = false;
+    // Wormhole: the accumulation data format picks the row, as for a write
+    bool Is32b = ConfigState.ALU_ACC_CTRL_Fp32_enabled || ConfigState.ALU_ACC_CTRL_INT8_math_enabled;
+    uint10_t WriteRow = Is32b ? Adj32(Row) : Row;
+    DstRowValid[WriteRow] = false;
+    uint10_t OtherRow = UseDst32b ? Adj32(Row) : Row;
+    if ((WriteRow ^ OtherRow) & 0x300) {
+      // Wormhole erratum: when the row as UseDst32b places it is in a different quarter of Dst (256
+      // rows each), it is marked as undefined too. E.g. with ALU_ACC_CTRL_Fp32_enabled and UseDst32b
+      // clear, Row == 132 also clears the valid bit of row 132, i.e. of Dst32b[68] (as
+      // Adj32(68) == 132); with UseDst32b set and both enables clear, Row == 132 also clears the
+      // valid bit of row Adj32(132) == 260. Rows below 128 are unaffected.
+      DstRowValid[OtherRow] = false;
+    }
   }
 } else {
   if (Mode == ZEROACC_MODE_16_ROWS && TTArchitecture == Blackhole) {

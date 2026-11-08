@@ -29,6 +29,8 @@ uint10_t Adj32(uint10_t Row) {
 
 Each of the valid bits is indexed by physical row: an access to `Dst32b[Row]` consults `DstRowValid[Adj32(Row)]` (and does not consult `Adj32(Row) + 8`), whereas an access to `Dst16b[Row]` consults `DstRowValid[Row]`.
 
+If writes to `Dst` from different clients (Matrix Unit, Vector Unit, unpacker) execute in the same cycle and would set the valid bits of physical rows in the same 256-row group that are congruent modulo 8, only one valid bit is set: that of the row whose number is the bitwise OR of theirs, which can be none of them. Software must not let such writes race with each other.
+
 Not every client consults them; [`ZEROACC`](ZEROACC.md) says how each reads an undefined row. In particular, `ZEROACC` doesn't give the Vector Unit (SFPU) zeros: [`SFPLOAD`](SFPLOAD.md) of an undefined row is `UndefinedBehavior`, so software that wants zeros in `Dst` for the Vector Unit to read must write them, e.g. with [`SFPSTORE`](SFPSTORE.md).
 
 ## Data types
