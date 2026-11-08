@@ -101,6 +101,8 @@ Other than the [`PACR`](PACR.md) interlock, Vector Unit (SFPU) accesses to `Dst`
 
 If an [`SFPSTORE`](SFPSTORE.md) writes to `Dst` in the same cycle as a Matrix Unit (FPU) instruction writes to the same half of `Dst`, the Matrix Unit (FPU) instruction's write can be lost; see [`SFPSTORE`'s instruction scheduling](SFPSTORE.md#instruction-scheduling).
 
+Reads have a similar limit: each half of `Dst` reads one row per cycle for the packers, the Vector Unit (SFPU) and the Matrix Unit (FPU) together. If two of them read the same half of `Dst` in the same cycle, both get the row that the higher-priority reader asked for (packers first, then the Vector Unit, then the Matrix Unit), even when they asked for different rows, so the other reader's data is wrong; this is `UndefinedBehavior`. A thread hits this when it issues a Matrix Unit (FPU) instruction which reads `Dst` (e.g. [`MVMUL`](MVMUL.md), or [`ELWADD`](ELWADD.md) accumulating) or an [`SFPLOAD`](SFPLOAD.md) after a [`PACR`](PACR.md), while the packers are still reading that half of `Dst`, whichever rows each one reads (e.g. a `PACR` of rows 0 through 63, then anywhere from one to fifteen `NOP`s, then an `ELWADD` accumulating onto rows 128 through 135: some or all of those rows end up accumulated onto the values of rows the packers were reading, and an `SFPLOAD` from row 128 in the same place loads a packed row's values). As with reusing rows that a `PACR` reads, wait for the packers first (above), or work in the other half of `Dst`. A Matrix Unit (FPU) instruction and an `SFPLOAD` from the same thread never read `Dst` in the same cycle; from two different threads they can.
+
 ## Pseudocode helpers
 
 The following pseudocode routines are shared across the various units that access `Dst`.
