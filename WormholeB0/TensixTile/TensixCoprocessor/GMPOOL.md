@@ -134,9 +134,8 @@ for (unsigned j = 0; j < 16; ++j) {
     DstVal = Dst16b[DstRow][j] << 16;
   }
   Datum Max = ReadDst(DstVal, DstStyle);
-  if (TTArchitecture == Blackhole && !ArgMax && DstStyle != INT32 &&
-      ((DstVal >> 16) & (DstStyle == FP16 ? 0x1f : 0xff)) == 0) {
-    // Blackhole: a Dst datum whose exponent field is zero competes as +0.
+  if (!ArgMax && DstStyle != INT32 && ((DstVal >> 16) & (DstStyle == FP16 ? 0x1f : 0xff)) == 0) {
+    // A Dst datum whose exponent field is zero competes as +0.
     Max.Sign = 0;
     Max.Exponent = 0;
     Max.MagOrMan = 0;
@@ -149,8 +148,8 @@ for (unsigned j = 0; j < 16; ++j) {
     uint19_t SrcAVal = TruncateSrc(SrcA[MatrixUnit.SrcABank][SrcARow + i][j], SrcAFmt);
     uint19_t SrcBVal = TruncateSrc(SrcB[MatrixUnit.SrcBBank][SrcBRow    ][i], SrcBFmt);
     Datum x = ReadAndScaleSrc(SrcAVal, SrcAStyle, SrcBVal);
-    if (TTArchitecture == Blackhole && SrcAStyle == FP16 && DstStyle == TF32) {
-      // Blackhole: with a 32-bit Dst, an FP16-style SrcA keeps only the top seven bits of its mantissa.
+    if (SrcAStyle == FP16 && DstStyle == TF32) {
+      // With a 32-bit Dst, an FP16-style SrcA keeps only the top seven bits of its mantissa.
       x.MagOrMan &= 0x3f8;
     }
     if (AsComparable(x) >= AsComparable(Max)) {

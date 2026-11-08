@@ -89,6 +89,10 @@ uint19_t TruncateSrc(uint19_t x, uint4_t Fmt) {
   // On Wormhole (only), a Src datum is truncated on the way out of SrcA/B according to its own
   // data format. This applies both to the Matrix Unit's arithmetic inputs and to the move datapath
   // used by MOVA2D/MOVB2A/MOVB2D, and it uses each operand's own format rather than SrcAStyle.
+  // It does not change whether the datum counts as zero: a datum whose exponent only this truncation
+  // makes zero (an FP16-class Fmt, exponent bits 4:0 zero and 7:5 not) still enters the arithmetic as a
+  // nonzero datum, with exponent 0, rather than as zero. Unpackers never write such a datum for those
+  // formats.
   if (TTArchitecture == Wormhole) {
     if (Fmt in {FP16, FP8, BFP8a, INT8}) {
       x &= 0x7FF1F; // drop high 3 exp bits
