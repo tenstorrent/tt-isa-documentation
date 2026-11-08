@@ -313,7 +313,11 @@ auto& CurrentPackerConfig = CurrentPacker.Config[StateID];
 
 CurrentPacker.AccTileSize[CurrentThread] += CurrentPacker.LastTileSize;
 if (CurrentPackerConfig.Add_tile_header_size) {
+  UnsupportedFunctionality(); // No known usage
   CurrentPacker.AccTileSize[CurrentThread] += 1;
+}
+if (CurrentPackerConfig.Enable_out_fifo) {
+  UnsupportedFunctionality(); // No known usage
 }
 if (CurrentPackerConfig.Enable_out_fifo && !CurrentPacker.MetadataFIFO.IsFull()) {
   CurrentPacker.MetadataFIFO.Push({CurrentPacker.LastTileSize, CurrentPacker.AllZeroFlags});

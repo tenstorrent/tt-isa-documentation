@@ -43,6 +43,7 @@ for (unsigned i = 0; i < 4; ++i) {
     PackerI.InputSourceAddr = 0;
     PackerI.InputSourceStride = 0;
   } else if (i == 0 && PackerIConfig.Source_interface_selection == 1) {
+    UnsupportedFunctionality(); // No known usage
     Addr = (PackerIConfig.L1_source_addr << 18) + (Addr & 0x3ffff); // Only low 18 bits of Addr used; high bits of L1 address come from L1_source_addr
     Addr = (Addr & ~0xf) + BytesPerDatum * (ADC.X & ADC_X_Mask);
     PackerI.InputSource = INPUT_SOURCE_L1;

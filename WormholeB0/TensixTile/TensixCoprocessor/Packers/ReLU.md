@@ -11,6 +11,7 @@ auto& ConfigState = Config[StateID];
 float Threshold;
 uint4_t IntermediateFormat;
 if (ConfigState.ALU_FORMAT_SPEC_REG_Dstacc_override) {
+  UnsupportedFunctionality(); // No known usage
   IntermediateFormat = ConfigState.ALU_FORMAT_SPEC_REG_Dstacc_val;
 } else if (TTArchitecture == Blackhole) {
   IntermediateFormat = CurrentPacker.Config[StateID].In_data_format; // ALU_FORMAT_SPEC_REG2_Dstacc has no effect on Blackhole

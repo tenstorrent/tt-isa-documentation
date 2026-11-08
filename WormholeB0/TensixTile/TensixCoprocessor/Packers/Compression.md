@@ -28,7 +28,7 @@ As augmented datums are stored in groups of 32, `RSI[i] >> 5` identifies a group
 
 ## Compressing during packing
 
-Compression can be performed during packing; see `PerformingCompression` and `Row_start_section_size` as part of the [output address generator](OutputAddressGenerator.md) description. The _exact_ compression logic isn't specified, but it'll generate output in the format described on this page.
+Compression can be performed during packing, though doing so is `UnsupportedFunctionality`; see `PerformingCompression` and `Row_start_section_size` as part of the [output address generator](OutputAddressGenerator.md) description. The _exact_ compression logic isn't specified, but it'll generate output in the format described on this page.
 
 ## Decompressing during unpacking
 

@@ -1,6 +1,6 @@
 # Exponent Thresholding
 
-Exponent thresholding can optionally be used to replace values which are close to zero with zero.
+Exponent thresholding can optionally be used to replace values which are close to zero with zero. Its use (`Exp_threshold_en` set) is `UnsupportedFunctionality`.
 
 ## Functional model
 
@@ -10,6 +10,7 @@ Datum ApplyExponentThresholding(Datum d) {
   uint1_t StateID = ThreadConfig[CurrentThread].CFG_STATE_ID_StateID;
   auto& CurrentPackerConfig = CurrentPacker.Config[StateID];
   if (CurrentPackerConfig.Exp_threshold_en) {
+    UnsupportedFunctionality(); // No known usage
     uint8_t Threshold = CurrentPackerConfig.Exp_threshold;
     uint4_t DataFormat = CurrentPackerConfig.In_data_format;
     switch (DataFormat) {

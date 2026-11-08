@@ -21,7 +21,7 @@ If fetching datums from `Dst` (as is usually the case), the early format convers
 |**To INT8 (e0m7)**|Sign bit and low 7 bits of mantissa|Sign bit only, other bits zero|Sign bit only, other bits zero|Shift then round then saturate (-127 to +127), or sign bit and low 7 bits of magnitude|No|
 |**To UINT8**|Low 8 bits of mantissa|No|No|Shift then round then saturate (0 to 255), or low 8 bits of magnitude|No|
 
-Where rounding is supported, it can either be deterministic round-to-nearest with ties away from zero, or stochastic (though due to a hardware bug, stochastic rounding has a slight bias towards increasing the magnitude rather than being 50:50, and can even sometimes increase the magnitude of values which do not require rounding).
+Where rounding is supported, it can either be deterministic round-to-nearest with ties away from zero, or stochastic (though due to a hardware bug, stochastic rounding has a slight bias towards increasing the magnitude rather than being 50:50, and can even sometimes increase the magnitude of values which do not require rounding). Stochastic rounding (any of the `ALU_ROUNDING_MODE_*_srnd_en` fields set) is `UnsupportedFunctionality`.
 
 Handling of denormals and NaNs in the early format conversion depends on the nature of the early format conversion:
 * **Identity / bitcast:** Denormals preserved. NaN preserved.
@@ -76,7 +76,7 @@ The late format conversion takes one of the supported intermediate formats, and 
 <tr><th>To INT8<br/>or UINT8</th><td colspan="2">No</td><td>No</td><td>No</td><td>Identity or bitcast</td></tr>
 </table>
 
-Where rounding happens in BFP conversions, it can either be deterministic round-to-nearest with ties away from zero, or stochastic (though due to a hardware bug, stochastic rounding has a slight bias towards increasing the magnitude rather than being 50:50, and can even sometimes increase the magnitude of values which do not require rounding).
+Where rounding happens in BFP conversions, it can either be deterministic round-to-nearest with ties away from zero, or stochastic (though due to a hardware bug, stochastic rounding has a slight bias towards increasing the magnitude rather than being 50:50, and can even sometimes increase the magnitude of values which do not require rounding). Stochastic rounding (any of the `ALU_ROUNDING_MODE_*_srnd_en` fields set) is `UnsupportedFunctionality`.
 
 With deterministic rounding, each group of 16 datums is converted from BF16 to BFP8, and then possibly truncated to BFP4 or BFP2, using the following logic:
 
@@ -229,6 +229,7 @@ Read_raw       is ConfigState.PCK_DEST_RD_CTRL_Read_int8;
 Read_unsigned  is ConfigState.PCK_DEST_RD_CTRL_Read_unsigned;
 
 if (ConfigState.ALU_FORMAT_SPEC_REG_Dstacc_override) {
+  UnsupportedFunctionality(); // No known usage
   IntermediateFormat is ConfigState.ALU_FORMAT_SPEC_REG_Dstacc_val;
 } else if (TTArchitecture == Blackhole) {
   IntermediateFormat is CurrentPacker.Config[StateID].In_data_format; // ALU_FORMAT_SPEC_REG2_Dstacc has no effect on Blackhole

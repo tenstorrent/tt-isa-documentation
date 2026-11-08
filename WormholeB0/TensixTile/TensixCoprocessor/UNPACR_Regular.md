@@ -55,6 +55,7 @@ if (MultiContextMode) {
   WhichContext += ThreadConfig[CurrentThread].UNPACK_MISC_CFG_CfgContextOffset[WhichUnpacker];
   WhichADC = ContextADC;
   if (WhichUnpacker == 1 && WhichContext >= 2) UndefinedBehavior();
+  if (WhichContext >= 2) UnsupportedFunctionality(); // No known usage of contexts past 1
   if (WhichADC == 3) UndefinedBehavior();
 } else {
   WhichContext = 0;
@@ -87,6 +88,7 @@ uint8_t WDim = ConfigDescriptor.WDim ? ConfigDescriptor.WDim : 1;
 uint4_t InDataFormat;
 uint4_t OutDataFormat;
 if (MultiContextMode && ConfigState.THCON_SEC[WhichUnpacker].REG2_Ovrd_data_format) {
+  UnsupportedFunctionality(); // No known usage
   InDataFormat  = ConfigState.THCON_SEC[WhichUnpacker].REG7_Unpack_data_format_cntx[WhichContext];
   OutDataFormat = ConfigState.THCON_SEC[WhichUnpacker].REG7_Unpack_out_data_format_cntx[WhichContext];
 } else {
@@ -129,6 +131,9 @@ if (!IsUncompressed) {
   }
 }
 
+if (ConfigState.THCON_SEC[WhichUnpacker].REG2_Force_shared_exp) {
+  UnsupportedFunctionality(); // No known usage
+}
 double InAddr_Exponents = undefined;
 bool BfpExpStream = IsBFPFormat(InDataFormat) && !ConfigState.THCON_SEC[WhichUnpacker].REG2_Force_shared_exp;
 if (BfpExpStream) {
@@ -285,6 +290,9 @@ if (MultiContextMode && WhichUnpacker == 0) {
 }
 if ((OutAddr & 15) || ((WhichUnpacker == 0) && (OutAddr < 64))) {
   UnsupportedFunctionality(); // No known usage, confidence in specification below is weak
+}
+if (ConfigState.THCON_SEC[WhichUnpacker].Unpack_Src_Reg_Set_Upd) {
+  UnsupportedFunctionality(); // No known usage
 }
 if ((TTArchitecture == Blackhole) && (WhichUnpacker == 1) && ConfigState.THCON_SEC[1].Unpack_Src_Reg_Set_Upd && OutAddr != 0) {
   UndefinedBehavior(); // Hardware drops some of the writes to SrcB

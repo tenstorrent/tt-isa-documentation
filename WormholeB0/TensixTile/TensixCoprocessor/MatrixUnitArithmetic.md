@@ -2,7 +2,7 @@
 
 The functional models of [`ELWADD`](ELWADD.md), [`ELWSUB`](ELWSUB.md), [`ELWMUL`](ELWMUL.md), [`MVMUL`](MVMUL.md), [`DOTPV`](DOTPV.md) and [`GAPOOL`](GAPOOL.md) describe their floating-point arithmetic with C `float` operations, which is only a rough guide. This page gives the exact arithmetic for one output datum, bit for bit, for Blackhole, and for Wormhole with the differences listed at the end. It covers the floating-point cases only (`SrcAStyle` is `BF16`, `FP16` or `TF32`); integer arithmetic (`ALU_ACC_CTRL_INT8_math_enabled`) is as the instruction pages describe it.
 
-The model assumes the configuration the instruction pages require: `ALU_ACC_CTRL_Zero_Flag_disabled_src` clear, `FP16A_FORCE_Enable` clear, and no fidelity phase other than 0 for `ELWADD` / `ELWSUB`. It also assumes `ALU_ROUNDING_MODE_Fpu_srnd_en` (stochastic rounding) is clear, which this page does not describe.
+The model assumes the configuration the instruction pages require: `ALU_ACC_CTRL_Zero_Flag_disabled_src` clear, `FP16A_FORCE_Enable` clear, and no fidelity phase other than 0 for `ELWADD` / `ELWSUB`. It also assumes `ALU_ROUNDING_MODE_Fpu_srnd_en` (stochastic rounding) and `ALU_ROUNDING_MODE_GS_LF` are clear, which this page does not describe; setting either is `UnsupportedFunctionality`.
 
 ## Overview
 
@@ -229,4 +229,4 @@ The same model describes Wormhole, with these differences:
 
 * Every `Src` datum first goes through `TruncateSrc`, as the instruction pages show.
 * The normalization of an accumulator value of exactly -1 (one unit in the 23rd fractional place, possible only with `ALU_ACC_CTRL_Fp32_enabled`) is wrong, as shown in the model: the result is -2<sup>4</sup> times 2 to the power of (the common exponent - 127), not -2<sup>-23</sup> times that.
-* `ALU_ROUNDING_MODE_GS_LF` changes the multiplier inputs, and is not described here; the model assumes it is clear.
+* `ALU_ROUNDING_MODE_GS_LF` changes the multiplier inputs, and is not described here; the model assumes it is clear (setting it is `UnsupportedFunctionality` on both chips).

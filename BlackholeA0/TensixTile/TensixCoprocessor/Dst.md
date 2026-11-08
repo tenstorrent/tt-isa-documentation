@@ -119,7 +119,7 @@ Unpacks to `Dst` and Matrix Unit (FPU) instructions share one write path into `D
 
 ## RISCV access to `Dst`
 
-RISCV T0 / T1 / T2 have `Dst` mapped into their address space, starting at address `0xFFBD_8000`. The nature of this mapping varies based on the Tensix backend configuration settings `RISC_DEST_ACCESS_CTRL_SEC[].{no_swizzle, unsigned_int, fmt}`. Of these, the value of `fmt` controls the high level shape of the mapping:
+RISCV T0 / T1 / T2 have `Dst` mapped into their address space, starting at address `0xFFBD_8000`. The nature of this mapping varies based on the Tensix backend configuration settings `RISC_DEST_ACCESS_CTRL_SEC[].{no_swizzle, unsigned_int, fmt}`; setting `no_swizzle` is `UnsupportedFunctionality`. Of these, the value of `fmt` controls the high level shape of the mapping:
 
 |`fmt`|Shape of mapping|Possible conversions|
 |--:|---|---|
@@ -141,6 +141,7 @@ uint32_t Load32(uint32_t Addr) {
   auto& ConfigState = Config[StateID];
   uint3_t fmt = ConfigState.RISC_DEST_ACCESS_CTRL_SEC[CurrentThread].fmt;
   bool no_swizzle = ConfigState.RISC_DEST_ACCESS_CTRL_SEC[CurrentThread].no_swizzle;
+  if (no_swizzle) UnsupportedFunctionality(); // No known usage
   bool unsigned_int = ConfigState.RISC_DEST_ACCESS_CTRL_SEC[CurrentThread].unsigned_int;
   Addr = (Addr - 0xFFBD8000) / 4;
   uint32_t Value = Dst32b[Addr / 16][Addr % 16];
@@ -171,6 +172,7 @@ uint16_t Load16(uint32_t Addr) {
   auto& ConfigState = Config[StateID];
   uint3_t fmt = ConfigState.RISC_DEST_ACCESS_CTRL_SEC[CurrentThread].fmt;
   bool no_swizzle = ConfigState.RISC_DEST_ACCESS_CTRL_SEC[CurrentThread].no_swizzle;
+  if (no_swizzle) UnsupportedFunctionality(); // No known usage
   bool unsigned_int = ConfigState.RISC_DEST_ACCESS_CTRL_SEC[CurrentThread].unsigned_int;
   Addr = (Addr - 0xFFBD8000) / 2;
   uint16_t Value = Dst16b[Addr / 16][Addr % 16];
@@ -207,6 +209,7 @@ uint8_t Load8(uint32_t Addr) {
   auto& ConfigState = Config[StateID];
   uint3_t fmt = ConfigState.RISC_DEST_ACCESS_CTRL_SEC[CurrentThread].fmt;
   bool no_swizzle = ConfigState.RISC_DEST_ACCESS_CTRL_SEC[CurrentThread].no_swizzle;
+  if (no_swizzle) UnsupportedFunctionality(); // No known usage
   bool unsigned_int = ConfigState.RISC_DEST_ACCESS_CTRL_SEC[CurrentThread].unsigned_int;
   Addr = (Addr - 0xFFBD8000) / 1;
   uint16_t Value16 = Dst16b[Addr / 16][Addr % 16];
@@ -232,6 +235,7 @@ void Store32(uint32_t Addr, uint32_t Value) {
   auto& ConfigState = Config[StateID];
   uint3_t fmt = ConfigState.RISC_DEST_ACCESS_CTRL_SEC[CurrentThread].fmt;
   bool no_swizzle = ConfigState.RISC_DEST_ACCESS_CTRL_SEC[CurrentThread].no_swizzle;
+  if (no_swizzle) UnsupportedFunctionality(); // No known usage
   switch (fmt) {
   case 0: // float    Dst32b[ 512][16]
     break;
@@ -260,6 +264,7 @@ void Store16(uint32_t Addr, uint16_t Value) {
   auto& ConfigState = Config[StateID];
   uint3_t fmt = ConfigState.RISC_DEST_ACCESS_CTRL_SEC[CurrentThread].fmt;
   bool no_swizzle = ConfigState.RISC_DEST_ACCESS_CTRL_SEC[CurrentThread].no_swizzle;
+  if (no_swizzle) UnsupportedFunctionality(); // No known usage
   bool unsigned_int = ConfigState.RISC_DEST_ACCESS_CTRL_SEC[CurrentThread].unsigned_int;
   switch (fmt) {
   case 2: // __fp16   Dst16b[1024][16]
@@ -295,6 +300,7 @@ void Store8(uint32_t Addr, uint8_t Value) {
   auto& ConfigState = Config[StateID];
   uint3_t fmt = ConfigState.RISC_DEST_ACCESS_CTRL_SEC[CurrentThread].fmt;
   bool no_swizzle = ConfigState.RISC_DEST_ACCESS_CTRL_SEC[CurrentThread].no_swizzle;
+  if (no_swizzle) UnsupportedFunctionality(); // No known usage
   bool unsigned_int = ConfigState.RISC_DEST_ACCESS_CTRL_SEC[CurrentThread].unsigned_int;
   uint16_t Value16;
   switch (fmt) {

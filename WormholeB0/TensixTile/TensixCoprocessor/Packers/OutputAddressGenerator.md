@@ -13,6 +13,7 @@ for (unsigned i = 0; i < 4; ++i) {
   auto& PackerI = Packers[i];
   auto& PackerIConfig = ConfigState.Packers[i];
 
+  if (PackerIConfig.Sub_l1_tile_header_size) UnsupportedFunctionality(); // No known usage
   uint32_t Addr = PackerIConfig.L1_Dest_addr + !PackerIConfig.Sub_l1_tile_header_size;
   if (i == 0) Packer0InitialAddr = Addr;
   else if (Packer0InitialAddr.Bit[31]) Addr += Packer0InitialAddr;
@@ -25,6 +26,9 @@ for (unsigned i = 0; i < 4; ++i) {
     if (WhichADC == 3) WhichADC = 0;
   }
   auto& ADC = ADCs[WhichADC].Packers.Channel[1];
+  if (TTArchitecture == Blackhole && ConfigState.PCK0_ADDR_CTRL_ZW_REG_1_Wstride) {
+    UnsupportedFunctionality(); // No known usage
+  }
   uint32_t YZW_Addr = ConfigState.PCK0_ADDR_BASE_REG_1_Base
     + ADC.Y * ConfigState.PCK0_ADDR_CTRL_XY_REG_1_Ystride
     + ADC.Z * ConfigState.PCK0_ADDR_CTRL_ZW_REG_1_Zstride
@@ -38,6 +42,7 @@ for (unsigned i = 0; i < 4; ++i) {
   ADCsToAdvance[WhichADC] = true;
 
   if (PackerIConfig.Add_l1_dest_addr_offset) {
+    UnsupportedFunctionality(); // No known usage
     Addr += PackerI.l1_dest_addr_offset; // This 16b field is set by TDMA-RISC
   }
   if (Addr > PackerIConfig.Pack_limit_address * 2 + 1) {
@@ -45,8 +50,12 @@ for (unsigned i = 0; i < 4; ++i) {
     // Note that Pack_limit_address and Pack_fifo_size are in THCON_SEC[01]_REG9, with non-standard naming
   }
 
+  if (ConfigState.THCON_SEC0_REG1_All_pack_disable_zero_compress_ovrd) {
+    UnsupportedFunctionality(); // No known usage
+  }
   bool PerformingCompression = !(ConfigState.THCON_SEC0_REG1_All_pack_disable_zero_compress_ovrd ? ConfigState.THCON_SEC0_REG1_All_pack_disable_zero_compress.Bit[i] : PackerIConfig.Disable_zero_compress);
   if (PerformingCompression) {
+    UnsupportedFunctionality(); // No known usage
     if (PackerI.RSIStream.NeedsNewAddress) {
       PackerI.RSIStream.ByteAddress = (Addr & 0x1ffff) << 4;
       PackerI.RSIStream.NeedsNewAddress = false;

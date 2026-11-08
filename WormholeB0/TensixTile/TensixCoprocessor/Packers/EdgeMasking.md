@@ -50,12 +50,14 @@ struct TilePositionGenerator {
     uint1_t StateID = ThreadConfig[CurrentThread].CFG_STATE_ID_StateID;
     auto& ConfigState = Config[StateID];
     unsigned ReadsPerXYPlane = ConfigState.PACK_COUNTERS_SEC[PackerIndex].pack_reads_per_xy_plane;
+    if (ReadsPerXYPlane == 0 || ReadsPerXYPlane > 16) UnsupportedFunctionality(); // No known usage
     if (ReadsPerXYPlane == 0) ReadsPerXYPlane = 256; // The count is 8 bits wide
 
     X += 1;
     if (X == 16) {
       X = 0;
       if (ConfigState.PACK_COUNTERS_SEC[PackerIndex].pack_yz_transposed) {
+        UnsupportedFunctionality(); // No known usage
         Z += 1;
         if (Z == ReadsPerXYPlane) {
           Z = 0;
