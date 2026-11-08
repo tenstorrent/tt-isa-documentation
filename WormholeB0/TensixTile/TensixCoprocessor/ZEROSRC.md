@@ -1,6 +1,6 @@
 # `ZEROSRC` (Set `SrcA` and/or `SrcB` to zero)
 
-**Summary:** Set either all or half of `SrcA` or `SrcB` (or both) to `0` or floating-point negative infinity (`SrcA` only).
+**Summary:** Set either all or half of `SrcA` or `SrcB` (or both) to `0` or floating-point negative infinity (`SrcA` only, and Wormhole only).
 
 **Backend execution unit:** [Matrix Unit (FPU)](MatrixUnit.md)
 
@@ -49,7 +49,7 @@ if (ClearSrcB) {
 for (unsigned Bank = 0; Bank < 2; ++Bank) {
   for (unsigned i = 0; i < 64; ++i) {
     for (unsigned j = 0; j < 16; ++j) {
-      if (ClearSrcABank[Bank]) SrcA[Bank][i][j] = NegativeInfSrcA ? ~0u : 0u;
+      if (ClearSrcABank[Bank]) SrcA[Bank][i][j] = (NegativeInfSrcA && TTArchitecture != Blackhole) ? ~0u : 0u;
       if (ClearSrcBBank[Bank]) SrcB[Bank][i][j] = 0u;
     }
   }
