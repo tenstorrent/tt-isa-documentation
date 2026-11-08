@@ -88,7 +88,7 @@ The following pseudocode routines are shared across the various opcodes in the m
 uint19_t TruncateSrc(uint19_t x, uint4_t Fmt) {
   // On Wormhole (only), a Src datum is truncated on the way out of SrcA/B according to its own
   // data format. This applies both to the Matrix Unit's arithmetic inputs and to the move datapath
-  // used by MOVB2A/MOVB2D, and it uses each operand's own format rather than SrcAStyle.
+  // used by MOVA2D/MOVB2A/MOVB2D, and it uses each operand's own format rather than SrcAStyle.
   if (TTArchitecture == Wormhole) {
     if (Fmt in {FP16, FP8, BFP8a, INT8}) {
       x &= 0x7FF1F; // drop high 3 exp bits

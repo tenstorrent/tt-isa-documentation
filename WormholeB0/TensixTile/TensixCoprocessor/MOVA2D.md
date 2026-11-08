@@ -93,9 +93,9 @@ if (Move8Rows) {
   NumRows = 1;
   DstRow &= 0x3ff;
   SrcRow &= 0x3f;
-  if ((TTArchitecture == Blackhole) && (SrcRow & 0x10)) {
-    // Blackhole erratum: in practice, SrcA rows 16 through 31 and 48 through 63 move as zeros.
-    // The eight-row form is unaffected.
+  if (SrcRow & 0x10) {
+    // Erratum (Wormhole and Blackhole): in practice, SrcA rows 16 through 31 and 48 through 63 move
+    // as zeros. The eight-row form is unaffected.
     UndefinedBehavior();
   }
 }
@@ -106,6 +106,7 @@ for (; NumRows; --NumRows, ++DstRow, ++SrcRow) {
     if (LaneConfig[Column / 2].BLOCK_DEST_MOV.Bit[Column & 1]) continue;
     uint19_t SrcAVal = SrcA[MatrixUnit.SrcABank][SrcRow][Column];
     if (FlushDenormals && !(SrcAVal & 0xff)) SrcAVal = 0;
+    SrcAVal = TruncateSrc(SrcAVal, SrcAFmt);
     uint16_t Val16b = Use8bExponent ? RemoveLowMantissa(SrcAVal) : RemoveHighExponent(SrcAVal);
     if (UseDst32b) {
       if (UseDst32bLo) {
@@ -135,6 +136,8 @@ for (; NumRows; --NumRows, ++DstRow, ++SrcRow) {
 // Advance the RWCs.
 ApplyAddrMod(AddrMod);
 ```
+
+On Wormhole, the rows whose `DstRowValid` an eight-row `MOVA2D` sets to `true` are rows 4 through 7 of the aligned block of eight rows that it writes, and rows 0 through 3 too only if bit 2 of `DstRow` is clear before it is aligned down. With bit 2 set, rows 0 through 3 are written but keep their old `DstRowValid`, so a row that was undefined still reads as undefined (see [`ZEROACC`](ZEROACC.md)). This is `NonContractualBehavior`; software should keep bit 2 of `DstRow` clear for eight-row moves.
 
 ## Instruction scheduling
 

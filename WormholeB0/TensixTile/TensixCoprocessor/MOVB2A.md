@@ -46,8 +46,8 @@ unsigned NumRows;
 SrcARow += RWCs[CurrentThread].SrcA;
 SrcBRow += RWCs[CurrentThread].SrcB;
 if (Move4Rows) {
-  if ((TTArchitecture == Blackhole) && (SrcARow & 3)) {
-    // On Blackhole, in practice the SrcA rows are not aligned down: the move writes SrcA rows
+  if (SrcARow & 3) {
+    // In practice (Wormhole and Blackhole) the SrcA rows are not aligned down: the move writes SrcA rows
     // starting at SrcARow (the SrcB rows are still aligned down).
     UndefinedBehavior();
   }

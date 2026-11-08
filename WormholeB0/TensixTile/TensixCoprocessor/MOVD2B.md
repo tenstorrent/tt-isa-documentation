@@ -57,8 +57,8 @@ DstRow += ThreadConfig[CurrentThread].DEST_TARGET_REG_CFG_MATH_Offset;
 DstRow += RWCs[CurrentThread].Dst + ConfigState.DEST_REGW_BASE_Base;
 SrcRow += RWCs[CurrentThread].SrcB;
 if (Move4Rows) {
-  if ((TTArchitecture == Blackhole) && (SrcRow & 3)) {
-    // On Blackhole, in practice the SrcB rows are not aligned down: the move writes SrcB rows
+  if (SrcRow & 3) {
+    // In practice (Wormhole and Blackhole) the SrcB rows are not aligned down: the move writes SrcB rows
     // starting at SrcRow (the Dst rows are still aligned down).
     UndefinedBehavior();
   }

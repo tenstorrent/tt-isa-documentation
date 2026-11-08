@@ -140,6 +140,8 @@ for (; NumRows; --NumRows, ++DstRow, SrcRow += !Broadcast1RowTo8) {
 ApplyAddrMod(AddrMod);
 ```
 
+On Wormhole, the rows whose `DstRowValid` a four-row or eight-row `MOVB2D` sets to `true` are rows 4 through 7 of the aligned block of eight rows containing `DstRow`, and rows 0 through 3 too only if bit 2 of `DstRow` is clear before it is aligned down, whichever of those rows it writes. So a four-row `MOVB2D` with bit 2 of `DstRow` clear also marks the four rows after the ones it writes as defined (they then read as whatever they hold rather than as undefined), and an eight-row `MOVB2D` with bit 2 set leaves `DstRowValid` of rows 0 through 3 unchanged. This is `NonContractualBehavior`: software should not read rows a four-row `MOVB2D` marked this way before writing them, and should keep bit 2 of `DstRow` clear for eight-row moves. A one-row `MOVB2D` sets the `DstRowValid` of the row it writes.
+
 ## Instruction scheduling
 
 If `MOVB2D` is used, then for the next three cycles, software should avoid reading from the region of `Dst` which was written to. To partially enforce this, if a thread presents an instruction from the following list (regardless of where in `Dst` it might access), hardware will automatically stall the thread for an appropriate number of cycles: `MOVD2A`, `MOVD2B`, `ELWMUL`, `MVMUL`, `DOTPV`, `GMPOOL`, `GAPOOL`, `MFCONV3S1`, `CONV3S1`, `MPOOL3S1`, `APOOL3S1`, `CONV3S2`, `MPOOL3S2`, `APOOL3S2`.
