@@ -4,6 +4,8 @@
 
 **Backend execution unit:** [Packers](Packers/README.md)
 
+A `PackerMask` other than `0b0001`, `0b0011` or `0b1111`, and `OvrdThreadId` set, are `UnsupportedFunctionality`, and their use is strongly discouraged.
+
 ## Syntax
 
 ```c
@@ -22,20 +24,20 @@ The `PackerMask` field determines which of the four packers are being instructed
 
 |`PackerMask`|Behavior|
 |---|---|
-|`0b0000`|Issue work to packer 0 (i.e. as a special case, `0b0000` is rewritten to `0b0001`)|
+|`0b0000`|Issue work to packer 0 (i.e. as a special case, `0b0000` is rewritten to `0b0001`); `UnsupportedFunctionality`|
 |`0b0001`|Issue work to packer 0|
-|`0b0010`|Issue work to packer 1|
-|`0b0100`|Issue work to packer 2|
-|`0b1000`|Issue work to packer 3|
+|`0b0010`|Issue work to packer 1; `UnsupportedFunctionality`|
+|`0b0100`|Issue work to packer 2; `UnsupportedFunctionality`|
+|`0b1000`|Issue work to packer 3; `UnsupportedFunctionality`|
 |`0b0011`|Issue work to packers 0 and 1|
-|`0b1100`|Issue work to packers 2 and 3|
+|`0b1100`|Issue work to packers 2 and 3; `UnsupportedFunctionality`|
 |`0b1111`|Issue work to all four packers|
 |Any other value|Undefined; will issue work to _at least_ one of the packers in the mask, but other bits of the mask _might_ be ignored|
 
 The issued work will start at the packers' [input address generator](Packers/InputAddressGenerator.md), work through the various [packer pipeline stages](Packers/README.md), and eventually reach the [output address generator](Packers/OutputAddressGenerator.md). The fields of the instruction are used at various stages:
 * `AddrMod`: used by the input address generator and the output address generator to manipulate ADC Y/Z values in preparation for the _next_ `PACR` instruction.
 * `ZeroWrite`: used by the input address generator (to fetch datums from `/dev/null` rather than `Dst`). The instruction packs the same number of datums to the same addresses as it would otherwise, but nothing is read from `Dst`: every datum reaches the late format conversion as all-zero bits, so [edge masking](Packers/EdgeMasking.md) and ReLU have no effect on it, and the packer's tile position generator, which advances only on reads from `Dst`, does not advance.
-* `OvrdThreadId`: used by the input address generator and the output address generator to determine which ADC is in use.
+* `OvrdThreadId`: used by the input address generator and the output address generator to determine which ADC is in use. Setting it is `UnsupportedFunctionality`.
 * `Concat`: if [compression](Packers/Compression.md) is enabled, setting this to `true` causes the _next_ `PACR` instruction to continue the current compression row rather than starting a new compression row. If compression is disabled, then there is no inherent concept of compression row, and this field has no effect.
 * `Flush`: used by the input address generator (overrides `InputNumDatums` to zero) and the output address generator (flushes the output buffers sitting before L1 and causes the _next_ `PACR` instruction to start at fresh output addresses).
 * `Last`: used by the output address generator (flushes the output buffers sitting before L1 and causes the _next_ `PACR` instruction to start at fresh output addresses).

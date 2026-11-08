@@ -4,6 +4,8 @@
 
 **Backend execution unit:** Packer
 
+The following are `UnsupportedFunctionality`, and their use is strongly discouraged: a non-zero `CfgContext`, `CtxtCtrl`, `AddrCntContext` or `RowPadZero`; `OvrdThreadId` or `Flush` set; a `ReadIntfSel` other than `0`, `0b0001`, `0b0011`, `0b0101`, `0b0111`, `0b1010` or `0b1111`; and a strided 32-bit read (`DstAccessMode` with `PCK_DEST_RD_CTRL_Read_32b_data`) with `DEST_ACCESS_CFG_swizzle_32b` clear.
+
 > [!TIP]
 > Compared to Wormhole, Blackhole has a single packer with four `Dst` read interfaces in place of Wormhole's four packers, and `PACR` selects read interfaces (`ReadIntfSel`) rather than packers (`PackerMask`). The pipeline stages are otherwise similar to Wormhole's, for which see [`Packers/README.md` in the Wormhole tree](../../../WormholeB0/TensixTile/TensixCoprocessor/Packers/README.md); only the `Dst` read interface behavior is documented here.
 
@@ -85,7 +87,7 @@ for (unsigned k = 0; k < 4; ++k) {
 
 Each row is then read as in the normal mode: a `Dst16b` row through `Adj16`, a `Dst32b` row through `Adj32`, each with its valid bit as described in [`Dst`](Dst.md). Everything else (the ADC X range, edge masking and the tile position, which advances by the number of enabled read interfaces, conversion and the output) is as in the normal mode. For example, with `remap_addrs` set, a `PACR` with `ReadIntfSel` of `0b0011` and a `StartRow` of `64 + r` packs row `r` of the 16-row faces at rows 64 and 80, one after the other, which is how an untilize pack gathers a row of a tile.
 
-A strided read of 32-bit data (`PCK_DEST_RD_CTRL_Read_32b_data`) assumes the `DEST_ACCESS_CFG_swizzle_32b` layout: with `swizzle_32b` clear it reads other datums, not described here. Strided 16-bit reads work under either value of `swizzle_32b`. `DstAccessMode` has no effect on a `PACR` with `ZeroWrite`, which reads nothing from `Dst`.
+A strided read of 32-bit data (`PCK_DEST_RD_CTRL_Read_32b_data`) assumes the `DEST_ACCESS_CFG_swizzle_32b` layout: with `swizzle_32b` clear it reads other datums, not described here, and is `UnsupportedFunctionality`. Strided 16-bit reads work under either value of `swizzle_32b`. `DstAccessMode` has no effect on a `PACR` with `ZeroWrite`, which reads nothing from `Dst`.
 
 ### Configuration contexts
 
@@ -154,13 +156,13 @@ A `PACR` with `Flush` set is UndefinedBehavior on Blackhole if any `PACR` has ru
 * `ReadIntfSel`: as above.
 * `AddrMod`: used by the input address generator and the output address generator to manipulate ADC Y/Z values in preparation for the _next_ `PACR` instruction.
 * `ZeroWrite`: used by the input address generator (to fetch datums from `/dev/null` rather than `Dst`). Nothing is read from `Dst`: every datum is packed as a zero read from `Dst` would be, so edge masking and ReLU have no effect on it, and the rest of the packer (format conversion, output address, the end of the tile, the `AddrMod` step) works as usual. The read interfaces are `ReadIntfSel` itself, not shifted by `StartRow & 3`, and each enabled one packs the datums of the ADC X range, as a row from `Dst` would. With `ZeroWrite`, a `ReadIntfSel` of `0` does not mean all four read interfaces: the instruction instead packs `X + 1` zero datums, where `X` is the whole X coordinate of the packer's channel 1 ADC (not its low four bits), in rows of 16 (each its own BFP block). That mode expects `X + 1` to be a multiple of 16 and channel 0's X to be 0; other X ranges are not yet characterized. The tile position used for edge masking advances on reads from `Dst`, so a `PACR` with `ZeroWrite` does not advance it, though one with `Last` set still restarts it.
-* `OvrdThreadId`: used by the input address generator and the output address generator to determine which ADC is in use (see `AddrCntContext`).
+* `OvrdThreadId`: used by the input address generator and the output address generator to determine which ADC is in use (see `AddrCntContext`). Setting it is `UnsupportedFunctionality`.
 * `Concat`: if [compression](../../../WormholeB0/TensixTile/TensixCoprocessor/Packers/Compression.md) is enabled, setting this to `true` causes the _next_ `PACR` instruction to continue the current compression row rather than starting a new compression row. If compression is disabled, then there is no inherent concept of compression row, and this field only has an effect via `RowPadZero`.
-* `Flush`: UndefinedBehavior after any earlier `PACR` (see above).
+* `Flush`: `UnsupportedFunctionality`, and UndefinedBehavior after any earlier `PACR` (see above).
 * `Last`: used by the output address generator (flushes the output buffers sitting before L1 and causes the _next_ `PACR` instruction to start at fresh output addresses).
 * `DstAccessMode`: selects the strided `Dst` read mode, in which the enabled read interfaces read rows 8 apart (16 apart with `DEST_ACCESS_CFG_remap_addrs`) rather than adjacent rows; see above.
-* `RowPadZero`: pads the packed data with zeros, every row or up to the next multiple of 16 datums; see above.
-* `CfgContext`, `CtxtCtrl`: select the configuration context; see above.
-* `AddrCntContext`: with `OvrdThreadId` set, the instruction uses the ADCs of thread `AddrCntContext` (0, 1 or 2) rather than those of the issuing thread.
+* `RowPadZero`: pads the packed data with zeros, every row or up to the next multiple of 16 datums; see above. A non-zero value is `UnsupportedFunctionality`.
+* `CfgContext`, `CtxtCtrl`: select the configuration context; see above. A non-zero value of either is `UnsupportedFunctionality`.
+* `AddrCntContext`: with `OvrdThreadId` set, the instruction uses the ADCs of thread `AddrCntContext` (0, 1 or 2) rather than those of the issuing thread. A non-zero value is `UnsupportedFunctionality`.
 
 A lot of [backend configuration fields](BackendConfiguration.md) are consumed by the various stages in the packer pipeline. Some of those fields are sampled when the `PACR` instruction starts, with that sampled value consistently used throughout the lifetime of the instruction. Other fields are sampled when _some_ `PACR` instruction starts: if there are multiple `PACR` instructions in-flight, they will observe the value of these configuration fields as they were when _one_ of the in-flight instructions started. Finally, some fields are sampled at an unspecified point during the lifetime of a `PACR` instruction.

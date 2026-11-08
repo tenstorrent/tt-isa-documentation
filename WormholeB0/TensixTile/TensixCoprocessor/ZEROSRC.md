@@ -2,6 +2,8 @@
 
 **Summary:** Set either all or half of `SrcA` or `SrcB` (or both) to `0` or floating-point negative infinity (`SrcA` only, and Wormhole only).
 
+Only two forms are supported: clearing both banks of both `SrcA` and `SrcB` (`BothBanks` alone), and clearing the Matrix Unit's current bank of `SrcA` and/or `SrcB` (`SingleBankMatrixUnit` alone). Every other form, including `NegativeInfSrcA`, is `UnsupportedFunctionality`.
+
 **Backend execution unit:** [Matrix Unit (FPU)](MatrixUnit.md)
 
 ## Syntax
@@ -21,6 +23,11 @@ TT_ZEROSRC(/* bool */ NegativeInfSrcA,
 ## Functional model
 
 ```c
+if (NegativeInfSrcA) UnsupportedFunctionality(); // No known usage
+if (!ClearSrcA && !ClearSrcB) UnsupportedFunctionality(); // Clears nothing: most likely a software bug
+if (BothBanks && (SingleBankMatrixUnit || !ClearSrcA || !ClearSrcB)) UnsupportedFunctionality(); // No known usage
+if (!BothBanks && !SingleBankMatrixUnit) UnsupportedFunctionality(); // No known usage
+
 // Determine what to clear.
 bool ClearSrcABank[2] = {false, false};
 bool ClearSrcBBank[2] = {false, false};
