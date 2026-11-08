@@ -6,6 +6,8 @@ If reading 8 bits, then the high 24 bits of the result GPR are left unchanged. I
 
 The L1 address is formed using a pair of GPRs, one of which can be incremented as part of the instruction.
 
+This instruction is `UnsupportedFunctionality` and its use is strongly discouraged: it has no known usage.
+
 **Backend execution unit:** [Scalar Unit (ThCon)](ScalarUnit.md)
 
 ## Syntax
@@ -23,6 +25,7 @@ TT_LOADIND(/* u2 */ Size, /* u7 */ OffsetHalfReg, /* u2 */ OffsetIncrement, /* u
 The instruction is considered complete once the following happens:
 
 ```c
+UnsupportedFunctionality(); // No known usage
 uint32_t* GPR = &GPRs[CurrentThread][ResultReg & (Size ? 0x3f : 0x3c)];
 uint16_t* Offset = (char*)&GPRs[CurrentThread][0] + OffsetHalfReg * 2;
 uint32_t L1Address = (GPRs[CurrentThread][AddrReg] * 16) + *Offset;

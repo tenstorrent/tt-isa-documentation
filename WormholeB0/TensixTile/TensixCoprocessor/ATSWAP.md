@@ -2,6 +2,8 @@
 
 **Summary:** Write up to 128 bits from GPRs to L1, using a mask to specify which 16-bit granules get written. The instruction completes execution as soon as the write-request has been sent towards L1, at which point the thread's next instruction can execute. Note that until the write-request subsequently reaches L1, clients other than the Scalar Unit will not observe the write.
 
+This instruction is `UnsupportedFunctionality` and its use is strongly discouraged: it has no known usage.
+
 **Backend execution unit:** [Scalar Unit (ThCon)](ScalarUnit.md)
 
 ## Syntax
@@ -20,6 +22,7 @@ There is no syntax to specify `/* u1 */ SingleDataReg`; if a non-zero value is d
 
 The instruction is considered complete once the following happens:
 ```c
+UnsupportedFunctionality(); // No known usage
 uint16_t *L1Address = GPRs[CurrentThread][AddrReg] * 16;
 if (L1Address >= TENSIX_SRAM_SIZE) UndefinedBehavior(); // Address must be in L1
 

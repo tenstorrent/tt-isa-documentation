@@ -2,6 +2,8 @@
 
 **Summary:** Block execution of the Tensix thread until a 32-bit field in L1 contains a particular 4-bit value, then atomically change that field to contain a new 4-bit value. The instruction completes execution once the Scalar Unit has received confirmation that the change has been made in L1, at which point the thread's next instruction can execute. Note that the Scalar Unit remains busy for the duration of the instruction, and that repeated requests are made through the ThCon L1 access port until the comparison succeeds, making this a fairly heavyweight instruction - the facilities of the Sync Unit should be used instead where possible.
 
+This instruction is `UnsupportedFunctionality` and its use is strongly discouraged: it has no known usage.
+
 **Backend execution unit:** [Scalar Unit (ThCon)](ScalarUnit.md)
 
 ## Syntax
@@ -17,6 +19,7 @@ TT_ATCAS(0, /* u4 */ SetVal, /* u4 */ CmpVal, /* u2 */ Ofs, 0, /* u6 */ AddrReg)
 ## Functional model
 
 ```c
+UnsupportedFunctionality(); // No known usage
 retry:
 
 uint32_t* L1Address = GPRs[CurrentThread][AddrReg] * 16 + Ofs * 4;

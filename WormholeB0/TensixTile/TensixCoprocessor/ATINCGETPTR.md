@@ -10,6 +10,8 @@ In all cases, the counter reads (and the increment, if any) are performed as a s
 
 (†) It is usually easier for software to let FIFO counters be free-running 32-bit integers, regardless of the FIFO capacity. Unfortunately, free-running counters are not compatible with this instruction - this instruction expects a counter in the low <code>N+1</code> bits, with the remaining bits of the 32-bit integer set to zero.
 
+This instruction is `UnsupportedFunctionality` and its use is strongly discouraged: it has no known usage.
+
 **Backend execution unit:** [Scalar Unit (ThCon)](ScalarUnit.md)
 
 ## Syntax
@@ -31,6 +33,7 @@ TT_ATINCGETPTR(0,
 ## Functional model
 
 ```c
+UnsupportedFunctionality(); // No known usage
 union FIFOControl {
   uint32_t Words[4];
   struct {

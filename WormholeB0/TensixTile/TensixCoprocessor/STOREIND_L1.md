@@ -4,6 +4,8 @@
 
 The L1 address is formed using a pair of GPRs, one of which can be incremented as part of the instruction.
 
+This instruction (in all three of its modes) is `UnsupportedFunctionality` and its use is strongly discouraged: it has no known usage.
+
 **Backend execution unit:** [Scalar Unit (ThCon)](ScalarUnit.md)
 
 ## Syntax
@@ -19,6 +21,7 @@ TT_STOREIND(1, 0, /* u2 */ Size, /* u7 */ OffsetHalfReg, /* u2 */ OffsetIncremen
 ## Functional model
 
 ```c
+UnsupportedFunctionality(); // No known usage
 uint32_t* GPR = &GPRs[CurrentThread][DataReg & (Size ? 0x3f : 0x3c)];
 uint16_t* Offset = (char*)&GPRs[CurrentThread][0] + OffsetHalfReg * 2;
 uint32_t L1Address = (GPRs[CurrentThread][AddrReg] * 16) + *Offset;

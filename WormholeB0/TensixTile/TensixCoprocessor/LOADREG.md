@@ -2,6 +2,8 @@
 
 **Summary:** Read 32 bits from a small window of the MMIO address space, placing the result into a Tensix GPR. The instruction completes execution as soon as the read-request has been sent towards the MMIO device, at which point the thread's next instruction can execute.
 
+This instruction is `UnsupportedFunctionality` and its use is strongly discouraged: it has no known usage.
+
 **Backend execution unit:** [Scalar Unit (ThCon)](ScalarUnit.md)
 
 ## Syntax
@@ -19,6 +21,7 @@ TT_LOADREG(/* u6 */ ResultReg, /* u18 */ AddrLo)
 The instruction is considered complete once the following happens:
 
 ```c
+UnsupportedFunctionality(); // No known usage
 uint32_t* GPR = &GPRs[CurrentThread][ResultReg];
 uint32_t* Addr = 0xFFB00000 + (AddrLo << 2);
 if (uintptr_t(Addr) < 0xFFB11000) {

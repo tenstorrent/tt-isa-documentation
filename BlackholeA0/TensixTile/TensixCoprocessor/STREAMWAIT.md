@@ -2,6 +2,8 @@
 
 **Summary:** One NoC Overlay stream condition is selected, and then one or more blocked instructions are selected using a bitmask. The issuing thread can continue execution until one of the blocked instructions is reached, at which point execution of the thread is paused until the selected condition is met.
 
+This instruction is `UnsupportedFunctionality` and its use is strongly discouraged: it has no known usage.
+
 **Backend execution unit:** [Sync Unit](SyncUnit.md)
 
 > [!TIP]
@@ -21,6 +23,7 @@ TT_STREAMWAIT(/* u9 */ BlockMask, /* u10 */ TargetValueLo, /* u1 */ ConditionInd
 
 The instruction is considered complete once the following happens:
 ```c
+UnsupportedFunctionality(); // No known usage
 uint32_t TargetValue;
 switch (ConditionIndex) {
 case 0: TargetValue = (ThreadConfig[CurrentThread].STREAMWAIT_PHASE_HI_Val    << 10) | TargetValueLo; break;

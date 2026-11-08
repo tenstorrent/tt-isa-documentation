@@ -4,6 +4,8 @@
 
 The index into [`SrcA` or `SrcB`](SrcASrcB.md) is formed using a pair of GPRs, one of which can be incremented as part of the instruction. Various pieces of Unpacker state are also used as part of forming the index.
 
+This instruction (in all three of its modes) is `UnsupportedFunctionality` and its use is strongly discouraged: it has no known usage.
+
 **Backend execution unit:** [Scalar Unit (ThCon)](ScalarUnit.md)
 
 ## Syntax
@@ -25,6 +27,7 @@ TT_STOREIND(0,
 ## Functional model
 
 ```c
+UnsupportedFunctionality(); // No known usage
 uint19_t Datum[4];
 Datum[0] = ReadBF16Lo(GPRs[CurrentThread][DataReg & 0x3c]);
 Datum[1] = ReadBF16Hi(GPRs[CurrentThread][DataReg & 0x3c]);

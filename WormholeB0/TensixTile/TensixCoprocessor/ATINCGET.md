@@ -2,6 +2,8 @@
 
 **Summary:** Atomically increments an integer in L1, whose width is between 1 and 32 bits, by an arbitrary amount. The original value of the integer (from before the increment) is returned to a Tensix GPR. The instruction completes execution as soon as the atomic-request has been sent towards L1, at which point the thread's next instruction can execute. Note that until the atomic-request subsequently reaches L1, clients other than the Scalar Unit will not observe the change to memory.
 
+This instruction is `UnsupportedFunctionality` and its use is strongly discouraged: it has no known usage.
+
 **Backend execution unit:** [Scalar Unit (ThCon)](ScalarUnit.md)
 
 ## Syntax
@@ -19,6 +21,7 @@ TT_ATINCGET(0, /* u5 */ IntWidth, /* u2 */ Ofs, /* u6 */ InOutReg, /* u6 */ Addr
 The instruction is considered complete once the following happens:
 
 ```c
+UnsupportedFunctionality(); // No known usage
 uint32_t* L1Address = GPRs[CurrentThread][AddrReg] * 16 + Ofs * 4;
 if (L1Address >= TENSIX_SRAM_SIZE) UndefinedBehavior(); // Address must be in L1
 uint32_t* GPR = &GPRs[CurrentThread][InOutReg];

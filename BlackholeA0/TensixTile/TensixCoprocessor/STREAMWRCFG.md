@@ -2,6 +2,8 @@
 
 **Summary:** Move 32 bits from NoC Overlay to thread-agnostic backend configuration. The current thread's `CFG_STATE_ID_StateID` determines which configuration bank is written to. This instruction cannot be used to write to `ThreadConfig` (see [`SETC16`](SETC16.md) for that).
 
+This instruction is `UnsupportedFunctionality` and its use is strongly discouraged: it has no known usage.
+
 **Backend execution unit:** [Configuration Unit](ConfigurationUnit.md)
 
 ## Syntax
@@ -17,6 +19,7 @@ TT_STREAMWRCFG(/* u2 */ StreamSelect, /* u10 */ RegIndex, /* u11 */ CfgIndex)
 ## Functional model
 
 ```c
+UnsupportedFunctionality(); // No known usage
 if (CfgIndex >= (CFG_STATE_SIZE*4)) UndefinedBehavior(); // Cannot index out of bounds.
 
 uint6_t StreamIndex = ThreadConfig[CurrentThread].STREAM_ID_SYNC_SEC[StreamSelect].BankSel;

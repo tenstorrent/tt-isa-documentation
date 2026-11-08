@@ -2,6 +2,8 @@
 
 **Summary:** This instruction is identical to [`MOVA2D`](MOVA2D.md), except that it doesn't _automatically_ wait for `SrcA[MatrixUnit.SrcABank].AllowedClient == MatrixUnit`.
 
+This instruction is `UnsupportedFunctionality` and its use is strongly discouraged: its only known usage is debug code that dumps `SrcA`, and its interaction with implied data formats is ill-specified (see below).
+
 **Backend execution unit:** [Matrix Unit (FPU)](MatrixUnit.md)
 
 ## Syntax
@@ -23,5 +25,7 @@ On Blackhole, `AddrMod` is a `u3` rather than a `u2`, giving this encoding:
 ![](../../../Diagrams/Out/Bits32_MOVDBGA2D_BH.svg)
 
 ## Functional model
+
+Use of this instruction is `UnsupportedFunctionality`.
 
 See [`MOVA2D`'s functional model](MOVA2D.md#functional-model), ignoring the paragraph about the Wait Gate. It is strongly recommended to set `DISABLE_IMPLIED_SRCA_FMT_Base` on Blackhole when using this instruction, as the interaction with `ImpliedSrcAFmt` is ill-specified when the bank is not valid. In practice, `SFPU_DEST_FMT_Base` will be used as the default implied format for an invalid bank, but this is a `NonContractualBehavior` and should not be relied on by software. The one exception is Blackhole with `ALU_ACC_CTRL_Fp32_enabled` set (and `FP16A_FORCE_Enable` clear), as `SrcAFmt` is then forced to `TF32` regardless of where it would otherwise have come from.

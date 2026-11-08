@@ -2,6 +2,8 @@
 
 **Summary:** Once all previous `PACR` instructions have gotten past the packer's late format conversion stage, flush any data in the packer buffers just before L1 and simultaneously perform a 32-bit memory write within a small window of the MMIO address space.
 
+This instruction is `UnsupportedFunctionality` and its use is strongly discouraged: it has no known usage.
+
 **Backend execution unit:** [Packers](Packers/README.md)
 
 ## Syntax
@@ -19,6 +21,7 @@ TT_PACR_SETREG(1, /* u1 */ AddrSel, /* u10 */ Value10, 0xf, /* u6 */ AddrMid, 1,
 Once all previous `PACR` instructions have gotten past the packer's late format conversion stage, the following happens:
 
 ```c
+UnsupportedFunctionality(); // No known usage
 uint1_t StateID = ThreadConfig[CurrentThread].CFG_STATE_ID_StateID;
 auto& Packer0Config = Packers[0].Config[StateID];
 uint32_t Addr = 0xFFB00000 + Packers.SetRegBase[AddrSel] + (AddrMid << 12);

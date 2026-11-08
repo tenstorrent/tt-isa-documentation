@@ -2,6 +2,8 @@
 
 **Summary:** Performs an unsigned bitwise shift (left or right) of one Tensix GPR by another, or of one Tensix GPR by a 5-bit immediate.
 
+This instruction is `UnsupportedFunctionality` and its use is strongly discouraged: it has no known usage.
+
 **Backend execution unit:** [Scalar Unit (ThCon)](ScalarUnit.md)
 
 ## Syntax
@@ -19,6 +21,7 @@ TT_SHIFTDMAREG(1, /* u3 */ Mode, /* u6 */ ResultReg, /* u5 */ RightImm5, /* u6 *
 ## Functional model
 
 ```c
+UnsupportedFunctionality(); // No known usage
 uint32_t LeftVal = GPRs[CurrentThread][LeftReg];
 uint32_t RightVal = GPRs[CurrentThread][RightReg] & 0x1f; // RightReg  variant
 uint32_t RightVal = RightImm5;                            // RightImm5 variant

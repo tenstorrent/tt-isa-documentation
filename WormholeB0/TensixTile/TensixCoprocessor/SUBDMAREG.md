@@ -2,6 +2,8 @@
 
 **Summary:** Performs subtraction between two Tensix GPRs, or between a Tensix GPR and an unsigned 6-bit immediate.
 
+This instruction is `UnsupportedFunctionality` and its use is strongly discouraged: it has no known usage.
+
 **Backend execution unit:** [Scalar Unit (ThCon)](ScalarUnit.md)
 
 ## Syntax
@@ -19,6 +21,7 @@ TT_SUBDMAREG(1, /* u6 */ ResultReg, /* u6 */ RightImm6, /* u6 */ LeftReg)
 ## Functional model
 
 ```c
+UnsupportedFunctionality(); // No known usage
 uint32_t LeftVal = GPRs[CurrentThread][LeftReg];
 uint32_t RightVal = GPRs[CurrentThread][RightReg]; // RightReg  variant
 uint32_t RightVal = RightImm6;                     // RightImm6 variant

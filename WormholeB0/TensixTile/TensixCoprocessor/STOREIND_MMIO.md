@@ -6,6 +6,8 @@ The MMIO address is formed using a pair of GPRs, one of which can be incremented
 
 See also [`STOREREG`](STOREREG.md) for a similar instruction with a different addressing mode.
 
+This instruction (in all three of its modes) is `UnsupportedFunctionality` and its use is strongly discouraged: it has no known usage.
+
 **Backend execution unit:** [Scalar Unit (ThCon)](ScalarUnit.md)
 
 ## Syntax
@@ -21,6 +23,7 @@ TT_STOREIND(0, 1, 0, /* u7 */ OffsetHalfReg, /* u2 */ OffsetIncrement, /* u6 */ 
 ## Functional model
 
 ```c
+UnsupportedFunctionality(); // No known usage
 uint16_t* Offset = (char*)&GPRs[CurrentThread][0] + OffsetHalfReg * 2;
 uint32_t Addr = GPRs[CurrentThread][AddrReg] + (*Offset >> 4);
 Addr = 0xFFB00000 + (Addr & 0x000FFFFC);

@@ -2,6 +2,8 @@
 
 **Summary:** Asynchronous bulk copy of data from L1 or from `/dev/null`, to L1 or to Tensix Backend Configuration or RISCV NC Instruction RAM, in aligned 16 byte units.
 
+This instruction is `UnsupportedFunctionality` and its use is strongly discouraged: it has no known usage.
+
 **Backend execution unit:** Mover
 
 ## Syntax
@@ -17,6 +19,7 @@ TT_XMOV(0, 0)
 ## Functional model
 
 ```c
+UnsupportedFunctionality(); // No known usage
 uint1_t StateID = ThreadConfig[CurrentThread].CFG_STATE_ID_StateID;
 auto& ConfigState = Config[StateID];
 

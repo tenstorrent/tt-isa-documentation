@@ -2,6 +2,8 @@
 
 **Summary:** Performs a bitwise and/or/xor operation between two Tensix GPRs, or between a Tensix GPR and an unsigned 6-bit immediate.
 
+This instruction is `UnsupportedFunctionality` and its use is strongly discouraged: it has no known usage.
+
 **Backend execution unit:** [Scalar Unit (ThCon)](ScalarUnit.md)
 
 ## Syntax
@@ -19,6 +21,7 @@ TT_BITWOPDMAREG(1, /* u3 */ Mode, /* u6 */ ResultReg, /* u6 */ RightImm6, /* u6 
 ## Functional model
 
 ```c
+UnsupportedFunctionality(); // No known usage
 uint32_t LeftVal = GPRs[CurrentThread][LeftReg];
 uint32_t RightVal = GPRs[CurrentThread][RightReg]; // RightReg  variant
 uint32_t RightVal = RightImm6;                     // RightImm6 variant

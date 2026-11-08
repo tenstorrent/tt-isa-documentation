@@ -2,6 +2,8 @@
 
 **Summary:** One row of `SrcB` is either rotated left by one lane, or shifted left by one lane and the rightmost lane set to zero.
 
+This instruction is `UnsupportedFunctionality` and its use is strongly discouraged: its only known usage is debug code that dumps `SrcB`.
+
 **Backend execution unit:** [Matrix Unit (FPU)](MatrixUnit.md)
 
 ## Syntax
@@ -42,6 +44,7 @@ while (SrcB[MatrixUnit.SrcBBank].AllowedClient != MatrixUnit) {
 
 Once dispatched to the Matrix Unit (FPU):
 ```c
+UnsupportedFunctionality(); // Only known usage is debug dumps of SrcB
 SrcRow = (SrcRow + RWCs[CurrentThread].SrcB) & 0x3f;
 
 uint19_t Column0 = SrcB[MatrixUnit.SrcBBank][SrcRow][0];
