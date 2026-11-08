@@ -20,7 +20,7 @@ TT_SETADCZW(((/* bool */ PK) << 2) +
               /* bool */ Z0)
 ```
 
-There is no syntax to specify `/* u2 */ ThreadOverride`; if a non-zero value is desired for this field, the raw encoding must be used. Use of `ThreadOverride` is `UnsupportedFunctionality` and is strongly discouraged.
+There is no syntax to specify `/* u2 */ ThreadOverride`; if a non-zero value is desired for this field, the raw encoding must be used. Use of `ThreadOverride` is `UnsupportedFunctionality` and is strongly discouraged. In practice, on Blackhole, a non-zero `ThreadOverride` applies the instruction to the counters of thread `ThreadOverride - 1` instead of the issuing thread's, as the functional model below describes.
 
 ## Encoding
 
@@ -30,7 +30,7 @@ There is no syntax to specify `/* u2 */ ThreadOverride`; if a non-zero value is 
 
 ```c
 if (ThreadOverride) {
-  UnsupportedFunctionality(); // No known usage, confidence in specification below is weak
+  UnsupportedFunctionality(); // Blackhole hardware behaves as below; on Wormhole, confidence in specification below is weak
 }
 uint2_t WhichThread = ThreadOverride == 0 ? CurrentThread : ThreadOverride - 1;
 if (U0) ApplyTo(ADCs[WhichThread].Unpacker[0]);

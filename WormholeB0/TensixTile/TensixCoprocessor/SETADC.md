@@ -24,7 +24,7 @@ TT_SETADC(((/* bool */ PK) << 2) +
 ```c
 uint2_t ThreadOverride = NewValue >> 16;
 if (ThreadOverride) {
-  UnsupportedFunctionality(); // No known usage, confidence in specification below is weak
+  UnsupportedFunctionality(); // Blackhole hardware behaves as below; on Wormhole, confidence in specification below is weak
 }
 uint2_t WhichThread = ThreadOverride == 0 ? CurrentThread : ThreadOverride - 1;
 if (U0) ApplyTo(ADCs[WhichThread].Unpacker[0]);

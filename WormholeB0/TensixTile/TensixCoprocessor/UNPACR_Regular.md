@@ -32,8 +32,11 @@ TT_OP_UNPACR(/* u1 */ WhichUnpacker,
 ## Functional model
 
 ```c
-if (RowSearch || UseContextCounter || !MultiContextMode || ContextADC || ContextNumber) {
+if (RowSearch || UseContextCounter || !MultiContextMode) {
   UnsupportedFunctionality(); // No known usage, confidence in specification below is weak
+}
+if (ContextADC || ContextNumber) {
+  UnsupportedFunctionality(); // Blackhole hardware behaves as below; on Wormhole, confidence in specification below is weak
 }
 
 // Start by reading some configuration:
