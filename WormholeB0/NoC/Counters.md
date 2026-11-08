@@ -7,7 +7,7 @@ Each NIU contains an array of counters, which software can use to monitor the st
 |0|`NIU_MST_ATOMIC_RESP_RECEIVED`|32 bits (will eventually wrap around)|
 |1|`NIU_MST_WR_ACK_RECEIVED`|32 bits (will eventually wrap around)|
 |2|`NIU_MST_RD_RESP_RECEIVED`|32 bits (will eventually wrap around)|
-|3|`NIU_MST_RD_DATA_WORD_RECEIVED`|32 bits (will eventually wrap around)|
+|3|`NIU_MST_RD_DATA_WORD_RECEIVED`|32 bits (will eventually wrap around); reading it is `UnsupportedFunctionality`|
 |4|`NIU_MST_CMD_ACCEPTED`|32 bits (will eventually wrap around)|
 |5|`NIU_MST_RD_REQ_SENT`|32 bits (will eventually wrap around)|
 |6|`NIU_MST_NONPOSTED_ATOMIC_SENT`|32 bits (will eventually wrap around)|

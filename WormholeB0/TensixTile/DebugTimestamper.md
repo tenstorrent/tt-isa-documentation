@@ -4,6 +4,8 @@ The debug timestamper provides two services:
 * A 64-bit counter which increments by one every clock cycle, the value of which can be sampled.
 * The ability to write a stream of timestamp events out to a buffer in [L1](L1.md), where each event contains a 29-bit user-specified token along with the value of the 64-bit counter at the time of the event.
 
+Writing a stream of timestamp events (any access to `RISCV_DEBUG_REG_TIMESTAMP` through `RISCV_DEBUG_REG_TIMESTAMP+24`) is `UnsupportedFunctionality`, as is a write to `RISCV_DEBUG_REG_WALL_CLOCK_L`, `RISCV_DEBUG_REG_WALL_CLOCK_L+4` or `RISCV_DEBUG_REG_WALL_CLOCK_H`; reading the 64-bit counter is supported.
+
 These services are mapped into the address space of the Tensix tile, and are available to any RISCV core. The address space is also available over the NoC and available to ThCon.
 
 ## The 64-bit counter

@@ -9,6 +9,8 @@ TDMA-RISC provides three services:
 
 See the functional specification (below) for state and functions referenced herein.
 
+The following accesses are `UnsupportedFunctionality`: a read of `RISCV_TDMA_REG_CLK_GATE_EN`; any access to `RISCV_TDMA_REG_PACKED_SIZE`, `RISCV_TDMA_REG_ACC_PACKED_SIZE`, `RISCV_TDMA_REG_CLK_GATE_HYST`, `RISCV_TDMA_REG_XMOV_L1_BASE_ADDR`, `RISCV_TDMA_REG_FIFO_PACKED_TILE_STATUS`, `RISCV_TDMA_REG_FIFO_PACKED_TILE_SIZE(i)` or `RISCV_TDMA_REG_FIFO_PACKED_TILE_ZEROMASK(i)` (at the addresses given below, not their `+ 0x040` and similar copies); on Wormhole, a read of `RISCV_TDMA_REG_XMOV_SRC_ADDR`, `RISCV_TDMA_REG_XMOV_DST_ADDR`, `RISCV_TDMA_REG_XMOV_SIZE`, `RISCV_TDMA_REG_XMOV_DIRECTION` or `RISCV_TDMA_REG_COMMAND_ADDR`, and a write of `RISCV_TDMA_REG_STATUS`; and on Blackhole, any access to those six registers.
+
 Addresses primarily related to the command queue and command processor for instructing the mover:
 
 |Address|Write Behavior|Read Behavior|

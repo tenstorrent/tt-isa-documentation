@@ -37,6 +37,8 @@ lw t3, 0(t2) # Load from RISCV_DEBUG_REG_DBG_RD_DATA
 
 ## `RISCV_DEBUG_REG_DBG_L1_MEM_REG2`
 
+Any access to `RISCV_DEBUG_REG_DBG_L1_MEM_REG0`, `RISCV_DEBUG_REG_DBG_L1_MEM_REG1` or `RISCV_DEBUG_REG_DBG_L1_MEM_REG2` is `UnsupportedFunctionality`.
+
 Once the `Enabled`, `DaisySel`, and `SignalSel` fields of `RISCV_DEBUG_REG_DBG_BUS_CNTL_REG` have been set to select a group of 128 bits to present on the debug daisychain, and software has waited at least five cycles, software can instruct the daisychain to write 128 bits out to an aligned address in the low 1 MiB of L1. This is controlled using `RISCV_DEBUG_REG_DBG_L1_MEM_REG2`:
 
 |First&nbsp;bit|#&nbsp;Bits|Name|

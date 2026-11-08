@@ -188,6 +188,8 @@ Note that instructions already in the RISCV pipeline might have already performe
 
 ## Debug register access
 
+Any access to these four registers is `UnsupportedFunctionality`.
+
 Access to all the `DR` registers of the various RISCV cores is multiplexed through just four registers in the "Tile control / debug / status registers" memory region, whose addresses are:
 
 ```c

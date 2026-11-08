@@ -39,6 +39,8 @@
 
 **Address:** `0xFFB1_2224`
 
+Any access to this register is `UnsupportedFunctionality`.
+
 |Bit index|Purpose|
 |--:|---|
 |0|If `false`, RISCV T0 soft reset will reset RISCV T0's local data RAM. If `true`, it won't|

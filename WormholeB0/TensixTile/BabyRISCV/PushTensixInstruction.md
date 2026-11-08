@@ -47,6 +47,8 @@ This read-only register provides some visibility into the status of the FIFO bef
 
 ### `RISCV_DEBUG_REG_INSTRN_BUF_CTRL0` (and `RISCV_DEBUG_REG_INSTRN_BUF_CTRL1`)
 
+Any access to `RISCV_DEBUG_REG_INSTRN_BUF_CTRL0` or `RISCV_DEBUG_REG_INSTRN_BUF_CTRL1` is `UnsupportedFunctionality`.
+
 `RISCV_DEBUG_REG_INSTRN_BUF_CTRL0` can be used to push Tensix instructions via the debug bus, though this comes at the cost of preventing RISCV from pushing instructions via normal means. This provides a mechanism for low-level external agents to push Tensix instructions prior to bringing the RISCV cores online, for example to issue [`RMWCIB`](../TensixCoprocessor/RMWCIB.md) instructions that set [Tensix backend configuration](../TensixCoprocessor/BackendConfiguration.md#special-cases) fields relating to RISCV execution.
 
 |Bit&nbsp;index|Purpose|

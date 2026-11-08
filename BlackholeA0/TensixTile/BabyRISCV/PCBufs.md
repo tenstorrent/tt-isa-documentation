@@ -49,7 +49,7 @@ When writing to a PCBuf, it is usually the case that the programmer wants the PC
 
 ## Configuration bits
 
-The configuration bits for all three PCBufs sit in the `RISCV_DEBUG_REG_TRISC_PC_BUF_OVERRIDE` register, within the "Tile control / debug / status registers" memory region, with the bits of that register mapped as:
+Any access to `RISCV_DEBUG_REG_TRISC_PC_BUF_OVERRIDE` is `UnsupportedFunctionality`. The configuration bits for all three PCBufs sit in the `RISCV_DEBUG_REG_TRISC_PC_BUF_OVERRIDE` register, within the "Tile control / debug / status registers" memory region, with the bits of that register mapped as:
 
 |Starting bit index|Type|Name|
 |--:|---|---|
