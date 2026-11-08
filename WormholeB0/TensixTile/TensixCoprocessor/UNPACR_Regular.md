@@ -283,6 +283,9 @@ if (MultiContextMode && WhichUnpacker == 0) {
 if ((OutAddr & 15) || ((WhichUnpacker == 0) && (OutAddr < 64))) {
   UnsupportedFunctionality(); // No known usage, confidence in specification below is weak
 }
+if ((TTArchitecture == Blackhole) && (WhichUnpacker == 1) && ConfigState.THCON_SEC[1].Unpack_Src_Reg_Set_Upd && OutAddr != 0) {
+  UndefinedBehavior(); // Hardware drops some of the writes to SrcB
+}
 
 uint4_t UpsampleZeroes = (1 << ConfigState.THCON_SEC[WhichUnpacker].REG2_Upsample_rate) - 1;
 bool UpsampleInterleave = ConfigState.THCON_SEC[WhichUnpacker].REG2_Upsample_and_interleave;
@@ -342,9 +345,14 @@ if (UnpackToDst) {
 
 uint2_t ThrottleMode = ConfigState.THCON_SEC[WhichUnpacker].REG2_Throttle_mode;
 // BFP4a/BFP4 unpack at x4 with ThrottleMode == 2, and on Blackhole also by default, which changes some BFP4a results.
+// On Blackhole, a run whose datums lie within two 16 byte words of L1 goes at x2 instead.
 bool BFP4AtX4 = (DatumSizeBytes == 0.5) &&
                 (ThrottleMode == 2 || ((TTArchitecture == Blackhole) &&
                                        !ConfigState.THCON_SEC[0].REG1_ovrd_default_throttle_mode));
+if ((TTArchitecture == Blackhole) &&
+    floor((InAddr_Datums + InputNumDatums * DatumSizeBytes - 1) / 16.) - floor(InAddr_Datums / 16.) < 2) {
+  BFP4AtX4 = false;
+}
 if ((TTArchitecture == Wormhole) && (ThrottleMode > 2)) {
   UndefinedBehavior(); // x8 ThrottleMode is illegal on Wormhole
 }
