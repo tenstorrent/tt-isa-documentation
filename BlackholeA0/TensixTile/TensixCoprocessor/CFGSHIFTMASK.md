@@ -22,7 +22,11 @@ TT_CFGSHIFTMASK(/* u1 */ MaskMode,
 ## Functional model
 
 ```c
-if (CfgIndex >= (CFG_STATE_SIZE*4)) UndefinedBehavior(); // Cannot index out of bounds.
+if (CfgIndex >= (CFG_STATE_SIZE*4)) {
+  NonContractualBehavior {
+    return; // Current silicon writes nothing and has no other effect (not architecturally guaranteed)
+  }
+}
 
 uint32_t ScratchValue = Config.SCRATCH_SEC[ScratchIndex < 3 ? ScratchIndex : CurrentThread].val;
 uint32_t MaskValue = (2u << MaskWidth) - 1u;
