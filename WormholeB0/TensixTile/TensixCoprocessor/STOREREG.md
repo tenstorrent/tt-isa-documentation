@@ -4,6 +4,8 @@
 
 See also [`STOREIND`](STOREIND_MMIO.md) for a similar instruction with a different addressing mode.
 
+Writes to addresses outside the NoC overlay's stream registers (`0xFFB40000` through `0xFFB7FFFF`) are `UnsupportedFunctionality`, and their use is strongly discouraged: they have no known usage.
+
 **Backend execution unit:** [Scalar Unit (ThCon)](ScalarUnit.md)
 
 ## Syntax
@@ -22,6 +24,10 @@ TT_STOREREG(/* u6 */ DataReg, /* u18 */ AddrLo)
 uint32_t Addr = 0xFFB00000 + (AddrLo << 2);
 if (Addr < 0xFFB11000) {
   UndefinedBehavior();
+}
+if (Addr < 0xFFB40000 || Addr >= 0xFFB80000) {
+  UnsupportedFunctionality(); // No known usage outside the NoC overlay
+  // The model continues to describe these writes
 }
 
 *(uint32_t*)Addr = GPRs[CurrentThread][DataReg];
