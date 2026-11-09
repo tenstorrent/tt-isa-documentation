@@ -25,6 +25,11 @@ WaitGate[CurrentThread].LatchedWaitInstruction.Opcode = STALLWAIT;
 WaitGate[CurrentThread].LatchedWaitInstruction.ConditionMask = ConditionMask ? ConditionMask : 0x0F;
 WaitGate[CurrentThread].LatchedWaitInstruction.BlockMask = BlockMask ? BlockMask : (1u << 6);
 WaitGate[CurrentThread].LatchedWaitInstruction.SemaphoreMask = 0;
+
+if (ConditionMask & ((1u << 6) | (1u << 9))) {
+  UnsupportedFunctionality(); // C6 and C9: no known usage
+  // The model continues to describe these conditions
+}
 ```
 
 The Wait Gate will then continuously re-evaluate the latched wait instruction until all of the selected conditions are simultaneously met, at which point the latched wait instruction will be forgotten, and instructions will no longer be blocked. The new latched wait instruction takes effect immediately, so it will influence whether or not the instruction immediately after `STALLWAIT` can pass through the Wait Gate. There is a one cycle lag between the condition(s) being met and the block mask being removed - in particular this means that the instruction immediately after `STALLWAIT` will always be subject to the block mask for at least one cycle, even if the condition(s) are met immediately.
@@ -200,6 +205,8 @@ The condition mask consists of 13 bits, named C0 (least significant bit) through
 |**C12**|Any thread has an instruction in any stage of the Configuration Unit pipeline.|
 
 If multiple condition bits are set in the condition mask, then the `STALLWAIT` instruction will remain latched if _any_ of the selected conditions indicate "keep on waiting" - the instruction will only be forgotten once _all_ of the conditions are simultaneously met.
+
+Conditions C6 and C9 are `UnsupportedFunctionality`, and their use is strongly discouraged: they have no known usage.
 
 ||Notes|
 |---|---|
