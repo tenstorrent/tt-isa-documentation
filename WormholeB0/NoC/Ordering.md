@@ -33,6 +33,8 @@ The final place of interest is the recipient NIU, which receives a request packe
 
 Note that there are no ordering guarantees when a write to L1 is followed by a write to an MMIO address: the MMIO write _can_ race ahead of the L1 write.
 
+Similarly, there are no ordering guarantees when a write to L1 is followed by an atomic request to L1 (for example a write of some data followed by an atomic increment of a counter that tells the recipient the data has arrived): the atomic operation _can_ be performed before every byte of the write has been committed to L1, so software that sees the atomic's result (for example by polling the counter) can still read old values from part of the write's address range. This can happen even when both packets travel on the same virtual channel; how often depends on how busy the recipient's L1 is. Software needing this ordering should wait for the write's acknowledgement (`NOC_CMD_RESP_MARKED`), which is only sent once every byte of the write has been committed to L1, before sending the atomic request.
+
 ## Stronger ordering
 
 If software requires stronger ordering than what is described in the above sections, then it will have to issue a request, wait for the response to arrive, and only then issue the next request. Such an approach will negatively impact both latency and throughput. This is also the only approach if software needs ordering between requests which travel on different NoCs.
