@@ -20,19 +20,18 @@ This instruction will, if necessary, spend time waiting at the Wait Gate for the
 
 ```c
 if (Index == 1 || Index > 7) {
-  // Invalid index causes infinite wait.
-  while (true) {
-    wait;
-  }
+  // No mutex has this index, so the instruction never leaves the Wait Gate and the thread hangs.
+  UndefinedBehavior();
 }
 
 if (Mutex[Index].HeldBy == CurrentThread) {
-  // Maybe wait for a cycle or two if trying to acquire
-  // a mutex already held by the current thread. These
-  // waits can happen if other threads are also trying to
-  // either acquire or release the mutex in question.
-  if (maybe) wait;
-  if (maybe) wait;
+  NonContractualBehavior {
+    // Current silicon lets the thread through, still holding the mutex, after maybe
+    // waiting for a cycle or two if other threads are also trying to either acquire
+    // or release the mutex in question (not architecturally guaranteed)
+    if (maybe) wait;
+    if (maybe) wait;
+  }
 } else {
   // Wait for mutex to become available if it is held
   // by some other thread.
