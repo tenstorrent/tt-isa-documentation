@@ -2,6 +2,8 @@
 
 **Summary:** Mutate 32 bits of thread-agnostic backend configuration using one of the `SCRATCH_SEC[].val` configuration registers. The current thread's `CFG_STATE_ID_StateID` determines which configuration bank is written to. This instruction cannot be used to write to `ThreadConfig` (see [`SETC16`](SETC16.md) for that).
 
+Only one form is supported: `MaskMode` 1, `AluMode` 3, `MaskWidth` 31 and `RotateAmt` 0, which adds a whole `SCRATCH_SEC[].val` to the configuration word. Any other value of these fields is `UnsupportedFunctionality`, and its use is strongly discouraged: it has no known usage.
+
 **Backend execution unit:** [Configuration Unit](ConfigurationUnit.md)
 
 ## Syntax
@@ -26,6 +28,11 @@ if (CfgIndex >= (CFG_STATE_SIZE*4)) {
   NonContractualBehavior {
     return; // Current silicon writes nothing and has no other effect (not architecturally guaranteed)
   }
+}
+
+if (MaskMode != 1 || AluMode != 3 || MaskWidth != 31 || RotateAmt != 0) {
+  UnsupportedFunctionality(); // No known usage
+  // The model below continues to describe these forms
 }
 
 uint32_t ScratchValue = Config.SCRATCH_SEC[ScratchIndex < 3 ? ScratchIndex : CurrentThread].val;
