@@ -34,6 +34,10 @@ if (SizeSel == 0) {
   // 128 bit configuration write
   memcpy(&ThConCfgBase[ThConCfgIndex & ~3], &GPRs[CurrentThread][InputReg & ~3], 16);
 } else {
+  if (SizeSel == 3) {
+    UnsupportedFunctionality(); // No known usage
+    // The model continues to describe the write
+  }
   // 32 bit configuration write
   ThConCfgBase[ThConCfgIndex] = GPRs[CurrentThread][InputReg];
 }
