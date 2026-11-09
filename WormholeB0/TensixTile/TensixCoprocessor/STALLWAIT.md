@@ -198,6 +198,7 @@ If multiple condition bits are set in the condition mask, then the `STALLWAIT` i
 |**C1, C2**|The block mask should include bit B3 (or B0) to prevent new instructions from this thread flowing into the unpackers.|
 |**C3, C4, C5, C6**|The block mask should include bit B2 (or B0) to prevent new instructions from this thread flowing into the packers.|
 |**C7**|The block mask should include bit B6 to prevent new instructions from this thread flowing into the Matrix Unit (FPU).|
+|**C8, C9**|The condition does not see the bank hand-over of an `UNPACR` with `FlipSrc` from the current thread until that `UNPACR` leaves the unpacker's pipeline: a `STALLWAIT` right after it can find the condition met on `Unpackers[i].SrcBank` as it was before the hand-over. Selecting C1 (or C2) as well makes the `STALLWAIT` wait for the hand-over.|
 |**C8, C9**|Rarely needed, as unpack instructions automatically wait for this condition.|
 |**C10, C11**|Rarely needed, as Matrix Unit (FPU) instructions which read from `SrcA` or `SrcB` automatically wait for this condition.|
 |**C12**|The block mask should include bit B4 (or B0) to prevent new `XMOV` instructions from this thread flowing into the mover. This won't prevent other threads (or TDMA-RISC) from issuing new instructions to the mover though, and those new instructions will cause this thread to continue to wait.|
