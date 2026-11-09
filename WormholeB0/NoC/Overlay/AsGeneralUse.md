@@ -45,6 +45,8 @@ Within each stream (of which there are 64 per Tensix tile, and 32 per Ethernet t
 |`STREAM_REMOTE_SRC_REG_INDEX`|24 bits||
 |`STREAM_SCRATCH_REG_INDEX + i`|24&nbsp;bits|Only available for streams capable of transmitting to DRAM buffers; otherwise writes are ignored and reads as zero. Where available, the allowed `i` is `0 ≤ i < 6`|
 
+On Blackhole, a read of `STREAM_REMOTE_DEST_BUF_SPACE_AVAILABLE_REG_INDEX + i` also returns a second 9-bit field in bits 25 through 17. That field has no reset value, writes to `STREAM_REMOTE_DEST_BUF_SIZE_REG_INDEX` leave it unchanged, a write of `m` to `STREAM_REMOTE_DEST_MSG_INFO_BUF_SIZE_REG_INDEX` (register index 12) sets it to 2<sup>m+1</sup>, and a write to `STREAM_REMOTE_DEST_BUF_SPACE_AVAILABLE_UPDATE_REG_INDEX` adds bits 31 through 23 of the written value to it (so writing `(j << 6) + i` with a negative `j` also subtracts one from it). Software using the register as a 17-bit counter should mask what it reads to the low 17 bits.
+
 ## Memory ordering
 
 If RISCV code does an MMIO store to one of these registers followed by an MMIO load from a _different_ register (for example writing to `STREAM_REMOTE_DEST_BUF_SIZE_REG_INDEX` then reading from `STREAM_REMOTE_DEST_BUF_SPACE_AVAILABLE_REG_INDEX`), then [RISCV memory ordering](../../TensixTile/BabyRISCV/MemoryOrdering.md) needs to be considered, as otherwise the RISCV core might reorder the operations to have the load happen first. To avoid the problem, following a sequence of writes, it is sufficient to load from the most recently-written register (the load result does not need to be used for anything).
