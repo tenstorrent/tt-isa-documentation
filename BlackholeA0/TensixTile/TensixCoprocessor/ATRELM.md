@@ -23,10 +23,8 @@ This instruction will, if necessary, spend time waiting at the Wait Gate for a c
 
 ```c
 if (Index == 1 || Index > 4) {
-  // Invalid index causes infinite wait.
-  while (true) {
-    wait;
-  }
+  // No mutex has this index, so the instruction never leaves the Wait Gate and the thread hangs.
+  UndefinedBehavior();
 }
 
 // Maybe wait for a cycle or two. These waits can happen if other threads
@@ -41,7 +39,9 @@ Once the wait is complete, if the current thread already holds the mutex, it pro
 if (Mutex[Index].HeldBy == CurrentThread) {
   Mutex[Index].HeldBy = Nobody;
 } else {
-  // The instruction completes, but no state is changed.
+  NonContractualBehavior {
+    // Current silicon completes the instruction and changes no state (not architecturally guaranteed)
+  }
 }
 ```
 
