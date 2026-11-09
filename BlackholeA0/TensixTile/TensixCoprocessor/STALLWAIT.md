@@ -2,6 +2,8 @@
 
 **Summary:** One or more assorted conditions are selected using a bitmask, and one or more blocked instructions are selected using another bitmask. The issuing thread can continue execution until one of the blocked instructions is reached, at which point execution of the thread is paused until all of the selected conditions are simultaneously met.
 
+A `BlockMask` or `ConditionMask` of zero is `UnsupportedFunctionality`, and its use is strongly discouraged: it has no known usage.
+
 **Backend execution unit:** [Sync Unit](SyncUnit.md)
 
 > [!TIP]
@@ -25,6 +27,11 @@ WaitGate[CurrentThread].LatchedWaitInstruction.Opcode = STALLWAIT;
 WaitGate[CurrentThread].LatchedWaitInstruction.ConditionMask = ConditionMask ? ConditionMask : 0x0F;
 WaitGate[CurrentThread].LatchedWaitInstruction.BlockMask = BlockMask ? BlockMask : (1u << 6);
 WaitGate[CurrentThread].LatchedWaitInstruction.SemaphoreMask = 0;
+
+if (ConditionMask == 0 || BlockMask == 0) {
+  UnsupportedFunctionality(); // A mask of zero: no known usage
+  // The model continues to describe the defaults above
+}
 
 if (ConditionMask & ((1u << 6) | (1u << 9))) {
   UnsupportedFunctionality(); // C6 and C9: no known usage

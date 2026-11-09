@@ -2,6 +2,8 @@
 
 **Summary:** One or more assorted conditions are selected using a bitmask, and one or more blocked instructions are selected using another bitmask. The issuing thread can continue execution until one of the blocked instructions is reached, at which point execution of the thread is paused until all of the selected conditions are simultaneously met.
 
+A `BlockMask` or `ConditionMask` of zero is `UnsupportedFunctionality`, and its use is strongly discouraged: it has no known usage.
+
 **Backend execution unit:** [Sync Unit](SyncUnit.md)
 
 ## Syntax
@@ -22,6 +24,11 @@ WaitGate[CurrentThread].LatchedWaitInstruction.Opcode = STALLWAIT;
 WaitGate[CurrentThread].LatchedWaitInstruction.ConditionMask = ConditionMask ? ConditionMask : 0x7F;
 WaitGate[CurrentThread].LatchedWaitInstruction.BlockMask = BlockMask ? BlockMask : (1u << 6);
 WaitGate[CurrentThread].LatchedWaitInstruction.SemaphoreMask = 0;
+
+if (ConditionMask == 0 || BlockMask == 0) {
+  UnsupportedFunctionality(); // A mask of zero: no known usage
+  // The model continues to describe the defaults above
+}
 ```
 
 The Wait Gate will then continuously re-evaluate the latched wait instruction until all of the selected conditions are simultaneously met, at which point the latched wait instruction will be forgotten, and instructions will no longer be blocked. The new latched wait instruction takes effect immediately, so it will influence whether or not the instruction immediately after `STALLWAIT` can pass through the Wait Gate. There is a one cycle lag between the condition(s) being met and the block mask being removed - in particular this means that the instruction immediately after `STALLWAIT` will always be subject to the block mask for at least one cycle, even if the condition(s) are met immediately.
