@@ -111,3 +111,6 @@ If `SFPSWAP` is used, then on the next cycle, the only instruction that the Vect
 
 > [!CAUTION]
 > Automatic stalling does not apply to `SFPSWAP` instructions executed as part of an [`SFPLOADMACRO`](SFPLOADMACRO.md) sequence. When constructing such sequences, software should be aware that `SFPSWAP` executes for two cycles: it reads `VC` and `VD` on its 1<sup>st</sup> cycle to compare them, and then if a swap is to be performed, the 2<sup>nd</sup> cycle involves reading `VC` and `VD` again and then writing them (swapped around).
+
+> [!CAUTION]
+> In all modes except `SFPSWAP_MOD1_SWAP`, the reads `SFPSWAP` performs during its 1<sup>st</sup> cycle are not seen by the automatic stalling that follows [`SFPMAD`](SFPMAD.md#instruction-scheduling) and the other instructions which write their result a cycle late. If `SFPSWAP` is issued on the cycle right after such an instruction writes to `VC` or `VD`, it compares the value from before that write, but moves the value that was written, so the result of the comparison can be wrong. Whether the two instructions issue on consecutive cycles depends on timing as well as on the instruction sequence, so software must ensure a gap of at least one cycle between them; an [`SFPNOP`](SFPNOP.md) or any unrelated Vector Unit (SFPU) instruction in between is sufficient.
