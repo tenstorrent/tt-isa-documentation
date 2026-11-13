@@ -15,6 +15,8 @@ TT_SETADC(((/* bool */ PK) << 2) +
             /* u18 */ NewValue)
 ```
 
+The high two bits of `NewValue` are `ThreadOverride`. Use of a non-zero `ThreadOverride` is `UnsupportedFunctionality` and is strongly discouraged. On both Wormhole and Blackhole, an override can corrupt the named thread's ADCs if that thread, or another override, reaches them in the same cycle; see [overriding another thread's ADCs](ADCs.md#overriding-another-threads-adcs).
+
 ## Encoding
 
 ![](../../../Diagrams/Out/Bits32_SETADC.svg)
@@ -24,7 +26,7 @@ TT_SETADC(((/* bool */ PK) << 2) +
 ```c
 uint2_t ThreadOverride = NewValue >> 16;
 if (ThreadOverride) {
-  UnsupportedFunctionality(); // Blackhole hardware behaves as below; on Wormhole, confidence in specification below is weak
+  UnsupportedFunctionality(); // Wormhole and Blackhole hardware behave as below
 }
 uint2_t WhichThread = ThreadOverride == 0 ? CurrentThread : ThreadOverride - 1;
 if (U0) ApplyTo(ADCs[WhichThread].Unpacker[0]);
