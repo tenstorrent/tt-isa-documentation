@@ -74,12 +74,12 @@ This field contains the request type and some commonly set request flags:
 |7|1|`NOC_CMD_VC_STATIC`|`true` if software dictates the class bits and buddy bit of the virtual channel number for all hops (see bits 13/14/15 of this register); `false` if the initiating NIU dynamically chooses the class bits and buddy bit for the initial hop to the router and any router along the path can dynamically flip the buddy bit|
 |8|1|`NOC_CMD_PATH_RESERVE`|For broadcast requests that are the first (or sole) request in a transaction, `true` if all routers along the path need to reserve virtual channel numbers for the transaction before any data leaves the initiating NIU, `false` otherwise; ignored for other types of request. When this is `true`, broadcasts take longer to happen, but when it is `false`, software is responsible for ensuring that its traffic patterns do not cause deadlocks<br/><br/>:warning: Due to a hardware bug, a broadcast with `NOC_CMD_PATH_RESERVE` set can lose a flit and hang the NoC if its reservation is refused at a router two or more hops past the initiating tile's router, which happens when another broadcast (with or without path reservation, from any initiator) holds the virtual channel that the reservation needs there. Whether the request is posted (`NOC_CMD_RESP_MARKED`) makes no difference. Broadcasts with `NOC_CMD_PATH_RESERVE` set to `false` are not affected, though the deadlock rule above applies to them. Software that sets `NOC_CMD_PATH_RESERVE` should keep other broadcasts off the routers that its broadcast passes through while it is in flight, e.g. by waiting for each broadcast to be acknowledged before starting another one that isn't linked to it|
 |9|1|`NOC_CMD_MEM_RD_DROP_ACK`|For outgoing write requests, `true` if the NoC Overlay does not require a notification of when the request data has finished leaving the NIU, `false` if it does require a notification|
-|10|3|Reserved|Software should always write `0` to these bits, but hardware might subsequently change them|
+|10|3|Reserved|Software should always write `0` to these bits|
 |13|1|`NOC_CMD_STATIC_VC`|When `NOC_CMD_VC_STATIC` is set, the buddy bit; ignored when `NOC_CMD_VC_STATIC` is not set|
 |14|2|`NOC_CMD_STATIC_VC`|When `NOC_CMD_VC_STATIC` is set, the class bits (which must be either `0b00` or `0b01` for unicast requests, and must be `0b10` for multicast requests); ignored when `NOC_CMD_VC_STATIC` is not set|
 |16|1|`NOC_CMD_BRCST_XY`|When `NOC_CMD_BRCST_PACKET` is set, `0` if the broadcast should use [X as the major axis](RoutingPaths.md#broadcast-routes-x-as-major-axis), or `1` if it should use [Y as the major axis](RoutingPaths.md#broadcast-routes-y-as-major-axis); ignored in other cases|
 |17|1|`NOC_CMD_BRCST_SRC_INCLUDE`|When `NOC_CMD_BRCST_PACKET` is set and the initiating NIU is part of the recipient rectangle, `true` if the NIU should indeed be a recipient of the packet, or `false` if the initiating NIU should be excluded from the recipient rectangle; ignored in other cases<br/><br/>:warning: A broadcast whose rectangle contains only the initiating tile never completes unless `NOC_CMD_BRCST_SRC_INCLUDE` is `true` and `NOC_CMD_PATH_RESERVE` is `false`: nothing is written, no acknowledgement comes back, and every later broadcast from the same NIU (posted or not) stays stuck behind it. Unicast requests from that NIU, and requests from other tiles to that tile, still work, but if `NOC_CMD_PATH_RESERVE` was also `true`, other tiles' path-reserving broadcasts through that tile's router can get stuck too. Software must not initiate such a broadcast; a request that should only reach the initiating tile can be a unicast write to itself instead.|
-|18|9|Reserved|Software should always write `0` to these bits, but hardware might subsequently change them|
+|18|9|Reserved|Software should always write `0` to these bits|
 |27|4|`NOC_CMD_ARB_PRIORITY`|When set to value `i`, if this request is at a router and contending for virtual channel number assignment against some other request, and that other request has priority `j`, then this request will always have priority if `0 < j < i`. When set to a value other than `0`, software is responsible for ensuring that its traffic patterns do not cause deadlocks|
 |31|1|`NOC_CMD_L1_ACC_AT_EN`|For read requests and write requests, `true` if the request's eventual L1 write should be an atomic accumulate rather than a plain write<br/><br/>:warning: Due to a hardware bug, this functionality cannot be safely used, meaning that this bit should always be set to `false`|
 
@@ -112,7 +112,7 @@ For unicast request packets, and all types of response packet, the `HI` bits con
 |0|6|[X coordinate](Coordinates.md)|
 |6|6|[Y coordinate](Coordinates.md)|
 |12|12|Reserved (do not affect the request or response in any way)|
-|24|8|Reserved (ignored by hardware)|
+|24|8|Reserved (ignored by hardware, and not stored: these bits always read as zero)|
 
 For broadcast request packets (which are allowed for atomic requests and write requests), the `HI` bits instead contain:
 
@@ -122,7 +122,7 @@ For broadcast request packets (which are allowed for atomic requests and write r
 |6|6|[EndY coordinate](Coordinates.md)|
 |12|6|[StartX coordinate](Coordinates.md)|
 |18|6|[StartY coordinate](Coordinates.md)|
-|24|8|Reserved (ignored by hardware)|
+|24|8|Reserved (ignored by hardware, and not stored: these bits always read as zero)|
 
 When `StartX ≤ EndX`, the X span of the broadcast is all `x` such that `StartX ≤ x ≤ EndX`. When `StartX > EndX`, the X span of the broadcast is all `x` such that `x ≤ EndX || StartX ≤ x`. Similarly, when `StartY ≤ EndY`, the Y span of the broadcast is all `y` such that `StartY ≤ y ≤ EndY`, and when `StartY > EndY`, the Y span of the broadcast is all `y` such that `y ≤ EndY || StartY ≤ y`. The broadcast rectangle is then the product of the X span and the Y span. Note that individual NIUs can opt out of receiving broadcast packets, and firmware will configure things such that all NIUs are opted out, other than those in Tensix tiles (some products contain Tensix tiles which are fused off for yield reasons, and any such tiles will also be opted out). When [coordinate translation](Coordinates.md#coordinate-translation) is enabled, all four of `StartX` / `EndX` / `StartY` / `EndY` will be translated to NoC coordinates, and _then_ the X / Y spans determined.
 
@@ -160,10 +160,11 @@ This field contains some uncommonly set request flags:
 Software instructs the NIU to initiate a NoC request by writing details of the request to the _other_ fields of the initiator, and then writing to `NOC_CMD_CTRL` with the low bit set. This will immediately cause the NIU to:
 * Increment the `NIU_MST_REQS_OUTSTANDING_ID` and `NIU_MST_WRITE_REQS_OUTGOING_ID` [counters](Counters.md), if appropriate for the configured request.
 * If coordinate translation is enabled, apply coordinate translation to the X and Y coordinates in `NOC_TARG_ADDR_HI` and `NOC_RET_ADDR_HI` and use the resultant coordinates for the request (at this point Wormhole would also write the translated coordinates back to the MMIO registers, but Blackhole does not: the registers retain the original values provided by software).
-* Write values to some of the reserved fields within `NOC_CTRL`.
 * Append the initiator to an internal queue of initiators waiting to have a virtual channel number assigned to them.
 
 If the queue referenced in the final step above has any initiators in it, then hardware will continuously try to assign a virtual channel number to the initiator at the front of the queue. Until this assignment has happened, software must not write to any fields of the initiator. Once this assignment happens, hardware will clear the low bit of `NOC_CMD_CTRL`, at which point software is free to reconfigure the initiator again and instruct another request through it. Given all this, it is recommended that software always checks the low bit of `NOC_CMD_CTRL` before writing to any fields of the initiator.
+
+Initiating a request changes none of the initiator's other fields, whether or not the request FIFOs are enabled: reading any of them returns the value software last wrote to it, so software can save an initiator's fields and later restore them. Of each field's 32 bits, `NOC_TARG_ADDR_HI`, `NOC_RET_ADDR_HI` and `NOC_BRCST_EXCLUDE` store the low 24 and `NOC_PACKET_TAG` the low 16; the rest always read as zero.
 
 The above is the behavior with the request FIFOs disabled (bit 16 of [`NIU_CFG_0`](#niu_cfg_0) clear, the default). With them enabled, writes to `NOC_CMD_CTRL` instead go through a FIFO; see [NIU request FIFOs](#niu-request-fifos).
 
