@@ -28,14 +28,16 @@ if (WhichUnpacker == 0) {
     ImpliedSrcAFmt[Unpackers[0].SrcBank] = ConfigState.THCON_SEC[0].REG2_Out_data_format;
   }
   Unpackers[0].SrcBank ^= 1;
-  Unpackers[0].SrcRow[CurrentThread] = ThreadConfig[CurrentThread].SRCA_SET_Base << 4;
+  uint2_t T = TTArchitecture == Wormhole ? Unpackers[0].WriteThread : CurrentThread; // See SrcASrcB.md
+  Unpackers[0].SrcRow[T] = ThreadConfig[T].SRCA_SET_Base << 4;
 } else {
   SrcB[Unpackers[1].SrcBank].AllowedClient = SrcClient::MatrixUnit;
   if (TTArchitecture == Blackhole) {
     ImpliedSrcBFmt[Unpackers[1].SrcBank] = ConfigState.THCON_SEC[1].REG2_Out_data_format;
   }
   Unpackers[1].SrcBank ^= 1;
-  Unpackers[1].SrcRow[CurrentThread] = ThreadConfig[CurrentThread].SRCB_SET_Base << 4;
+  uint2_t T = TTArchitecture == Wormhole ? Unpackers[1].WriteThread : CurrentThread; // See SrcASrcB.md
+  Unpackers[1].SrcRow[T] = ThreadConfig[T].SRCB_SET_Base << 4;
 }
 ```
 

@@ -562,6 +562,9 @@ uint6_t SrcRowBase = (WhichUnpacker ? ThreadConfig[CurrentThread].SRCB_SET_Base 
 if (WhichUnpacker == 0) {
   Unpackers[0].WroteDst = UnpackToDst;
 }
+if (TTArchitecture == Wormhole) {
+  CurrentUnpacker.WriteThread = CurrentThread; // See SrcASrcB.md
+}
 if (FlipSrc) {
   if (WhichUnpacker == 0 && Unpackers[0].WroteDst) {
     UndefinedBehavior(); // Hardware bug; see Unpackers[0].WroteDst in SrcASrcB.md

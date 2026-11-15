@@ -28,6 +28,16 @@ Unpacker 0 also remembers whether the most recent [`UNPACR`](UNPACR_Regular.md) 
 bool Unpackers[0]::WroteDst = false;
 ```
 
+Each Unpacker has a row pointer per thread, which [`UNPACR`](UNPACR_Regular.md) adds to the row it writes in `SrcB` (and in `SrcA` when `SRCA_SET_SetOvrdWithAddr` is clear), and on Wormhole it remembers which thread's `UNPACR` most recently wrote datums through it:
+```c
+uint6_t Unpackers[0]::SrcRow[3] = {0, 0, 0}; // Indexed by thread
+uint6_t Unpackers[1]::SrcRow[3] = {0, 0, 0};
+uint2_t Unpackers[0]::WriteThread = 0; // Wormhole
+uint2_t Unpackers[1]::WriteThread = 0;
+```
+
+When a bank is given to the Matrix Unit, by `UNPACR` with `FlipSrc`, by the set-dvalid form of [`UNPACR_NOP`](UNPACR_NOP_SETDVALID.md) or by [`SETDVALID`](SETDVALID.md), the row pointer that goes back to `SRCA_SET_Base` or `SRCB_SET_Base` (times 16) is, on Wormhole, that of `WriteThread`, read from `WriteThread`'s `ThreadConfig`, whichever thread gives the bank. For `UNPACR` with `FlipSrc` that is the issuing thread; for `UNPACR_NOP` or `SETDVALID` issued by a thread other than the one that last unpacked, the issuing thread's own row pointer is left as it is. This matters only when a thread's `SRCA_SET_Base` or `SRCB_SET_Base` is nonzero.
+
 ### Hardware bug: giving `SrcA` to the Matrix Unit after an `UNPACR` to `Dst`
 
 On both Wormhole and Blackhole, while `Unpackers[0].WroteDst` is `true`, giving a `SrcA` bank to the Matrix Unit (FPU) is `UndefinedBehavior` if it is done by any of:

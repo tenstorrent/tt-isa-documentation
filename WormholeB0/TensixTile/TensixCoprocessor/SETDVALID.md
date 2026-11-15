@@ -34,7 +34,8 @@ if (FlipSrcA) {
     ImpliedSrcAFmt[Unpackers[0].SrcBank] = UnpredictableValue();
   }
   Unpackers[0].SrcBank ^= 1;
-  Unpackers[0].SrcRow[CurrentThread] = ThreadConfig[CurrentThread].SRCA_SET_Base << 4;
+  uint2_t T = TTArchitecture == Wormhole ? Unpackers[0].WriteThread : CurrentThread; // See SrcASrcB.md
+  Unpackers[0].SrcRow[T] = ThreadConfig[T].SRCA_SET_Base << 4;
 }
 if (FlipSrcB) {
   SrcB[Unpackers[1].SrcBank].AllowedClient = SrcClient::MatrixUnit;
@@ -42,6 +43,11 @@ if (FlipSrcB) {
     ImpliedSrcBFmt[Unpackers[1].SrcBank] = UnpredictableValue();
   }
   Unpackers[1].SrcBank ^= 1;
-  Unpackers[1].SrcRow[CurrentThread] = ThreadConfig[CurrentThread].SRCB_SET_Base << 4;
+  uint2_t T = TTArchitecture == Wormhole ? Unpackers[1].WriteThread : CurrentThread; // See SrcASrcB.md
+  Unpackers[1].SrcRow[T] = ThreadConfig[T].SRCB_SET_Base << 4;
 }
 ```
+
+## Instruction scheduling
+
+`SETDVALID` doesn't wait for anything: not at the Wait Gate for `AllowedClient == SrcClient::Unpackers`, and not for earlier [`UNPACR`](UNPACR_Regular.md) instructions to finish writing, not even the issuing thread's own. If an `UNPACR` to the bank is still writing when `SETDVALID` executes, the bank is given to the Matrix Unit with only the datums written so far. Software should put a [`STALLWAIT`](STALLWAIT.md) with block bit B0 and condition C1 (for `SrcA`) or C2 (for `SrcB`) between its last `UNPACR` and `SETDVALID`; C1 and C2 only see the current thread's instructions, so when another thread does the unpacking, synchronize with that thread instead.
