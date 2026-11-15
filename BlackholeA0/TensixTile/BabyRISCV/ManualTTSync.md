@@ -35,6 +35,8 @@ return undefined;
 ```
 Note that the `wait` in the above happens _within_ the memory subsystem; it doesn't _by itself_ block execution of subsequent RISCV instructions. Use the instruction sequence at the top of this page to block execution of subsequent RISCV instructions.
 
+A wait instruction latched at thread i's Wait Gate (by [`STALLWAIT`](../TensixCoprocessor/STALLWAIT.md) or [`SEMWAIT`](../TensixCoprocessor/SEMWAIT.md)) is not an in-flight instruction: once it has been latched, it is only the instructions behind it that count. If nothing has been pushed behind the wait, a load from `CoprocessorDoneCheck` can therefore return while the wait is still latched (for example, while a `SEMWAIT` is waiting for some other thread or RISCV to change a semaphore), and the wait stays latched afterwards, blocking whatever RISCV T<sub>i</sub> pushes next. To wait for the condition itself, push an instruction that the wait blocks before the load.
+
 Per the usual [RISCV memory ordering](MemoryOrdering.md) rules, a small amount of reordering can occur between loads and stores, which becomes relevant if performing a store to push a Tensix instruction to the coprocessor, followed shortly thereafter by a load from `CoprocessorDoneCheck` to wait for completion of that instruction. To prevent this undesirable reordering, software should store a value to `CoprocessorDoneCheck` prior to loading from `CoprocessorDoneCheck`, as is done in the instruction sequence at the top of this page (the stored value is irrelevant and will be discarded; the only effect of the store is to enforce ordering between earlier stores and the subsequent load).
 
 ## `MOPExpanderDoneCheck`
