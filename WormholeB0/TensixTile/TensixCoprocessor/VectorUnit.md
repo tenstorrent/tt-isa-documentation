@@ -169,4 +169,24 @@ uint32_t AdvancePRNG(unsigned Lane) {
 }
 ```
 
+Writing to `Config.PRNG_SEED_Seed_Val_ADDR32` (see [backend configuration](BackendConfiguration.md#special-cases)) seeds every lane's PRNG, though each lane ends up with a different state:
+
+```c
+void SeedPRNGs(uint32_t Seed) {
+  for (unsigned Lane = 0; Lane < 32; ++Lane) {
+    unsigned Steps = 96 - 16 * (Lane / 8) - 2 * (Lane % 8);
+    uint32_t S = Seed;
+    for (unsigned i = 0; i < Steps; ++i) {
+      uint32_t Taps = __builtin_popcount(S & 0x80200003);
+      S = (~Taps << 31) | (S >> 1);
+    }
+    State[Lane] = S;
+  }
+}
+```
+
+The seeding is not instantaneous: the hardware hands out the lanes' seeds one at a time, lane 31 first, almost at once, and lane 0 last, about 64 cycles after the write. Until a lane's seed arrives, `AdvancePRNG` returns values from that lane's old state, and the seed then replaces whatever state that left, so software must wait at least 100 cycles after writing `PRNG_SEED_Seed_Val` before any instruction that uses the PRNG. The same write also seeds the PRNGs used for stochastic rounding outside the Vector Unit, later in the same sweep; writing `PRNG_SEED_Seed_Val` again within about 250 cycles of the previous write leaves every PRNG's state as an `UnpredictableValue()`.
+
+On Wormhole, a lane takes its seed only if the Vector Unit's clock is running when the lane's turn comes, and the seeding does not start that clock. While Tensix clock gating (`CG_CTRL_EN`) is enabled and the Vector Unit is idle, the gated clock is stopped, so lanes whose turn comes then keep their old state: with the Vector Unit idle throughout, no lane is seeded at all, at any hysteresis. To seed every lane, software should either disable clock gating of the Vector Unit for the duration, or keep the Vector Unit busy with a dense stream of instructions from the write until the seeding is done (for example, writing `PRNG_SEED_Seed_Val` and then issuing 600 consecutive `SFPNOP` instructions from the same thread). Sparser streams seed only the lanes whose turn happens to come while the clock runs.
+
 The statistical properties of this PRNG are poor, so software is encouraged to build its own PRNG if high quality randomness is required.
