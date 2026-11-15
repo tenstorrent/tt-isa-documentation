@@ -45,6 +45,8 @@ Various counters are incremented (or occasionally decremented) at various points
 > [!NOTE]
 > When the [NIU request FIFOs](MemoryMap.md#niu-request-fifos) are enabled, the increments described below as happening "as software writes to `NOC_CMD_CTRL`" instead happen as the request leaves its FIFO and is initiated, which can be much later. Requests still waiting in a FIFO are not included in any counter.
 
+The counters described below as incremented "by the number of data flits" count the 64-byte-aligned blocks spanned by the packet's data at its destination: a packet of `n` bytes destined for address `a` (its `NOC_RET_ADDR`, for both reads and writes) has `ceil(((a % 64) + n) / 64.)` data flits, so a 100-byte packet has 2 or 3 data flits depending on `a`.
+
 ## Atomic requests
 
 At the initiating NIU, as software writes to `NOC_CMD_CTRL`:
@@ -108,6 +110,7 @@ At the initiating NIU, as the virtual channel number for the first hop from the 
 * Revert the relevant `NOC_CMD_CTRL` back to `0`.
 
 At each `NOC_TARG_ADDR` NIU, as the request arrives at the NIU:
+* Increment `NIU_SLV_REQ_ACCEPTED`.
 * If `NOC_CMD_RESP_MARKED` is set, increment `NIU_SLV_NONPOSTED_WR_REQ_STARTED` and `NIU_SLV_NONPOSTED_WR_REQ_RECEIVED` and `NIU_SLV_NONPOSTED_WR_DATA_WORD_RECEIVED`. Otherwise increment `NIU_SLV_POSTED_WR_REQ_STARTED` and `NIU_SLV_POSTED_WR_REQ_RECEIVED` and `NIU_SLV_POSTED_WR_DATA_WORD_RECEIVED`.
 
 **Remainder only if `NOC_CMD_RESP_MARKED` is set:**
@@ -137,6 +140,7 @@ At the initiating NIU, after the data reads from L1 or register space are comple
 * Decrement `NIU_MST_WRITE_REQS_OUTGOING_ID(NOC_PACKET_TRANSACTION_ID)` by one.
 
 At each `NOC_RET_ADDR` NIU, as the request arrives at the NIU:
+* Increment `NIU_SLV_REQ_ACCEPTED`.
 * If `NOC_CMD_RESP_MARKED` is set, increment `NIU_SLV_NONPOSTED_WR_REQ_STARTED`. Otherwise increment `NIU_SLV_POSTED_WR_REQ_STARTED`.
 
 At each `NOC_RET_ADDR` NIU, as each data flit arrives at the NIU:
