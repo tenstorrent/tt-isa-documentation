@@ -152,6 +152,16 @@ At `NOC_TARG_ADDR` NIU, for each received write acknowledgement, as the packet a
 * Increment `NIU_MST_WR_ACK_RECEIVED`.
 * Decrement `NIU_MST_REQS_OUTSTANDING_ID(NOC_PACKET_TRANSACTION_ID)`.
 
+## Broadcast write requests
+
+A broadcast write request (`NOC_CMD_BRCST_PACKET`) counts at the initiating NIU as a write request does (above): the increments made as software writes to `NOC_CMD_CTRL`, as the virtual channel is assigned, and as the request leaves are made once per request packet, not once per recipient. The steps at each `NOC_RET_ADDR` NIU happen at each tile in the rectangle that [receives the broadcast](README.md#broadcast-receivers) (the initiating tile excluded unless `NOC_CMD_BRCST_SRC_INCLUDE` is set), and nowhere else; so if `NOC_CMD_RESP_MARKED` is set, each receiving tile sends one write acknowledgement per request packet, and for each of them the initiating NIU increments `NIU_MST_WR_ACK_RECEIVED` and decrements `NIU_MST_REQS_OUTSTANDING_ID(NOC_PACKET_TRANSACTION_ID)`. For a non-posted broadcast of `NOC_AT_LEN_BE` bytes to `N` receiving tiles, with `P = max(1, ceil(NOC_AT_LEN_BE / 16384.))` request packets:
+* `NIU_MST_WR_ACK_RECEIVED` increases by `P × N` in all.
+* `NIU_MST_REQS_OUTSTANDING_ID(NOC_PACKET_TRANSACTION_ID)` increases by `P` as software writes to `NOC_CMD_CTRL` and decreases by `P × N` as the acknowledgements arrive, so with more than one receiving tile it ends below where it started, wrapping modulo 256.
+
+So the way to wait for a non-posted broadcast to complete is to wait for `NIU_MST_WR_ACK_RECEIVED` to reach its value from before the request plus `P × N`, where `N` counts only the tiles that receive (tiles opted out by the broadcast masks, such as DRAM tiles and fused-off Tensix tiles in the rectangle, send nothing). `NIU_MST_REQS_OUTSTANDING_ID` of a transaction ID that a broadcast used doesn't return to zero, so waiting for it to reach zero is wrong until it is [cleared](#clear-niu-transaction-id-counters). A posted broadcast increments none of these counters and returns no acknowledgements.
+
+For example, a Tensix tile at (1, 2) sends a non-posted 2048-byte broadcast write on NoC #0 (coordinate translation off) with transaction ID 3 to the rectangle from (0, 3) to (1, 6), which holds four DRAM tiles in column 0 and four Tensix tiles in column 1. With the masks firmware sets, column 0 is opted out, so `N = 4` and `P = 1`: the four Tensix tiles receive the data, `NIU_MST_WR_ACK_RECEIVED` increases by 4, and `NIU_MST_REQS_OUTSTANDING_ID(3)` goes from 0 to 1 and then to `0xFD`. Three such requests on ID 3 increase `NIU_MST_WR_ACK_RECEIVED` by 12 and take `NIU_MST_REQS_OUTSTANDING_ID(3)` from 0 to `0xF7`. If the column 0 mask bits were cleared, the four DRAM tiles would also write the data to GDDR6 and acknowledge: `N = 8`, and one request takes `NIU_MST_REQS_OUTSTANDING_ID(3)` from 0 to `0xF9`.
+
 ## Clear NIU transaction ID counters
 
 If software writes the value `new_val` to `NIU_BASE + 0x0060`, then the following happens:
@@ -165,7 +175,7 @@ for (unsigned i = 0; i < 16; ++i) {
 
 There are a few reasons why software might wish to clear counters in this manner:
 1. It is performing a NoC transaction where the read response or write acknowledgement is sent to an NIU other than the originating NIU, as this will cause counter increments at the originating NIU, but counter decrements at the other NIU, leaving both NIUs with non-zero counters.
-2. It is performing a NoC transaction with both `NOC_CMD_BRCST_PACKET` and `NOC_CMD_RESP_MARKED` set, as this will cause one counter increment when the request is initiated, but a counter decrement for _every_ response received, likely leaving the counter non-zero.
+2. It is performing a NoC transaction with both `NOC_CMD_BRCST_PACKET` and `NOC_CMD_RESP_MARKED` set, as this will cause one counter increment per request packet when the request is initiated, but a counter decrement for _every_ acknowledgement received, one per request packet from every receiving tile, leaving the counter non-zero whenever more than one tile receives (see [broadcast write requests](#broadcast-write-requests)).
 
 ## Automatic request splitting
 

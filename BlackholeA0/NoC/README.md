@@ -29,11 +29,11 @@ There are various types of request packet:
   * When length ≤ 64 bytes: can write any arbitrary subset of the 64 bytes (otherwise needs to be contiguous span)
   * Optionally posted (i.e. receiver does _not_ send an acknowledgement packet in response once the write completes)
     * Optionally with first 128b of data stored to two separate addresses in receiver's L1
-  * Optionally broadcast to a rectangle of multiple receivers (though if so, receivers can only be Tensix tiles)
+  * Optionally broadcast to a rectangle of multiple receivers (see [broadcast receivers](#broadcast-receivers) for which tiles in the rectangle receive)
   * Optionally have NoC overlay in receiver tile(s) notified of the write
 * [**Atomic**](Atomics.md): Data is 32b immediate or two 4b immediates, acting on 128b in receiver's [L1](../../WormholeB0/TensixTile/L1.md#atomics), 32b result delivered back to (usually) initiator's L1
   * Optionally posted (i.e. receiver does _not_ send a response packet containing acknowledgement and 32b of data)
-  * Optionally broadcast to a rectangle of multiple receivers (though if so, receivers can only be Tensix tiles)
+  * Optionally broadcast to a rectangle of multiple receivers (see [broadcast receivers](#broadcast-receivers) for which tiles in the rectangle receive)
 
 NoC hardware ensures deadlock freedom for most common types of transaction; however, software becomes partially responsible for this when certain advanced features are used:
   * Transactions containing more than one request packet (c.f. `NOC_CMD_VC_LINKED`)
@@ -42,6 +42,16 @@ NoC hardware ensures deadlock freedom for most common types of transaction; howe
 
 > [!TIP]
 > Compared to Wormhole, some of the major upgrades to the NoC in Blackhole are: higher clock speed (1 GHz → 1.35 GHz), doubling of bandwidth per clock cycle (256 bits per flit → 512 bits per flit), and widening of addresses (36 bits → 64 bits). An unfortunate regression means that `NOC_CMD_WR_INLINE` can no longer safely be used to write to L1 addresses.
+
+## Broadcast receivers
+
+A broadcast's rectangle can include tiles of any type. Each router decides, for the tile it is attached to, whether to pass the broadcast to that tile's NIU: it does not if the tile's X coordinate is set in that router's [`ROUTER_CFG_1`](MemoryMap.md#router_cfg_1) or its Y coordinate in that router's [`ROUTER_CFG_3`](MemoryMap.md#router_cfg_3) (coordinates in that NoC's own coordinate space). A tile that is opted out in this way neither writes the data nor sends an acknowledgement, and the broadcast completes without it; its router still forwards the broadcast through the tile, so the broadcast's tree, and with `NOC_CMD_PATH_RESERVE` its path reservation, still covers it. A tile in the rectangle that is not opted out receives the broadcast whatever kind of tile it is: with the masks cleared, a DRAM tile in the rectangle writes the data to GDDR6 and, for a non-posted broadcast, acknowledges it.
+
+Firmware sets the same masks at every router on both NoCs so that only Tensix tiles receive broadcasts: the DRAM columns and the column of the L2CPU, security and ARC tiles, the Ethernet row and the PCI Express row, and every fused-off (harvested) Tensix column. Firmware also turns a fused-off Tensix tile's clock off ([`NIU_CFG_0`](MemoryMap.md#niu_cfg_0) bit 12). A tile whose clock is off but which is not opted out stalls any broadcast whose rectangle holds it: every recipient gets part of the data and the broadcast never completes, with or without path reservation. So a rectangle may span DRAM, L2CPU, Ethernet, PCI Express and fused-off columns as long as their mask bits stay set, and software that changes these masks must keep them set.
+
+With coordinate translation enabled, fused-off Tensix columns are moved to the end of the translated range, but a rectangle is a range of NoC coordinates, so one that spans translated columns either side of a fused-off column still covers that column on the die; the masks are what keep it silent.
+
+The number of tiles that receive a non-posted broadcast is the number of acknowledgements it returns, which is what software must count to know it has completed: see [counters](Counters.md#broadcast-write-requests). Broadcasts with `NOC_CMD_PATH_RESERVE` have a further rule: while one is in flight, it must be the only broadcast passing through each router of its tree on that NoC (see the warning at [`NOC_CMD_PATH_RESERVE`](MemoryMap.md#noc_ctrl)).
 
 ## Virtual channels
 
