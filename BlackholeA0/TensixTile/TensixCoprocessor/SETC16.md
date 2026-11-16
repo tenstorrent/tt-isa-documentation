@@ -40,6 +40,8 @@ Note that `CfgIndex` values line up exactly with the `Name_ADDR32` constants in 
 
 ## Instruction scheduling
 
+Matrix Unit (FPU) and Vector Unit (SFPU) instructions read `DEST_TARGET_REG_CFG_MATH_Offset` and `ADDR_MOD_DST_SEC[i]` as they leave the issuing thread, so a `SETC16` of these fields needs no `STALLWAIT` before or after it: instructions ahead of the `SETC16` in the thread's instruction stream use the old value, even while they are still executing, and the instruction right after it uses the new value.
+
 When `CfgIndex == CFG_STATE_ID_StateID_ADDR32`, some scheduling restrictions apply to work around hardware bugs in Auto TTSync:
 1. After coming out of reset, `TT_SETC16(CFG_STATE_ID_StateID_ADDR32, x)` needs to be executed for _some_ `x`.
 2. The RISCV frontend can fuse together up to four adjacent `.ttinsn` instructions. If any instruction within a fused bundle is `TT_SETC16(CFG_STATE_ID_StateID_ADDR32, x)`, software must ensure that any instructions after it in the bundle do not depend upon the value `x`.

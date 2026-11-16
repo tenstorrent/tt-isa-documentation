@@ -34,3 +34,7 @@ ThreadConfig[CurrentThread][CfgIndex].Value = NewValue;
 ```
 
 Note that `CfgIndex` values line up exactly with the `Name_ADDR32` constants in `cfg_defines.h`, but only for the `// Registers for THREAD` section of `cfg_defines.h` (use [`WRCFG`](WRCFG.md) for all other sections of `cfg_defines.h`).
+
+## Instruction scheduling
+
+Matrix Unit (FPU) and Vector Unit (SFPU) instructions read `DEST_TARGET_REG_CFG_MATH_Offset` and `ADDR_MOD_DST_SEC[i]` as they leave the issuing thread, so a `SETC16` of these fields needs no `STALLWAIT` before or after it: instructions ahead of the `SETC16` in the thread's instruction stream use the old value, even while they are still executing, and the instruction right after it uses the new value.
