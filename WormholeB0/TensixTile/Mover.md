@@ -22,7 +22,7 @@ void Mover(uint32_t dst, uint32_t src, uint32_t count, uint32_t mode) {
     // In the "_TO_L0" modes, dst can refer to either Tensix Backend Configuration or Instruction RAM.
     if (dst <= 0xffff) dst += TENSIX_CFG_BASE;
     else if (0x40000 <= dst && dst <= 0x4ffff) dst = (dst - 0x40000) + MEM_NCRISC_IRAM_BASE;
-    else dst = NOWHERE; // Operation still happens, but the writes get discarded.
+    else UndefinedBehavior(); // E.g. the mover can stay busy forever.
 
     if ((dst & 0xffff) + count > 0x10000) {
       UndefinedBehavior(); // Don't even think about trying to access more than one region at a time.
