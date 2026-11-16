@@ -195,7 +195,7 @@ SrcB[1].AllowedClient = SrcClient::Unpackers;
 <table><thead><tr><th/><th>Value when coming out of soft reset (all lanes)</th></tr></thead>
 <tr><th><code>LReg[0]</code><br/>...<br/><code>LReg[7]</code></th><td>Zero</td></tr>
 <tr><th><code>LReg[11]</code></th><td><code>-1.0</code> (FP32 format)</td></tr>
-<tr><th><code>LReg[12]</code></th><td><code>1.0/65536</code> (FP32 format)</td></tr>
+<tr><th><code>LReg[12]</code></th><td><code>1.0/512</code> (FP32 format)</td></tr>
 <tr><th><code>LReg[13]</code></th><td><code>-0.67487759</code> (FP32 format)</td></tr>
 <tr><th><code>LReg[14]</code></th><td><code>-0.34484843</code> (FP32 format)</td></tr>
 <tr><th><code>LReg[16]</code></th><td>Zero</td></tr></table>
