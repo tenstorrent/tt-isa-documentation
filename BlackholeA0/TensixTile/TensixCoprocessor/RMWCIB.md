@@ -38,6 +38,10 @@ atomic {
 
 Note that `CfgAddress` values line up exactly with the `Name_ADDR32` constants in `cfg_defines.h`, though be aware that the `// Registers for THREAD` section of `cfg_defines.h` is for indexing into `ThreadConfig` rather than `Config` (see [`SETC16`](SETC16.md) for that).
 
+## Instruction scheduling
+
+Matrix Unit (FPU) instructions take `ALU_ACC_CTRL_Zero_Flag_disabled_src` from the configuration as they are issued, so changing it with `RMWCIB` needs no `STALLWAIT` before or after: Matrix Unit instructions ahead of the `RMWCIB` in the thread's instruction stream use the old value, even while they wait behind earlier Matrix Unit work or for their `SrcA` / `SrcB` bank, and the instruction right after it uses the new value.
+
 ## Performance
 
 This instruction executes in a single cycle, though if the Configuration Unit is busy with other instructions, it might have to wait at the Wait Gate until the Configuration Unit can accept it.
