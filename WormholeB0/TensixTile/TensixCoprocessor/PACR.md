@@ -32,7 +32,7 @@ The `PackerMask` field determines which of the four packers are being instructed
 |`0b0011`|Issue work to packers 0 and 1|
 |`0b1100`|Issue work to packers 2 and 3; `UnsupportedFunctionality`|
 |`0b1111`|Issue work to all four packers|
-|Any other value|Undefined; will issue work to _at least_ one of the packers in the mask, but other bits of the mask _might_ be ignored|
+|Any other value|`UnsupportedFunctionality`|
 
 The issued work will start at the packers' [input address generator](Packers/InputAddressGenerator.md), work through the various [packer pipeline stages](Packers/README.md), and eventually reach the [output address generator](Packers/OutputAddressGenerator.md). The fields of the instruction are used at various stages:
 * `AddrMod`: used by the input address generator and the output address generator to manipulate ADC Y/Z values in preparation for the _next_ `PACR` instruction.
