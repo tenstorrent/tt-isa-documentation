@@ -38,3 +38,5 @@ Note that `CfgIndex` values line up exactly with the `Name_ADDR32` constants in 
 ## Instruction scheduling
 
 Matrix Unit (FPU) and Vector Unit (SFPU) instructions read `DEST_TARGET_REG_CFG_MATH_Offset` and `ADDR_MOD_DST_SEC[i]` as they leave the issuing thread, so a `SETC16` of these fields needs no `STALLWAIT` before or after it: instructions ahead of the `SETC16` in the thread's instruction stream use the old value, even while they are still executing, and the instruction right after it uses the new value.
+
+`CFG_STATE_ID_StateID` is different: a Matrix Unit (FPU) instruction picks its `Config` bank by the thread's `CFG_STATE_ID_StateID` when it starts executing, not when it is issued, so if the Matrix Unit instruction just before a `SETC16` of `CFG_STATE_ID_StateID` is still waiting behind earlier Matrix Unit work, it uses the configuration (data formats, `ALU_ACC_CTRL_Fp32_enabled` and so on) of the bank the `SETC16` selects. To switch banks without affecting instructions already issued, first use `STALLWAIT` with block B7 and conditions C7 and C14.
