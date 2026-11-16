@@ -158,6 +158,8 @@ At least three unrelated Tensix instructions need to execute after a Matrix Unit
 
 If scheduling Vector Unit (SFPU) instructions for future execution, software should ensure that it doesn't subsequently issue a regular Vector Unit (SFPU) instruction to the same sub-unit for the same cycle.
 
+A scheduled `SFPSTORE` is protected from the other clients of `Dst` for only seven cycles after the `SFPLOADMACRO`, so a store with a delay of 5 or more cycles, or one whose delay counts instructions, can meet a Matrix Unit (FPU) instruction or an unpack in the same half of `Dst`; see [`Dst`](Dst.md#instruction-scheduling) for what then happens and how far apart to keep them.
+
 The automatic stalling described in [`SFPMAD`](SFPMAD.md#instruction-scheduling) does not apply to instructions scheduled via `SFPLOADMACRO`: if an instruction in the MAD column writes an `LReg` (or `LReg[16]`), an instruction which reads that `LReg` on the very next cycle will observe its old value, if either of the two instructions was scheduled via `SFPLOADMACRO`. Software should ensure that at least one cycle separates them.
 
 If [`SFPCONFIG`](SFPCONFIG.md) is used to change `LoadMacroConfig.Sequence` or `LoadMacroConfig.Misc`, and the very next Vector Unit (SFPU) instruction is `SFPLOADMACRO`, then that `SFPLOADMACRO` might observe either the old value or the new value. Similarly, if `SFPCONFIG` is used to change `LoadMacroConfig.InstructionTemplate[i]`, an instruction scheduled via `SFPLOADMACRO` from that template which executes on the very next cycle might be either the old or the new instruction. In both cases, software should insert an [`SFPNOP`](SFPNOP.md) instruction immediately after `SFPCONFIG`.
