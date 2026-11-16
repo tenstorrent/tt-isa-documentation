@@ -83,6 +83,12 @@ If two clients are interacting through L1, and those two clients go through diff
 
 If two clients are interacting through a memory region _other_ than L1, then each client will be emitting its own stream of read/write requests against that region, and those streams will be combined into a single ordered stream as they reach the memory region. Each memory region can process at most one request per cycle, allowing a strict total order for processing of all the requests targeting any given region.
 
+### Instructing the NoC
+
+A RISCV core issues a NoC write by storing to NIU registers, the last of them `NOC_CMD_CTRL`, and the NoC then reads the source bytes from L1. Those NIU stores and the core's earlier stores to the source bytes are to different memory regions, so the usual store-then-store rule applies: the write-requests are emitted in order, but the NoC can read the source bytes before an earlier store to them has been processed, and then sends their old value. This happens when that store waits at its L1 access port, for example while another RISCV core that shares the port is storing to L1. To guarantee that the NoC sends what was stored, read back the last store to the source bytes (`lw` of the same address), make use of the `lw` result, and only then store to `NOC_CMD_CTRL`.
+
+The opposite order is a race as well: a store to the source bytes after the store to `NOC_CMD_CTRL` changes what the NoC sends if the NoC hasn't yet read those bytes, which for a long write can be tens of cycles later. The NoC has read all of a write's source bytes once [`NIU_MST_WRITE_REQS_OUTGOING_ID`](../../NoC/Counters.md) for the write's transaction ID reads zero (when no other write with that ID is outstanding), or once the write's acknowledgement has arrived. `NIU_MST_NONPOSTED_WR_REQ_SENT` and `NIU_MST_POSTED_WR_REQ_SENT` count a write before its last read is complete.
+
 ## Examples of non-intuitive memory ordering
 
 ### Mailbox read from the future
