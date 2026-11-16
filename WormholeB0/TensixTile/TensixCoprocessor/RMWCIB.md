@@ -42,6 +42,8 @@ Note that `CfgIndex` values line up exactly with the `Name_ADDR32` constants in 
 
 A Matrix Unit (FPU) instruction reads `ALU_ACC_CTRL_Zero_Flag_disabled_src` when it starts executing, not when it is issued, so if it is still waiting behind earlier Matrix Unit work, an `RMWCIB` of the flag issued after it can change how it treats `SrcA` and `SrcB` datums whose exponent is zero. To change the flag without affecting instructions already issued, first use `STALLWAIT` with block B7 and conditions C7 and C14. The instruction right after the `RMWCIB` uses the new value.
 
+The `SrcA` data format (`ALU_FORMAT_SPEC_REG0_SrcA`, or `ALU_FORMAT_SPEC_REG_SrcA_val` when `ALU_FORMAT_SPEC_REG_SrcA_override` is set) is read the same way, so the same `STALLWAIT` is needed before an `RMWCIB` of it whenever the Matrix Unit instruction just before the `RMWCIB` might still be waiting behind earlier Matrix Unit work.
+
 ## Performance
 
 This instruction executes in a single cycle, though if the Configuration Unit is busy with other instructions, it might have to wait at the Wait Gate until the Configuration Unit can accept it.

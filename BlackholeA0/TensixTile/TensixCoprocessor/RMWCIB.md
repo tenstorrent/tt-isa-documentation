@@ -42,6 +42,8 @@ Note that `CfgAddress` values line up exactly with the `Name_ADDR32` constants i
 
 Matrix Unit (FPU) instructions take `ALU_ACC_CTRL_Zero_Flag_disabled_src` from the configuration as they are issued, so changing it with `RMWCIB` needs no `STALLWAIT` before or after: Matrix Unit instructions ahead of the `RMWCIB` in the thread's instruction stream use the old value, even while they wait behind earlier Matrix Unit work or for their `SrcA` / `SrcB` bank, and the instruction right after it uses the new value.
 
+The same holds for `ALU_FORMAT_SPEC_REG0_SrcA` (used when `DISABLE_IMPLIED_SRCA_FMT` is set) and `ALU_ACC_CTRL_Fp32_enabled`, which software changes with `RMWCIB` between `MOVD2B` / `MOVB2D` / `MOVA2D` instructions to move the high and low halves of 32-bit `Dst` datums separately: each instruction uses the values written before it in the thread's instruction stream.
+
 ## Performance
 
 This instruction executes in a single cycle, though if the Configuration Unit is busy with other instructions, it might have to wait at the Wait Gate until the Configuration Unit can accept it.
