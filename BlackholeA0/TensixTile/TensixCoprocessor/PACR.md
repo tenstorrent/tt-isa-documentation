@@ -32,7 +32,7 @@ The packer has four `Dst` read interfaces, and each enabled read interface reads
 uint4_t ReadIntfMask = CurrentInstruction.ReadIntfSel;
 if (ReadIntfMask == 0) ReadIntfMask = 0b1111; // as a special case, 0 enables all four
 if ((ReadIntfMask << (StartRow & 3)) > 0b1111) {
-  UndefinedBehavior(); // every enabled read interface has to stay within the group of four
+  UnsupportedFunctionality(); // every enabled read interface has to stay within the group of four
 }
 for (unsigned k = 0; k < 4; ++k) {
   if (ReadIntfMask & (1 << k)) {
@@ -76,7 +76,7 @@ unsigned Pos = (StartRow / Stride) & 3; // the read interface of StartRow itself
 uint4_t ReadIntfMask = CurrentInstruction.ReadIntfSel;
 if (ReadIntfMask == 0) ReadIntfMask = 0b1111;
 if ((ReadIntfMask << Pos) > 0b1111) {
-  UndefinedBehavior(); // every enabled read interface has to stay within the group of four
+  UnsupportedFunctionality(); // every enabled read interface has to stay within the group of four
 }
 for (unsigned k = 0; k < 4; ++k) {
   if (ReadIntfMask & (1 << k)) {
