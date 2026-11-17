@@ -43,6 +43,8 @@ The RISCV B read behavior is particularly interesting, as it waits for all three
 2. RISCV T<sub>i</sub> to be performing a read against <code>PC_BUF_BASE</code> and be blocked waiting due to `PCBuf[i].FIFO` being empty.
 3. Tensix T<sub>i</sub> to be idle, i.e. for the Tensix coprocessor to not have any in-flight instructions from Tensix thread T<sub>i</sub>. This is the same thing that RISCV T<sub>i</sub> can wait for via the [`CoprocessorDoneCheck` of Manual TTSync](ManualTTSync.md#coprocessordonecheck).
 
+While RISCV T<sub>i</sub> is blocked on a read of an empty PCBuf, its clock can be stopped; see [idle RISCV cores](../ClockGating.md#idle-riscv-cores).
+
 ## Memory ordering
 
 When writing to a PCBuf, it is usually the case that the programmer wants the PCBuf write-request to be processed _after_ all earlier write-requests have been processed. When reading from a PCBuf, it is usually the case that the programmer wants the PCBuf read-response to be obtained _before_ any later memory requests are emitted. Neither of these things happen by default; see [memory ordering](MemoryOrdering.md) for details on how to avoid race conditions and ensure that they do happen.

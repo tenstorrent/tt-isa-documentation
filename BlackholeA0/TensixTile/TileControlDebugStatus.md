@@ -8,3 +8,4 @@ An assortment of interesting registers exist in the address space starting at ad
 * PCBuf and TTSync configuration (`RISCV_DEBUG_REG_TRISC_PC_BUF_OVERRIDE`)
 * Debug access to the Tensix instruction FIFOs (`RISCV_DEBUG_REG_INSTRN_BUF_STATUS`, `RISCV_DEBUG_REG_INSTRN_BUF_CTRL0`, `RISCV_DEBUG_REG_INSTRN_BUF_CTRL1`)
 * Read-only debug access to Tensix backend configuration (`RISCV_DEBUG_REG_CFGREG_RD_CNTL`, `RISCV_DEBUG_REG_CFGREG_RDDATA`)
+* [Clock gating](ClockGating.md) enables and hysteresis (`RISCV_DEBUG_REG_CG_CTRL_EN`, `RISCV_DEBUG_REG_CG_CTRL_HYST0` et al., `RISCV_DEBUG_REG_DEST_CG_CTRL`)
