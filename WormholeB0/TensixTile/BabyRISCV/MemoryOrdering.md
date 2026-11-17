@@ -152,3 +152,17 @@ lw t5, 0(t2)     # Mailbox pop
 addi x0, t5, 0   # Consume the read result
 lw t3, 0x124(x0) # Random address in L1</code></pre></td></tr>
 </table>
+
+### Cross-core signalling through L1
+
+If the signal is itself a store to L1, rather than a mailbox push, no extra instructions are needed:
+<table><tr><th>RISCV B</th><th>RISCV T0</th></tr>
+<tr><td><pre><code>li t1, 123
+sw t1, 0x124(x0) # Random address in L1
+li t2, 1
+sw t2, 0x200(x0) # Flag, another address in L1</code></pre></td><td><pre><code>1: lw t5, 0x200(x0) # Poll the flag
+beqz t5, 1b
+lw t3, 0x124(x0)    # Random address in L1</code></pre></td></tr>
+</table>
+
+Both of RISCV B's write-requests are against L1, so they pass through RISCV B's L1 access port and are processed in order: the flag's write-request is held behind the value's even when the value's bank is busy and the flag's is idle. RISCV T0's read-requests are likewise both against L1 and processed in order. So once RISCV T0 reads the new flag, its read of the value is processed after RISCV B's write of it. This holds for any number of value stores before the flag store, for a flag written by a byte store, and whether or not RISCV B and RISCV T0 share an L1 access port. It relies on the value and the flag both being written by the same core's stores to L1: a flag in any other memory region (such as the mailbox above) needs the read-back shown there.

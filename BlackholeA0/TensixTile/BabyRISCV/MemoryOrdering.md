@@ -180,6 +180,20 @@ fence            # Ensure read complete, flush L0 data cache
 lw t3, 0x124(x0) # Random address in L1</code></pre></td></tr>
 </table>
 
+### Cross-core signalling through L1
+
+If the signal is itself a store to L1, rather than a mailbox push, no extra instructions are needed:
+<table><tr><th>RISCV B</th><th>RISCV T0</th></tr>
+<tr><td><pre><code>li t1, 123
+sw t1, 0x124(x0) # Random address in L1
+li t2, 1
+sw t2, 0x200(x0) # Flag, another address in L1</code></pre></td><td><pre><code>1: lw t5, 0x200(x0) # Poll the flag
+beqz t5, 1b
+lw t3, 0x124(x0)    # Random address in L1</code></pre></td></tr>
+</table>
+
+Both of RISCV B's write-requests are against L1, so they pass through RISCV B's L1 access port and are processed in order: the flag's write-request is held behind the value's even when the value's bank is busy and the flag's is idle. RISCV T0's read-requests are likewise both against L1 and processed in order. So once RISCV T0 reads the new flag, its read of the value is processed after RISCV B's write of it. This holds for any number of value stores before the flag store, for a flag written by a byte store, and whether or not RISCV B and RISCV T0 share an L1 access port. It relies on the value and the flag both being written by the same core's stores to L1: a flag in any other memory region (such as the mailbox above) needs the read-back shown there. On Blackhole, if RISCV T0's L0 data cache is enabled, the polling loop also needs a `fence` before each poll (see [L0 data cache](#l0-data-cache)), which also flushes any stale copy of the value.
+
 ### Aliasing of underlying storage
 
 The following example, when executed on RISCV T0 / T1 / T2, relies on each Tensix GPR being mapped into the address space several times (e.g. at address `X` and also at `X + 256`). It is possible for the example to finish with `t2` containing the value `0` (as written by the earlier `sw`), whereas if a `fence` is inserted just before the `lw`, it always finishes with `t2` containing the value `1` (as written by the later `sw`). The reordering is possible because the byte address ranges do not overlap, even though the eventual underlying storage _does_ overlap.
