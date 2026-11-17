@@ -93,7 +93,7 @@ if (Move8Rows) {
     // On Blackhole, the low bit of AddrMod also selects a four-row mode: in practice the move
     // copies the aligned group of four rows of SrcA to the aligned group of four rows of Dst
     // (and AddrMod still advances the RWCs).
-    UndefinedBehavior();
+    UnsupportedFunctionality();
   }
   NumRows = 1;
   DstRow &= 0x3ff;
@@ -101,7 +101,7 @@ if (Move8Rows) {
   if (SrcRow & 0x10) {
     // Erratum (Wormhole and Blackhole): in practice, SrcA rows 16 through 31 and 48 through 63 move
     // as zeros. The eight-row form is unaffected.
-    UndefinedBehavior();
+    UnsupportedFunctionality();
   }
 }
 

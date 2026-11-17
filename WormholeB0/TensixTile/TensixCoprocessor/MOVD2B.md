@@ -60,7 +60,7 @@ if (Move4Rows) {
   if (SrcRow & 3) {
     // In practice (Wormhole and Blackhole) the SrcB rows are not aligned down: the move writes SrcB rows
     // starting at SrcRow (the Dst rows are still aligned down).
-    UndefinedBehavior();
+    UnsupportedFunctionality();
   }
   NumRows = 4;
   DstRow &= 0x3fc;
