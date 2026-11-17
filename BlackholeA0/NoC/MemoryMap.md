@@ -249,19 +249,27 @@ Each NIU has a handful of configuration registers in its memory map. Some of the
 
 |First&nbsp;bit|#&nbsp;Bits|Contents|
 |--:|--:|---|
-|0|12|Reserved; software should preserve the values of these bits when modifying other bits|
-|12|1|Tile clock disable; if set to `true`, then the tile attached to the NIU will be disabled (firmware will set this to `true` for fused-off tiles)|
+|0|1|NIU clock gating enable; if set to `true`, the NIU's clock stops while the NIU is idle, and restarts when it has work to do|
+|1|11|Reserved; software should preserve the values of these bits when modifying other bits|
+|12|1|Tile clock disable; if set to `true`, then the tile attached to the NIU will be disabled (firmware will set this to `true` for fused-off tiles); see [tile clock disable](#tile-clock-disable)|
 |13|1|Double store disable; has no effect in Tensix tiles and Ethernet tiles, but if set to `true` in other types of tile, the tile will ignore the `NOC_PACKET_TAG_HEADER_STORE` flag|
 |14|1|Coordinate translation enable; if set to `true`, various other registers [define a coordinate translation scheme](Coordinates.md#coordinate-translation)|
 |15|1|AXI subordinate enable; only has an effect in DRAM tiles, where it switches the NoC-visible address space between being GDDR-based and being RISCV/L1-based|
 |16|1|Request FIFO enable; see [NIU request FIFOs](#niu-request-fifos)|
 |17|15|Available for general use|
 
+#### Tile clock disable
+
+In a Tensix tile, setting bit 12 of `NIU_CFG_0` stops the clock of the tile's RISCV cores, its Tensix coprocessor, its L1 and its NoC overlay. The NIUs and the router keep running: traffic passing through the tile's router is unaffected, and the NIUs' own registers (including `NIU_CFG_0`) can still be read and written over either NoC, so a NoC write that clears the bit turns the tile back on. Nothing is lost while the clock is off: L1 contents and the state of the RISCV cores and the coprocessor are kept, and once the bit is cleared the cores continue from where they stopped, with no reset needed.
+
+That holds only if nothing addressed the tile while its clock was off. Any other access to such a tile, i.e. to its L1 or to its RISCV-side registers (e.g. `RISCV_DEBUG_REG_WALL_CLOCK_L`), is `UndefinedBehavior`: it is never answered (no response and no error), clearing the bit doesn't complete it, and the NIU it came through can stay stuck for later requests. A read of a RISCV-side register also holds the tile's one register path for both NoCs, after which the write that would clear the bit is never processed either. A broadcast whose rectangle includes the tile never completes, and its other recipients get only part of the data, with or without path reservation; since the broadcast opt-out masks ([`ROUTER_CFG_1`](#router_cfg_1), [`ROUTER_CFG_3`](#router_cfg_3)) work per column and per row, a tile whose clock is off has to be in an opted-out column or row, or outside every rectangle that is used. See also [Security and Isolation at the System Level](../../SystemSecurity.md).
+
 ### `ROUTER_CFG_0`
 
 |First&nbsp;bit|#&nbsp;Bits|Contents|
 |--:|--:|---|
-|0|19|Reserved; software should preserve the values of these bits when modifying other bits|
+|0|1|Router clock gating enable; if set to `true`, the router's clock stops while the router is idle, and restarts when it has work to do|
+|1|18|Reserved; software should preserve the values of these bits when modifying other bits|
 |19|13|Available for general use|
 
 ### `ROUTER_CFG_1`
