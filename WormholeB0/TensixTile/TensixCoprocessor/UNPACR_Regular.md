@@ -54,9 +54,9 @@ if (MultiContextMode) {
   }
   WhichContext += ThreadConfig[CurrentThread].UNPACK_MISC_CFG_CfgContextOffset[WhichUnpacker];
   WhichADC = ContextADC;
-  if (WhichUnpacker == 1 && WhichContext >= 2) UndefinedBehavior();
+  if (WhichUnpacker == 1 && WhichContext >= 2) UnsupportedFunctionality();
   if (WhichContext >= 2) UnsupportedFunctionality(); // No known usage of contexts past 1
-  if (WhichADC == 3) UndefinedBehavior();
+  if (WhichADC == 3) UndefinedBehavior(); // There is no ADC 3: X, X end and Y come from counters that don't exist
 } else {
   WhichContext = 0;
   WhichADC = CurrentThread;
@@ -184,7 +184,7 @@ if (IsUncompressed) {
   // nibble offset held in a 14-bit field, i.e. 8192 bytes of datums.
   unsigned XLimit = 8192 / max(1., DatumSizeBytes);
   if ((XPos >= XLimit) || (XEnd > XLimit)) {
-    UndefinedBehavior(); // Hardware wraps around within the 14-bit field
+    UnsupportedFunctionality(); // Hardware wraps around within the 14-bit field
   }
   if (XEnd < XPos) {
     UndefinedBehavior(); // Hardware searches for an end address that it has already passed
@@ -239,7 +239,7 @@ if (TTArchitecture == Blackhole) {
 bool DiscontiguousInputRows = ConfigState.THCON_SEC[WhichUnpacker].REG2_Tileize_mode;
 if (DiscontiguousInputRows) {
   if (DatumSizeBytes < 1) {
-    UndefinedBehavior(); // BFP2(a) has no valid Throttle_mode with tileize; BFP4(a) addressing is incorrect
+    UnsupportedFunctionality(); // BFP2(a) has no valid Throttle_mode with tileize; BFP4(a) addressing is incorrect
   }
   RowStride = (ConfigState.THCON_SEC[WhichUnpacker].REG2_Shift_amount_cntx[0] <<  4)
             | (ConfigState.THCON_SEC[WhichUnpacker].REG2_Shift_amount_cntx[1] <<  8)
@@ -274,10 +274,10 @@ unsigned OutAddr = ConfigState.UNP[WhichUnpacker].ADDR_BASE_REG_1_Base
      + ADC_Out.Z * ConfigState.UNP[WhichUnpacker].ADDR_CTRL_ZW_REG_1_Zstride
      + ADC_Out.W * ConfigState.UNP[WhichUnpacker].ADDR_CTRL_ZW_REG_1_Wstride;
 if (OutDataFormat in {FP32, TF32, INT32}) {
-  if (OutAddr & 3) UndefinedBehavior();
+  if (OutAddr & 3) UnsupportedFunctionality();
   OutAddr >>= 2;
 } else if (OutDataFormat in {FP16, BF16, INT16}) {
-  if (OutAddr & 1) UndefinedBehavior();
+  if (OutAddr & 1) UnsupportedFunctionality();
   OutAddr >>= 1;
 }
 if (MultiContextMode && WhichUnpacker == 0) {
@@ -314,7 +314,7 @@ if (UpsampleZeroes || UpsampleInterleave || ColShift) {
 if (Transpose || DiscontiguousInputRows) {
   // These modes require that InAddr_Datums start at an aligned 16 byte boundary.
   if (InAddr_Datums != floor(InAddr_Datums / 16.) * 16.) {
-    UndefinedBehavior();
+    UnsupportedFunctionality();
   }
 }
 if (BfpExpStream) {
@@ -342,11 +342,11 @@ if (DiscontiguousInputRows && (UpsampleZeroes > 0 || !IsUncompressed)) {
   UndefinedBehavior();
 }
 if (UnpackToDst && (ColShift || Transpose)) {
-  UndefinedBehavior();
+  UnsupportedFunctionality();
 }
 if (UnpackToDst) {
   if (ThreadConfig[CurrentThread].SRCA_SET_SetOvrdWithAddr) {
-    UndefinedBehavior(); // Silicon behavior is "Row &= 0x3CF", which is not useful; do not use this mode
+    UnsupportedFunctionality(); // Silicon behavior is "Row &= 0x3CF", which is not useful; do not use this mode
   }
 } else {
   if (!ThreadConfig[CurrentThread].SRCA_SET_SetOvrdWithAddr) {
@@ -365,7 +365,7 @@ if ((TTArchitecture == Blackhole) &&
   BFP4AtX4 = false;
 }
 if ((TTArchitecture == Wormhole) && (ThrottleMode > 2)) {
-  UndefinedBehavior(); // x8 ThrottleMode is illegal on Wormhole
+  UnsupportedFunctionality(); // x8 ThrottleMode is illegal on Wormhole
 }
 if ((TTArchitecture == Blackhole) && ConfigState.THCON_SEC[0].REG1_ovrd_default_throttle_mode && (ThrottleMode == 3) && (DatumSizeBytes == 0.5 || DatumSizeBytes >= 2)) {
   // x8 ThrottleMode works on Blackhole only for 8-bit input (and BFP2a/BFP2, which always run at x1).
@@ -375,7 +375,8 @@ if ((TTArchitecture == Blackhole) && ConfigState.THCON_SEC[0].REG1_ovrd_default_
 }
 if (BfpExpStream && (DatumSizeBytes == 0.5) && (TTArchitecture == Wormhole ? ThrottleMode == 2 : (ThrottleMode >= 2 || !ConfigState.THCON_SEC[0].REG1_ovrd_default_throttle_mode))) {
   // At x4 (on Blackhole the default for BFP4a/BFP4), a run that starts partway into a group of 16 exponents
-  // must end within that group; otherwise datums past the group boundary can get the wrong exponents.
+  // must end within that group; otherwise datums past the group boundary can get the wrong exponents, and
+  // some such runs hang the unpacker or leave it in a state where later unpacks go wrong.
   if ((FirstDatum % 256) != 0 && FirstDatum + InputNumDatums > (FirstDatum / 256 + 1) * 256) {
     UndefinedBehavior();
   }
@@ -457,7 +458,7 @@ for (unsigned i = 0; i < InputNumDatums && DecompressNumDatums; ) {
       ExpBits = ConfigState.UNP[WhichUnpacker].FORCED_SHARED_EXP_shared_exp;
     } else {
       if (FirstDatum + i > 65536) {
-        UndefinedBehavior(); // The datum index addressing the exponents is only 16 bits wide
+        UnsupportedFunctionality(); // The datum index addressing the exponents is only 16 bits wide
       }
       ExpBits = ReadL1Bytes(floor(InAddr_Exponents), 1);
       InAddr_Exponents += 1 / 16.;
@@ -497,7 +498,7 @@ for (unsigned i = 0; i < InputNumDatums && DecompressNumDatums; ) {
           wait;
         }
         Row += CurrentUnpacker.SrcRow[CurrentThread];
-        if (Row >= 64) UndefinedBehavior();
+        if (Row >= 64) UnsupportedFunctionality();
         SrcB[Bank][Row][Col] = Datum;
       } else {
         while (SrcA[Bank].AllowedClient != SrcClient::Unpackers) {
@@ -512,10 +513,10 @@ for (unsigned i = 0; i < InputNumDatums && DecompressNumDatums; ) {
             if (TTArchitecture == Blackhole) { // allowed for BH fast tilize
               Row &= 63;
             } else {
-              if (Row >= 64) UndefinedBehavior();
+              if (Row >= 64) UnsupportedFunctionality();
             }
           } else {
-            if (Row >= 16) UndefinedBehavior();
+            if (Row >= 16) UnsupportedFunctionality();
             Row += CurrentUnpacker.SrcRow[CurrentThread];
           }
           if (Transpose) {
@@ -811,7 +812,7 @@ bool IsBFPFormat(uint4_t x) {
 
 ## Instruction scheduling
 
-An `UNPACR` with `UnpackToDst` uses `ThreadConfig[CurrentThread].SRCA_SET_SetOvrdWithAddr` at each of its writes to `Dst`, not only when it starts. If a `SETC16` sets `SetOvrdWithAddr` back to `true` while the `UNPACR` is still writing, its remaining writes go to `Row & 0x3CF` (as in the `UndefinedBehavior` case above): datums meant for rows 16 to 63 of each group of 64 overwrite rows 0 to 15 of that group. E.g. an unpack of 1024 FP32 datums followed directly by that `SETC16` leaves the last 256 datums in rows 0 to 15 and nothing in rows 16 to 63. Software must not issue that `SETC16` until the `UNPACR` has finished: a `STALLWAIT` with block mask B7 and condition C1 before it orders them, as does any earlier instruction in the thread that waits for C1 (e.g. a `SEMPOST` behind `STALLWAIT` B1 with C1).
+An `UNPACR` with `UnpackToDst` uses `ThreadConfig[CurrentThread].SRCA_SET_SetOvrdWithAddr` at each of its writes to `Dst`, not only when it starts. If a `SETC16` sets `SetOvrdWithAddr` back to `true` while the `UNPACR` is still writing, its remaining writes go to `Row & 0x3CF` (as in the `UnsupportedFunctionality` case above): datums meant for rows 16 to 63 of each group of 64 overwrite rows 0 to 15 of that group. E.g. an unpack of 1024 FP32 datums followed directly by that `SETC16` leaves the last 256 datums in rows 0 to 15 and nothing in rows 16 to 63. Software must not issue that `SETC16` until the `UNPACR` has finished: a `STALLWAIT` with block mask B7 and condition C1 before it orders them, as does any earlier instruction in the thread that waits for C1 (e.g. a `SEMPOST` behind `STALLWAIT` B1 with C1).
 
 On Wormhole, while clock gating of the ThCon unit is enabled (`CG_CTRL_EN` bit 12, in any thread's `ThreadConfig`) with a short hysteresis (2 cycles shows this; the reset value, 16, does not), the size of the BFP exponent section that an `UNPACR` skips follows a change to the tile descriptor's `YDim`, `ZDim` or `WDim` only once a Scalar Unit instruction (e.g. `DMANOP`, `SETDMAREG`, `REG2FLOP`) has executed since the change. Until then every `UNPACR` of a BFP tile with an exponent section uses the size from the old dimensions, so it reads its datums from the wrong address, however many other instructions come between (`NOP`, ADC instructions, `STALLWAIT`, other `UNPACR`s). After changing those fields with `WRCFG` or `RMWCIB`, issue a `DMANOP` before the next such `UNPACR`. With clock gating off, or at the reset hysteresis, the `WRCFG` rule (two instructions between) suffices.
 
