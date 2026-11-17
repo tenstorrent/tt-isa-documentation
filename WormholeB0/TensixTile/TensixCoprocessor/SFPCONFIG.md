@@ -63,7 +63,7 @@ for (unsigned Lane = 0; Lane < 32; ++Lane) {
     break; }
   case 9: case 10:
     // Current silicon is seen to do nothing, but this is not verified
-    UndefinedBehavior();
+    UnsupportedFunctionality();
     break;
   case 11: case 12: case 13: case 14: {
     // Write to LReg[VD].
