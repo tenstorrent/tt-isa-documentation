@@ -295,7 +295,7 @@ if (ConfigState.THCON_SEC[WhichUnpacker].Unpack_Src_Reg_Set_Upd) {
   UnsupportedFunctionality(); // No known usage
 }
 if ((TTArchitecture == Blackhole) && (WhichUnpacker == 1) && ConfigState.THCON_SEC[1].Unpack_Src_Reg_Set_Upd && OutAddr != 0) {
-  UndefinedBehavior(); // Hardware drops some of the writes to SrcB
+  UnsupportedFunctionality(); // Hardware drops some of the writes to SrcB
 }
 
 uint4_t UpsampleZeroes = (1 << ConfigState.THCON_SEC[WhichUnpacker].REG2_Upsample_rate) - 1;
@@ -323,7 +323,7 @@ if (BfpExpStream) {
   // Otherwise, hardware can pair datums with the wrong exponents, or drop them.
   double Misalignment = InAddr_Datums - floor(InAddr_Datums / 16.) * 16.;
   if (Misalignment != 0 && ((FirstDatum % 16) != 0 || Misalignment + InputNumDatums * DatumSizeBytes > 16)) {
-    UndefinedBehavior();
+    UnsupportedFunctionality();
   }
 } else if (IsBFPFormat(InDataFormat) && DatumSizeBytes < 1) {
   // With REG2_Force_shared_exp there is no exponent stream, but BFP4 and BFP2 datums still arrive in 16 byte
@@ -331,7 +331,7 @@ if (BfpExpStream) {
   // or drops some of the datums.
   double Misalignment = InAddr_Datums - floor(InAddr_Datums / 16.) * 16.;
   if (Misalignment != 0 && Misalignment + InputNumDatums * DatumSizeBytes > 16) {
-    UndefinedBehavior();
+    UnsupportedFunctionality();
   }
 }
 if (IsUncompressed && DatumSizeBytes == 0.25 && (InputNumDatums & 1)) {
