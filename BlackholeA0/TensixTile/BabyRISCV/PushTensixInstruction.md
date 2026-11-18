@@ -29,6 +29,12 @@ The Tensix-TRISC sync unit tracks every instruction which RISCV T0 / T1 / T2 pus
 * A `MOP` whose expansion ends with a `REPLAY` with `Load` set.
 * A `REPLAY` with `Load` set and `Exec` clear, unless either RISCV T0 / T1 / T2 pushes it and then pushes the `Count` instructions it loads, one store each and none of them `MOP` or `MOP_CFG`, or RISCV B pushes it and every instruction it loads. In particular, such a `REPLAY` with `Count` of zero pushed by RISCV T0 / T1 / T2.
 
+## Words that aren't Tensix instructions
+
+Pushing a word whose opcode (its high eight bits) isn't the opcode of any Tensix instruction is `UndefinedBehavior`. In particular, nothing in the coprocessor ever accepts a word with opcode `0x00`, whatever its low 24 bits: it stays at the front of its thread's FIFO for good, so that thread executes nothing more (the other threads carry on), and once the FIFO fills, the next push stalls RISCV. While such a word waits there, hardware also drops writes, whether from RISCV or over the NoC, to most of the [tile control / debug / status registers](../TileControlDebugStatus.md): `RISCV_DEBUG_REG_SOFT_RESET_0`, the clock gating, TRISC and NCRISC reset PC, debug bus and performance counter controls, and `RISCV_DEBUG_REG_INSTRN_BUF_CTRL0` among them. So not even a soft reset recovers the tile; only a reset of the whole chip does. Reads of those registers still work.
+
+Such a word is easy to produce by accident: if a macro builds an instruction as `(Opcode << 24) + Params` without parentheses around `Params`, then an argument such as `3 << 19` shifts the opcode out of the word, leaving opcode `0x00`.
+
 ## Memory ordering
 
 `sw` (or `.ttinsn`) instructions to push Tensix instructions follow the usual [RISCV memory ordering](MemoryOrdering.md) rules for stores, with the added twist that the instruction's write-request counts as processed once the instruction has been pushed onto a FIFO in the coprocessor's frontend. If a RISCV core wants to wait for an instruction to have finished executing, rather than just wait for it to have been pushed, then additional mechanisms are required, for example [Auto TTSync](AutoTTSync.md) or [Manual TTSync](ManualTTSync.md).
