@@ -2,6 +2,8 @@
 
 Software can instruct the NIU to perform certain atomic operations against L1 of Tensix tiles and Ethernet tiles (atomic operations cannot be performed against MMIO addresses, nor DRAM addresses, nor can they be translated to or from PCIe transactions). This can be the L1 of the initiating tile, or the L1 of any other Tensix or Ethernet tile, or the request can be broadcast to a rectangle of Tensix tiles and separately performed on the L1 of each of them.
 
+The Blackhole hardware bug that makes inline writes to L1 unsafe (see `NOC_CMD_WR_INLINE` in [the memory map](MemoryMap.md#noc_ctrl)) does not affect atomic requests: an atomic to L1 waits until its 16 bytes' L1 port can take it, posted or not, however busy that port is.
+
 ## Atomic increment
 
 To perform this operation, software should populate `NOC_AT_LEN_BE` with:
