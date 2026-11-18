@@ -10,26 +10,20 @@ These services are mapped into the address space of the Tensix tile, and are ava
 
 ## The 64-bit counter
 
-The low and high halves of the 64-bit counter are accessed separately. The low 32 bits can be obtained by reading from `RISCV_DEBUG_REG_WALL_CLOCK_L`.
+The low and high halves of the 64-bit counter are accessed separately. The low 32 bits can be obtained by reading from `RISCV_DEBUG_REG_WALL_CLOCK_L`, and the high 32 bits by reading from `RISCV_DEBUG_REG_WALL_CLOCK_L+4`.
 
-If the full 64 bits are required, then there are two ways of obtaining it. If there is only one agent simultaneously reading from `RISCV_DEBUG_REG_WALL_CLOCK_L`, then the full 64 bits can be obtained by reading from `RISCV_DEBUG_REG_WALL_CLOCK_L` and then reading from `RISCV_DEBUG_REG_WALL_CLOCK_H`:
-```
-li t0, 0xFFB12000
-lw t1, 0x1F0(t0) # RISCV_DEBUG_REG_WALL_CLOCK_L
-lw t2, 0x1F8(t0) # RISCV_DEBUG_REG_WALL_CLOCK_H
-# t2:t1 now contains the 64-bit value
-```
-
-If there are multiple agents simultaneously reading from `RISCV_DEBUG_REG_WALL_CLOCK_L`, then a more complex sequence is required to safely obtain the full 64 bits:
+If the full 64 bits are required, then the two halves have to be read in a way that copes with the low half wrapping around between the reads. The following sequence does so, regardless of how many agents are reading the counter at the same time:
 ```
 li t0, 0xFFB12000
 retry:
-lw t2, 0x1F4(t0)
+lw t2, 0x1F4(t0) # RISCV_DEBUG_REG_WALL_CLOCK_L+4
 lw t1, 0x1F0(t0) # RISCV_DEBUG_REG_WALL_CLOCK_L
-lw t3, 0x1F4(t0)
+lw t3, 0x1F4(t0) # RISCV_DEBUG_REG_WALL_CLOCK_L+4
 bne t2, t3, retry
 # t2:t1 now contains the 64-bit value
 ```
+
+`RISCV_DEBUG_REG_WALL_CLOCK_H` looks like it captures the high 32 bits at the time of a read from `RISCV_DEBUG_REG_WALL_CLOCK_L`, but it does not hold them: after any access to `RISCV_DEBUG_REG_WALL_CLOCK_L`, it keeps following the counter's high 32 bits until the next access by any agent to another memory-mapped register of the tile (such as `RISCV_DEBUG_REG_WALL_CLOCK_L+4`, another debug register, or a NoC or NoC overlay register), and only then keeps its value. Loads and stores to L1 or to a RISCV core's own local data memory are not such accesses, and an access to one of those registers whose address agrees with `RISCV_DEBUG_REG_WALL_CLOCK_L` in bits 2 through 9 (`0xFFB2_01F0`, say) acts like an access to `RISCV_DEBUG_REG_WALL_CLOCK_L`. Hence reading `RISCV_DEBUG_REG_WALL_CLOCK_L` and then `RISCV_DEBUG_REG_WALL_CLOCK_H` gives a value 2<sup>32</sup> too large whenever the low half wraps around after the first load and before the second one reaches the register, even with only one agent reading the counter. Two loads back to back make that window about one cycle wide; anything executed between them (an L1 load, say) widens it, and another agent's accesses between them can move it. The retry sequence above is the one to use.
 
 ## Timestamp event streams
 
@@ -48,13 +42,13 @@ Additional memory-mapped registers are used to configure the location of the buf
 
 ## Memory map
 
-See the functional specification (below) for state and functions referenced herein.
+See the functional specification (below) for state and functions referenced herein. Any access by any agent to another memory-mapped register of the tile (any of the registers below, another debug register, or a NoC or NoC overlay register) also sets `following_counter = false`, except that an access to one whose address agrees with `RISCV_DEBUG_REG_WALL_CLOCK_L` in bits 2 through 9 sets `following_counter = true`.
 
 |Address|Write Behavior|Read Behavior|
 |---|---|---|
-|`RISCV_DEBUG_REG_WALL_CLOCK_L`<br/>`0xFFB1_21F0`|`counter_high_at = counter >> 32`<br/>(No other effect)|`counter_high_at = counter >> 32`<br/>`return counter & 0xffffffff`|
-|`RISCV_DEBUG_REG_WALL_CLOCK_L+4`<br/>`0xFFB1_21F4`|No effect|`return counter >> 32`|
-|`RISCV_DEBUG_REG_WALL_CLOCK_H`<br/>`0xFFB1_21F8`|No effect|`return counter_high_at`|
+|`RISCV_DEBUG_REG_WALL_CLOCK_L`<br/>`0xFFB1_21F0`|`following_counter = true`<br/>(No other effect)|`following_counter = true`<br/>`return counter & 0xffffffff`|
+|`RISCV_DEBUG_REG_WALL_CLOCK_L+4`<br/>`0xFFB1_21F4`|`following_counter = false`<br/>(No other effect)|`following_counter = false`<br/>`return counter >> 32`|
+|`RISCV_DEBUG_REG_WALL_CLOCK_H`<br/>`0xFFB1_21F8`|`following_counter = false`<br/>(No other effect)|`following_counter = false`<br/>`return counter_high_at`|
 |`RISCV_DEBUG_REG_TIMESTAMP`<br/>`0xFFB1_21FC`|`CmdWrite(new_val)`|`return 0`|
 |`RISCV_DEBUG_REG_TIMESTAMP+4`<br/>`0xFFB1_2200`|`cntl_raw = new_val`<br/>`CntlWrite(new_val)`|`return cntl_raw`|
 |`RISCV_DEBUG_REG_TIMESTAMP_STATUS`<br/>`0xFFB1_2204`|`StatusWrite(new_val)`|`return StatusRead()`|
@@ -85,12 +79,14 @@ bool reset_streams = false;
 uint32_t cntl_raw = 3;
 uint64_t counter = 0;
 uint32_t counter_high_at = 0;
+bool following_counter = false;
 ```
 
 This function executes every cycle:
 
 ```c
 void EveryCycle() {
+  if (following_counter) counter_high_at = counter >> 32;
   counter += 1;
   if (reset_streams) {
     for (auto& buf : bufs) {
