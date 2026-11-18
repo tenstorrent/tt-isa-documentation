@@ -137,7 +137,7 @@ The "NoC" column indicates which parts of the address space are made available t
 
 ## L0 Data Cache
 
-Each baby RISCV has a tiny L0 data cache between it and L1. The capacity of this L0 data cache is a mere 64 bytes: 4 lines of 16 bytes each. The entire L0 data cache will be flushed by any `fence` or atomic instruction, and cache hits also have a ~0.8% chance of flushing the entire cache (though see the [`cfg0` CSR](CSRs.md#cfg0) `DisLowCachePeriodicFlush` bit to disable this). The cache is _not_ coherent: if other clients write to L1, doing so will not invalidate the L0 of any baby RISCV.
+Each baby RISCV has a tiny L0 data cache between it and L1. The capacity of this L0 data cache is a mere 64 bytes: 4 lines of 16 bytes each. The entire L0 data cache will be flushed by any `fence` or atomic instruction, and every request the RISCV sends to memory (load or store, hit or miss, any address) also has a ~0.8% chance of flushing the entire cache (though see the [`cfg0` CSR](CSRs.md#cfg0) `DisLowCachePeriodicFlush` bit to disable this). The cache is _not_ coherent: if other clients write to L1, doing so will not invalidate the L0 of any baby RISCV.
 
 Stores to L1 cause the containing cache line to be flushed if it was previously present in the L0 data cache. As such, the L0 data cache is never dirty. That said, the store queue in the Load/Store Unit can be seen as a kind of cache (especially when it is coalescing stores), and if viewed in that manner, the store queue is _always_ dirty.
 
