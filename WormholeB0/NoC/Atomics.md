@@ -1,6 +1,6 @@
 # NoC Atomic Requests
 
-Software can instruct the NIU to perform certain atomic operations against L1 (atomic operations cannot be performed against MMIO addresses, nor DRAM addresses, nor can they be translated to or from PCIe transactions). This can be the L1 of the initiating tile, or the L1 of any other tile, or the request can be broadcast to a rectangle of tiles and separately performed on the L1 of each of them.
+Software can instruct the NIU to perform certain atomic operations against L1 (atomic operations cannot be performed against MMIO addresses, nor DRAM addresses, nor can they be translated to or from PCIe transactions). This can be the L1 of the initiating tile, or the L1 of any other tile, or the request can be broadcast to a rectangle of tiles and separately performed on the L1 of each of them. Broadcasting an atomic request is `UnsupportedFunctionality`.
 
 ## Atomic increment
 
