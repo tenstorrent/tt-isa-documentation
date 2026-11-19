@@ -40,6 +40,14 @@ Although any address within the address range can be used, it is conventional to
 
 Note that the `wait`s in the above happen within the memory subsystem; they prevent the memory region in question from processing the next request, but they do not _necessarily_ prevent the issuing RISCV from executing some more RISCV instructions.
 
+## Soft reset
+
+When a RISCV enters [soft reset](../SoftReset.md#riscv-soft-reset), the values in the four mailboxes it writes are discarded. A blocking pop of an empty mailbox waits within the writer's side of the mailbox, not the reader's, which has these consequences:
+* If the writer enters soft reset while a pop of one of its mailboxes is waiting, the pop is forgotten, and the reader waits forever: a value the writer pushes after leaving reset stays in the mailbox for the reader's next read, but never completes the forgotten pop. A pop that is issued while the writer is held in soft reset is forgotten the same way. Only soft reset of the reader ends the wait.
+* If the reader enters soft reset while its pop is waiting and the writer does not, the pop remains waiting within the writer's side: the next value pushed to that mailbox completes it and is lost, and until that push, a read of that mailbox by the reader (a query included) waits.
+
+Software must not soft reset one side of a mailbox while a pop of that mailbox may be waiting; it should instead put the reader and the writer into soft reset together, with a single write to `RISCV_DEBUG_REG_SOFT_RESET_0`. A pop that is waiting when its writer enters soft reset, or that is issued while its writer is held in soft reset, is `UndefinedBehavior`, as the reader can hang forever. Soft reset of the reader alone while its pop is waiting is `NonContractualBehavior`.
+
 ## Memory ordering
 
 When writing to a mailbox, it is usually the case that the programmer wants the mailbox write-request to be processed _after_ all earlier write-requests have been processed. When reading from a mailbox, it is usually the case that the programmer wants the mailbox read-response to be obtained _before_ any later read-requests are emitted. Neither of these things happen by default; see [memory ordering](MemoryOrdering.md) for details on how to avoid race conditions and ensure that they do happen.
