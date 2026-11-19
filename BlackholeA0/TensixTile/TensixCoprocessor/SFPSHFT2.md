@@ -133,7 +133,8 @@ case SFPSHFT2_MOD1_SHFT_LREG:
   }
   break;
 case SFPSHFT2_MOD1_SHFT_IMM:
-  UnsupportedFunctionality(); // No plausible utility; use SFPSHFT with ARG_IMM_USE_VC instead
+  // Within each lane, shift bits left or right by an immediate amount. Only for SFPLOADMACRO
+  // (see below); issued directly, this mode is NonContractualBehavior.
   if (VD < 8 || VD == 16) {
     lanewise {
       if (LaneEnabled) {
@@ -177,6 +178,8 @@ Supporting definitions:
 #define SFPSHFT2_MOD1_SHFT_LREG 5
 #define SFPSHFT2_MOD1_SHFT_IMM 6
 ```
+
+`SFPSHFT2_MOD1_SHFT_IMM` is supported in instructions that [`SFPLOADMACRO`](SFPLOADMACRO.md) schedules, where it gives the round sub-unit a shift by an immediate amount (and `SFPLOADMACRO` can substitute its own `VD` for `VB`). Issuing it directly is `NonContractualBehavior`: current silicon does what the functional model says, but software should use [`SFPSHFT`](SFPSHFT.md) with `SFPSHFT_MOD1_ARG_IMM_USE_VC` instead. Writing it to `LoadMacroConfig.InstructionTemplate[VD - 12]` (`VD` of 12 to 15 while `LaneConfig.DISABLE_BACKDOOR_LOAD` is clear) executes nothing, as for every other instruction.
 
 ## Instruction scheduling
 
