@@ -4,7 +4,7 @@ Matrix Unit (FPU) and Vector Unit (SFPU) instructions assume the presence of the
 
 ```c
 struct {
-  uint10_t Dst, Dst_Cr;
+  uint12_t Dst, Dst_Cr; // uint10_t on Blackhole
   uint6_t SrcA, SrcA_Cr;
   uint6_t SrcB, SrcB_Cr;
   uint2_t FidelityPhase;
@@ -12,6 +12,8 @@ struct {
   uint10_t Sp; // Blackhole only: the SFPLOAD / SFPSTORE stack pointer
 } RWCs[3];
 ```
+
+On Wormhole, `Dst` and `Dst_Cr` are 12 bits wide, so they count to 4095 before wrapping to 0. Every instruction that addresses [`Dst`](Dst.md) uses only the low 10 bits of the row it computes, so the two extra bits change no access; they show only in the counters' own values, e.g. when read over the debug bus. On Blackhole, `Dst` and `Dst_Cr` are 10 bits wide.
 
 The `[3]` is always indexed as `[CurrentThread]`, i.e. each Tensix thread has its own set of RWCs, and each thread has exclusive access to its own RWCs (there is no cross-thread access).
 
