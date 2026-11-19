@@ -88,6 +88,8 @@ A [bit-perfect software model](../../../Miscellaneous/FMA/README.md) is provided
 >
 > If `SFPMAD` is followed by one of the above cases, with `SFPMAD` writing to a location which is not detected by the automatic stalling logic, software must ensure a gap of at least one cycle between `SFPMAD` and the consuming instruction. An [`SFPNOP`](SFPNOP.md) instruction can be inserted to ensure this.
 
+A Matrix Unit (FPU) instruction pushed right behind an [`SFPSTORE`](SFPSTORE.md) that this stall holds back can access `Dst` before the `SFPSTORE` does; see [`Dst`](Dst.md#instruction-scheduling).
+
 ## Performance
 
 Each `SFPMAD` instruction can perform 32 FP32 multiplications and 32 FP32 additions, for 64 FP32 operations total. Running at Blackhole's standard 1.35 GHz clock rate, this gives 0.0864 TFLOP/s (per Vector Unit). To hit this number whilst simultaneously moving data in and out of the Vector Unit (SFPU), [`SFPLOADMACRO`](SFPLOADMACRO.md) needs to be used.
