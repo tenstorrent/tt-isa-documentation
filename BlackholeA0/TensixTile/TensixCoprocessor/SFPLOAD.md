@@ -200,4 +200,4 @@ uint32_t SignMag16ToSignMag32(uint16_t x) {
 
 ## Instruction scheduling
 
-At least three unrelated Tensix instructions need to execute after a Matrix Unit (FPU) instruction which writes (or accumulates) to `Dst` and an `SFPLOAD` instruction which wants to read that same region of `Dst`. If software lacks useful instructions to fill the gap, any kind of Tensix NOP instruction can be used for this purpose. Software can also use [`STALLWAIT`](STALLWAIT.md) (with block bit B8 and condition code C7), though the recommendation (in this context) is to insert three unrelated Tensix instructions rather than using `STALLWAIT`.
+At least three unrelated Tensix instructions need to execute after a Matrix Unit (FPU) instruction which writes (or accumulates) to `Dst` and an `SFPLOAD` instruction which wants to read that same region of `Dst`. If software lacks useful instructions to fill the gap, any kind of Tensix NOP instruction can be used for this purpose. Software can also use [`STALLWAIT`](STALLWAIT.md) (with block bit B8 and condition code C4), though the recommendation (in this context) is to insert three unrelated Tensix instructions rather than using `STALLWAIT`.
