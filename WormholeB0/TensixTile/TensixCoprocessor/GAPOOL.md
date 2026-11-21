@@ -28,3 +28,4 @@ On Blackhole, `AddrMod` is a `u3` rather than a `u2`, giving this encoding:
 `GAPOOL`'s functional model is identical to [`MVMUL`'s functional model](MVMUL.md#functional-model), except that:
 * `BroadcastSrcBRow` is always `false`.
 * `unsigned NumRows = BroadcastSrcBRow ? 7 : 8;` changes to `unsigned NumRows = 4;`. Note that this does not influence the masking in the computation of `SrcBRow`, so the 4x16 `SrcB` matrix is the top half of an aligned 8x16 matrix, but it does influence the masking in the computation of `DstRow`.
+* The note on bit 2 of `DstRow` that follows `MVMUL`'s functional model does not apply: `GAPOOL` writes the aligned 4x16 block at `DstRow`, and marks exactly those four rows as valid, whether bit 2 of `DstRow` is set or not.
