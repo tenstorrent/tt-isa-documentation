@@ -2,7 +2,7 @@
 
 The functional models of [`ELWADD`](ELWADD.md), [`ELWSUB`](ELWSUB.md), [`ELWMUL`](ELWMUL.md), [`MVMUL`](MVMUL.md), [`DOTPV`](DOTPV.md) and [`GAPOOL`](GAPOOL.md) describe their floating-point arithmetic with C `float` operations, which is only a rough guide. This page gives the exact arithmetic for one output datum, bit for bit, for Blackhole, and for Wormhole with the differences listed at the end. It covers the floating-point cases only (`SrcAStyle` is `BF16`, `FP16` or `TF32`); integer arithmetic (`ALU_ACC_CTRL_INT8_math_enabled`) is as the instruction pages describe it.
 
-The model assumes the configuration the instruction pages require: `ALU_ACC_CTRL_Zero_Flag_disabled_src` clear, `FP16A_FORCE_Enable` clear, and no fidelity phase other than 0 for `ELWADD` / `ELWSUB`. It also assumes `ALU_ROUNDING_MODE_Fpu_srnd_en` (stochastic rounding) and `ALU_ROUNDING_MODE_GS_LF` are clear, which this page does not describe; setting either is `UnsupportedFunctionality`.
+The model assumes the configuration the instruction pages require: `ALU_ACC_CTRL_Zero_Flag_disabled_src` clear, `FP16A_FORCE_Enable` clear, and no fidelity phase other than 0 for `ELWADD` / `ELWSUB`. It also assumes `ALU_ROUNDING_MODE_Fpu_srnd_en` (stochastic rounding) and `ALU_ROUNDING_MODE_GS_LF` are clear, which this page does not describe; setting either is `UnsupportedFunctionality`. When `SrcAStyle` is `FP16`, a `Src` datum whose exponent field is above 31 is `UnsupportedFunctionality` too; Wormhole's `TruncateSrc` clears those bits, while on Blackhole they reach the arithmetic, and the model gives what Blackhole does with them.
 
 ## Overview
 
@@ -18,7 +18,7 @@ Notable properties, all visible in the model below:
 * Without `ALU_ACC_CTRL_Fp32_enabled`, every term is rounded to 10 fractional bits of the common exponent before the addition, whether `Dst` holds `BF16` or `FP16`; with it, to 23.
 * Rounding is to nearest. Ties go away from zero, except when a lane's sum is aligned to the common exponent: there, ties go towards positive infinity.
 * There are no denormals: a `Src` datum whose exponent field is 0 is zero, and a result whose exponent would be 0 or less is `+0`. A zero result is always `+0`.
-* Infinities and NaNs have no special handling: an exponent field of 255 is an ordinary (large) exponent, the mantissa of a NaN takes part in the arithmetic like any other, and a result whose exponent would be 255 or more is an infinity of the result's sign. For an `FP16` result in 16-bit `Dst`, an exponent of 31 is an ordinary exponent, and a result whose exponent would be 32 or more becomes the largest `FP16` magnitude (exponent 31, mantissa all ones).
+* Infinities and NaNs have no special handling: an exponent field of 255 is an ordinary (large) exponent, the mantissa of a NaN takes part in the arithmetic like any other, and a result whose exponent would be 255 or more is an infinity of the result's sign. For an `FP16` result in 16-bit `Dst`, an exponent of 31 is an ordinary exponent, and a result whose exponent would be 32 through 63 becomes the largest `FP16` magnitude (exponent 31, mantissa all ones). Only an exponent field above 31 in an `FP16` `Src` datum gives a larger one, and then the hardware keeps only the exponent's low bits, as the model shows.
 
 ## Functional model
 
@@ -177,15 +177,17 @@ uint32_t LanePairResult(LaneControl c, LaneSum r0, LaneSum r1, DstOperand d, uin
   uint23_t Man = (Rounded << (Dropped - 5)) & 0x7fffff;
 
   if (c.Fp32 || c.Exp8) {
-    if (ResultExp <= 0) return 0; // +0
+    if (ResultExp <= 0 || ResultExp >= 512) return 0; // +0 (512 or more: only from FP16 exponent fields above 31)
     if (ResultExp >= 255) return (Sign << 31) | (255 << 23); // Infinity
     return (Sign << 31) | (ResultExp << 23) | Man;
   } else {
     // FP16 result in a 16-bit Dst. With FP16 operands (exponent fields 0 through 31),
-    // ResultExp is always less than 64.
-    if (ResultExp <= 0) return 0; // +0
-    if (ResultExp >= 32) return (Sign << 31) | (31 << 23) | (0x3ff << 13); // Largest magnitude
-    return (Sign << 31) | (ResultExp << 23) | Man;
+    // ResultExp is always less than 64; only exponent fields above 31 give more, and then
+    // only bits 6:0 of ResultExp count.
+    if (ResultExp <= 0 || ResultExp >= 512) return 0; // +0
+    if (((ResultExp >> 5) & 3) == 1) return (Sign << 31) | (31 << 23) | (0x3ff << 13); // Largest magnitude
+    if ((ResultExp & 31) == 0) return 0; // +0
+    return (Sign << 31) | ((ResultExp & 31) << 23) | Man;
   }
 }
 
