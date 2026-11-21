@@ -43,6 +43,10 @@ Each byte holds the hysteresis, in cycles, of the gaters of one or more of the b
 |`RISCV_DEBUG_REG_CG_CTRL_HYST1`|Unpackers|XSearch|Scalar Unit (ThCon)|RISCV T0 / T1 / T2|
 |`RISCV_DEBUG_REG_CG_CTRL_HYST2`|L1 return path|Tensix instruction frontend|L1 banks|`SrcB`|
 
+### Hysteresis of the Tensix instruction frontend
+
+The Tensix instruction frontend's gater also clocks the [Sync Unit](TensixCoprocessor/SyncUnit.md), which takes RISCV T<sub>i</sub>'s writes to [`SemaphoreAccess`](TensixCoprocessor/SyncUnit.md#riscv-access-to-semaphores). While that gater is enabled, its hysteresis must be at least 1. At 0, the frontend's clock runs only in cycles in which something kicks it, such as an instruction being pushed, however busy the RISCV T cores are, and a `SemaphoreAccess` write made while the clock is stopped completes without taking effect: the semaphore keeps its old value. At 1 or more, a running RISCV T core keeps the clock going, so no such write is lost, including one made right after the core wakes from a park on its PCBuf (see [idle RISCV cores](#idle-riscv-cores)).
+
 ## `RISCV_DEBUG_REG_DEST_CG_CTRL`
 
 **Address:** `0xFFB1_2240`
