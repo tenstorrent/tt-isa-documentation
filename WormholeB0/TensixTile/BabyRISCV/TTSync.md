@@ -17,6 +17,8 @@ andi t1, t1, 0 # Actually wait for the load result, and also replace the undefin
 
 Due to a hardware bug, if RISCV T<sub>i</sub> _starts_ executing a load from `CoprocessorDoneCheck` or `MOPExpanderDoneCheck`, it must not _start_ executing another load against the range `PC_BUF_BASE` through `PC_BUF_BASE + 0xFFFF` or the range `TENSIX_MAILBOX0_BASE` through `TENSIX_MAILBOX0_BASE + 0x3FFF` until the original load has _finished_ executing. Failure to comply with this constraint can cause loads against these ranges to return incorrect values, or can cause RISCV T<sub>i</sub> to hang. Compliance is possible by having an ALU instruction after the load (and before the next load) which consumes the result of the load (as in the instruction sequence above), or by executing at least seven other instructions after the load and before the next load.
 
+For example, while a load from `CoprocessorDoneCheck` is still waiting, a load from a semaphore (`SemaphoreAccess[i]`, see [RISCV access to semaphores](../TensixCoprocessor/SyncUnit.md#riscv-access-to-semaphores)) can make it return at once with the semaphore's value, so that it doesn't wait for Tensix thread T<sub>i</sub> to become idle; the semaphore load then returns an unrelated value once the thread is idle. A second load from `CoprocessorDoneCheck` or `MOPExpanderDoneCheck` in that window never returns, so RISCV T<sub>i</sub> hangs.
+
 ## `CoprocessorDoneCheck`
 
 Loads from this address allow RISCV T<sub>i</sub> to determine when the Tensix coprocessor has finished executing all instructions from Tensix thread T<sub>i</sub>. The logic for determining the result of the read-request is:
