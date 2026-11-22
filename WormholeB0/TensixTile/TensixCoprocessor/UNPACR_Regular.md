@@ -441,6 +441,19 @@ if (FlipSrc && !UnpackToDst && DatumSizeBytes >= 1 && InAddr_Datums != floor(InA
     }
   }
 }
+bool StaleDatums = false;
+if ((TTArchitecture == Blackhole) && !UnpackToDst && DatumSizeBytes == 1 && !IsBFPFormat(InDataFormat)) {
+  // Hardware bug: at x4 or x8 (x8 being the default for 8-bit input), a run that starts partway into a 16 byte
+  // word of L1 and goes past the first 128 bytes from the start of that word can write some of its datums with
+  // values left over in the unpacker from its previous UNPACR (that UNPACR's L1 data, possibly in another format)
+  // rather than the values in L1. Which datums and values depends on the previous UNPACR; in practice only datums
+  // 128 or more bytes past the start of the first word are affected. Nothing else in SrcA, SrcB or L1 changes.
+  uint32_t GroupThrottle = ConfigState.THCON_SEC[0].REG1_ovrd_default_throttle_mode ? ConfigState.THCON_SEC[WhichUnpacker].REG2_Throttle_mode : 3;
+  uint32_t StartByte = InAddr_Datums - floor(InAddr_Datums / 16.) * 16.;
+  if (GroupThrottle >= 2 && StartByte != 0 && StartByte + InputNumDatums > 128) {
+    StaleDatums = true;
+  }
+}
 
 // Main unpack loop:
 for (unsigned i = 0; i < InputNumDatums && DecompressNumDatums; ) {
@@ -482,6 +495,9 @@ for (unsigned i = 0; i < InputNumDatums && DecompressNumDatums; ) {
   if (AllDatumsAreZero) {
     Datum = 0;
     DecompressionZeroes = 0;
+  }
+  if (StaleDatums) {
+    Datum = UnpredictableValue(); // Hardware bug; see StaleDatums above
   }
   // Write the datum out to SrcA / SrcB / Dst, along with any zeroes
   // resulting from decompression and from upsampling:
