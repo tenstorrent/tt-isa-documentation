@@ -25,7 +25,21 @@ Where rounding is supported, it can either be deterministic round-to-nearest wit
 
 Handling of denormals and NaNs in the early format conversion depends on the nature of the early format conversion:
 * **Identity / bitcast:** Denormals preserved. NaN preserved.
-* **Rounding:** Denormals flushed to zero. Minus zero converted to positive zero. If the exponent is 8 bits wide, NaN becomes infinity (this is a potentially surprising behavior). When rounding from FP32 to BF16, the flush happens _after_ rounding: the FP32 bit pattern is rounded (which can carry from the mantissa into the exponent), and then the result is flushed to positive zero if its exponent is zero. Consequently, with deterministic rounding, FP32 denormals with a mantissa of at least `0x7F8000` become the smallest BF16 normal of the same sign (`0x0080` or `0x8080`), whereas all other FP32 denormals become positive zero. Rounding to E8M6 likewise flushes after rounding: with deterministic rounding, FP32 denormals with a mantissa of at least `0x7F0000` and BF16 denormals with a mantissa of `0x7F` become the smallest E8M6 normal of the same sign, whereas all other denormals become positive zero.
+* **Rounding:** Denormals flushed to zero. Minus zero converted to positive zero. If the exponent is 8 bits wide, NaN becomes infinity (this is a potentially surprising behavior). When rounding from FP32 or BF16 to BF16 or E8M6, the flush happens _after_ rounding: the bit pattern is rounded (which can carry from the mantissa into the exponent), and then the result is flushed to positive zero if its exponent is zero. With deterministic rounding, this is:
+
+  ```c
+  uint32_t RoundExp8(uint32_t x, unsigned ManBits) { // x is FP32, or BF16 in the high 16 bits; ManBits is 7 (BF16) or 6 (E8M6)
+    uint32_t Sign = x & 0x80000000;
+    unsigned Drop = 23 - ManBits;
+    uint32_t Mag = (x & 0x7fffffff) + (1u << (Drop - 1)); // Round to nearest, ties away from zero; can carry into the exponent
+    Mag &= ~((1u << Drop) - 1);
+    if (Mag >= 0x7f800000) return Sign | 0x7f800000;      // Exponent 255: infinity, including from NaN
+    if (Mag < 0x00800000) return 0;                       // Exponent 0: positive zero, including from denormals and minus zero
+    return Sign | Mag;                                    // The result is in the high 1 + 8 + ManBits bits
+  }
+  ```
+
+  Consequently, FP32 denormals with a mantissa of at least `0x7F8000` become the smallest BF16 normal of the same sign (`0x0080` or `0x8080`), whereas all other FP32 denormals become positive zero; and to E8M6, FP32 denormals with a mantissa of at least `0x7F0000` and BF16 denormals with a mantissa of `0x7F` become the smallest E8M6 normal of the same sign, whereas all other denormals become positive zero.
 * **Truncation:** Denormals can become zero, if that is the outcome of truncating mantissa bits. NaN can become infinity, if that is the outcome of truncating mantissa bits.
 * **Exponent narrowing (Blackhole only):** The datum has an 8-bit exponent and a 10-bit mantissa: from FP32, the TF32 result of the rounding (which flushes denormals and minus zero to positive zero and turns NaN into infinity) or of the truncation (which keeps them); from BF16, the BF16 datum with three zero bits appended to its mantissa. Its exponent is then narrowed to 5 bits without rounding:
 
@@ -169,55 +183,7 @@ For all BFP4 formats, two datums are packed into each byte of L1. For all BFP2 f
 
 ## Configuring the conversions
 
-The early format conversion is configured using a variety of configuration fields, taking different values based on the desired conversion:
-
-* **From FP32 or INT32:** Set `Read_32b_data = true`, then:
-  * **To FP32 or INT32:** Choose any of:
-    * Set `IntermediateFormat = INT32`.
-    * Set `IntermediateFormat = FP32` and either `Round_10b_mant = false` or `Read_raw = true`.
-    * Set `IntermediateFormat = TF32` and `Read_raw = true`.
-  * **To TF32:** Set `Read_raw = false`, then choose any of:
-    * Set `IntermediateFormat = TF32`.
-    * Set `IntermediateFormat = FP32` and `Round_10b_mant = true`.
-    * Set `IntermediateFormat = BF16` and `Round_10b_mant = true` (this choice can only be used if the late conversion is from TF32 to FP16).
-  * **To BF16:**
-    * **Rounding:** Set `IntermediateFormat = BF16` and `Read_raw = false`. If the late conversion is from BF16 to FP16, also set `Round_10b_mant = false`.
-    * **Truncating:** Set `Read_raw = true`, then choose either of:
-      * Set `IntermediateFormat = BFP8`.
-      * Set `IntermediateFormat = BF16`. If the late conversion is from BF16 to FP16, also set `Round_10b_mant = false`.
-  * **To E8M6:** Set `IntermediateFormat = BFP8` and `Read_raw = false`.
-  * **To FP16 (Blackhole only):** Set `IntermediateFormat = FP16` and `Round_10b_mant = true`. Then set `Read_raw = false` to round to TF32, or `Read_raw = true` to truncate to TF32, before the exponent narrowing.
-  * **To INT16:** Set `IntermediateFormat = INT16`. The top 16 bits of each 32-bit datum pass through unchanged, as opaque data: no conversion, rounding or saturation.
-  * **To INT8:** Set `IntermediateFormat = INT8` and `Read_unsigned = false`. Then:
-    * **Sign bit and low seven bits:** Set `Read_raw = true`.
-    * **Shifting, rounding, and saturating:** Set `Read_raw = false`. Set the low five bits of `ShiftAmount` to the desired right-shift amount; note that this shifts the magnitude right, leaves the sign bit as-is, and fills the gap with zeros. The shifted-out bits (if any) are used for rounding: to nearest, with ties away from zero (the magnitude rounds half up). The magnitude is then saturated to 127. A result whose magnitude is zero is +0, even if the input was negative.
-  * **To UINT8:** Set `IntermediateFormat = INT8` and `Read_unsigned = true`. Then:
-    * **Low eight bits:** Set `Read_raw = true`.
-    * **Shifting, rounding, and saturating:** Set `Read_raw = false`. Set the low five bits of `ShiftAmount` to the desired right-shift amount; note that this shifts the magnitude right, leaves the sign bit as-is, and fills the gap with zeros. The shifted-out bits (if any) are used for rounding: to nearest, with ties away from zero (the magnitude rounds half up). The magnitude is saturated to 255 and the sign is then dropped, so a negative input becomes its saturated magnitude rather than 0 (e.g. -5 becomes 5).
-* **From BF16:** Set `Read_32b_data = false`, then:
-  * **To TF32:** Set `Read_raw = false`, then choose any of:
-    * Set `IntermediateFormat = TF32`.
-    * Set `IntermediateFormat = FP32` and `Round_10b_mant = true`.
-    * Set `IntermediateFormat = BF16` and `Round_10b_mant = true` (this choice can only be used if the late conversion is from TF32 to FP16, and if available, is the preferred choice for efficiency reasons).
-  * **To BF16:**
-    * **Rounding (i.e. flush denormals to zero and NaN to infinity):** Set `IntermediateFormat = BF16` and `Read_raw = false`. If the late conversion is from BF16 to FP16, also set `Round_10b_mant = false`.
-    * **Identity (i.e. preserve denormals and NaN):** Set `IntermediateFormat = BF16` and `Read_raw = true`. If the late conversion is from BF16 to FP16, also set `Round_10b_mant = false`. Note that setting `IntermediateFormat = BFP8` and `Read_raw = true` is _not_ an identity: it preserves every other value, but turns negative zero into negative infinity.
-  * **To E8M6:** Set `IntermediateFormat = BFP8` and `Read_raw = false`.
-  * **To FP16 (Blackhole only):** Set `IntermediateFormat = FP16` and `Round_10b_mant = true`. This is the exponent narrowing, with no rounding.
-  * **To FP32:** Keep the datum as BF16 (as above) and let the late conversion widen it from BF16 to FP32. On Blackhole, setting `IntermediateFormat = FP32` instead is `UnsupportedFunctionality`: each BF16 datum lands in the high 16 bits, but the low 16 bits are not zero; they come from other data in `Dst`.
-  * **To INT8 (sign bit only):** Set `IntermediateFormat = INT8` and `Read_unsigned = false` and `Read_raw = true`.
-* **From FP16:** Set `Read_32b_data = false`, then:
-  * **To FP16:** Set `IntermediateFormat = FP16`.
-    * **Rounding (i.e. flush denormals to zero):** Set `Read_raw = false`.
-    * **Identity (i.e. preserve denormals):** Set `Read_raw = true`.
-  * **To E5M7:** Set `IntermediateFormat = BFP8a` and `Read_raw = true`.
-  * **To E5M6:** Set `IntermediateFormat = BFP8a` and `Read_raw = false`.
-  * **To FP8:** Set `IntermediateFormat = FP8` and `Read_raw = true`.
-  * **To INT8 (sign bit only):** Set `IntermediateFormat = INT8` and `Read_unsigned = false` and `Read_raw = true`.
-* **From INT16:** Set `Read_32b_data = false`, then:
-  * **To INT16:** Set `IntermediateFormat = INT16`.
-
-The mapping of variables in the above to concrete configuration fields is:
+The early format conversion is configured by these variables, which map to concrete configuration fields as:
 
 ```c
 uint1_t StateID = ThreadConfig[CurrentThread].CFG_STATE_ID_StateID;
@@ -250,6 +216,97 @@ if (ConfigState.INT_DESCALE_Enable) {
 
 In `INT_DESCALE_Mode`, `z` is the Z position of the packer's tile position generator (see [edge masking](EdgeMasking.md)) plus the packer's `DEST_TARGET_REG_CFG_PACK_SEC[i].ZOffset`, so each XY plane of `pack_reads_per_xy_plane` rows can have its own shift amount. Only the low five bits of the selected byte are used, in either mode. It does not affect conversions to INT32.
 
+The conversion these variables select is a cell of the tables above: a row (the format converted to) and how. `Read_32b_data` decides whether `Dst` is read as 32-bit or 16-bit datums, but no variable says which format the datums in `Dst` are, so each 16-bit case below names the `Dst` format it is described for. Combinations for which `SelectEarlyConversion` gives `NotDescribed` are not described here:
+
+```c
+EarlyConversion SelectEarlyConversion() {
+  if (Read_32b_data) { // Dst holds FP32 or INT32 datums
+    switch (IntermediateFormat) {
+    case INT32: return {FP32 or INT32, Identity or Bitcast};
+    case FP32:
+      if (Read_raw || !Round_10b_mant) return {FP32 or INT32, Identity or Bitcast};
+      else return {TF32, Rounding};
+    case TF32:
+      if (Read_raw) return {FP32 or INT32, Identity or Bitcast};
+      else return {TF32, Rounding};
+    case BF16:
+      if (Read_raw) return {BF16, Truncation};
+      else if (Round_10b_mant) return {TF32, Rounding}; // Can only be used if the late conversion is from TF32 to FP16
+      else return {BF16, Rounding};
+    case BFP8:
+      if (Read_raw) return {BF16, Truncation};
+      else return {E8M6, Rounding};
+    case FP16:
+      if (TTArchitecture == Blackhole && Round_10b_mant) {
+        if (Read_raw) return {FP16, Truncation to TF32 then exponent narrowing};
+        else return {FP16, Rounding to TF32 then exponent narrowing};
+      }
+      return NotDescribed;
+    case INT16: return {INT16, Top 16 bits}; // Opaque data: no conversion, rounding or saturation
+    case INT8: return {Read_unsigned ? UINT8 : INT8, PackInt8}; // PackInt8 is below
+    default: return NotDescribed;
+    }
+  } else { // Dst holds BF16, FP16 or INT16 datums
+    switch (IntermediateFormat) {
+    case TF32: // From BF16
+      if (!Read_raw) return {TF32, Rounding};
+      return NotDescribed;
+    case FP32: // From BF16
+      if (!Read_raw && Round_10b_mant) return {TF32, Rounding};
+      if (TTArchitecture == Blackhole) {
+        // Each BF16 datum lands in the high 16 bits, but the low 16 bits are not zero; they come from other data in Dst.
+        // To get FP32, keep the datum as BF16 instead, and let the late conversion widen it.
+        UnsupportedFunctionality();
+      }
+      return NotDescribed;
+    case BF16: // From BF16
+      if (Read_raw) return {BF16, Identity};
+      else if (Round_10b_mant) return {TF32, Rounding}; // Can only be used if the late conversion is from TF32 to FP16, and if available, is the preferred choice for efficiency reasons
+      else return {BF16, Rounding};
+    case BFP8: // From BF16
+      if (Read_raw) return {BF16, Identity}; // Except that it turns -0 into -infinity, so not actually an identity
+      else return {E8M6, Rounding};
+    case FP16:
+      if (TTArchitecture == Blackhole && Round_10b_mant) return {FP16, Exponent narrowing}; // From BF16, with no rounding
+      else if (Read_raw) return {FP16, Identity}; // From FP16
+      else return {FP16, Rounding}; // From FP16
+    case BFP8a: // From FP16
+      if (Read_raw) return {E5M7, Truncation};
+      else return {E5M6, Rounding};
+    case FP8: // From FP16
+      if (Read_raw) return {FP8, Truncation};
+      return NotDescribed;
+    case INT8: // From BF16 or FP16
+      if (Read_raw && !Read_unsigned) return {INT8, Sign bit only};
+      return NotDescribed;
+    case INT16: return {INT16, Identity}; // From INT16
+    default: return NotDescribed;
+    }
+  }
+}
+```
+
+If the late conversion is from BF16 to FP16, `Round_10b_mant` should be `false` wherever `IntermediateFormat = BF16`.
+
+For `IntermediateFormat = INT8` with `Read_32b_data = true`, each 32-bit datum `x` becomes:
+
+```c
+uint8_t PackInt8(uint32_t x) { // x is a sign-magnitude INT32 datum, or the bits of an FP32 datum
+  if (Read_raw) {
+    if (Read_unsigned) return x & 0xff;         // Low 8 bits (of the magnitude, or of the mantissa)
+    else return ((x >> 31) << 7) | (x & 0x7f);  // Sign bit and low 7 bits
+  }
+  // From INT32 only:
+  uint1_t Sign = x >> 31;
+  uint32_t Mag = x & 0x7fffffff;
+  uint5_t Shift = ShiftAmount & 0x1f;
+  if (Shift) Mag = (Mag + (1u << (Shift - 1))) >> Shift; // Round to nearest, ties away from zero
+  if (Read_unsigned) return min(Mag, 255u);   // The sign is dropped: e.g. -5 becomes 5
+  Mag = min(Mag, 127u);
+  return Mag ? ((Sign << 7) | Mag) : 0;       // A zero magnitude is +0, even if the input was negative
+}
+```
+
 The late format conversion is configured using the `LateFromFormat` and `LateToFormat` variables, which map to concrete configuration fields as:
 ```c
 uint1_t StateID = ThreadConfig[CurrentThread].CFG_STATE_ID_StateID;
@@ -259,15 +316,23 @@ LateToFormat   is CurrentPacker.Config[StateID].Out_data_format;
 Pac_LF8_4b_exp is CurrentPacker.Config[StateID].Pac_LF8_4b_exp; // Blackhole only
 ```
 
-It is usually the case that `IntermediateFormat` and `LateFromFormat` should be set to the same value. All three of `IntermediateFormat` and `LateFromFormat` and `LateToFormat` are 4-bit fields, with the encoding of data type names being:
+It is usually the case that `IntermediateFormat` and `LateFromFormat` should be set to the same value (on Blackhole, both come from `In_data_format`). All three of `IntermediateFormat` and `LateFromFormat` and `LateToFormat` are 4-bit fields with the same encoding, but some values mean different things in different fields:
 
-||`0b??11`|`0b??10`|`0b??01`|`0b??00`|
-|---|---|---|---|---|
-|**`0b00??`**|`BFP4a` (‡)|`BFP8a` (†)|`FP16`|`FP32`|
-|**`0b01??`**|`BFP4` (‡)|`BFP8` (†)|`BF16`|`TF32`|
-|**`0b10??`**|`BFP2a` (‡)|`FP8`|`INT16`|`INT32`|
-|**`0b11??`**|`BFP2` (‡)|`INT8`|||
+|Value|Name|In `IntermediateFormat` or `LateFromFormat`|In `LateToFormat` (the format written to L1)|
+|---|---|---|---|
+|`0b0000`|`FP32`|FP32|FP32|
+|`0b0001`|`FP16`|FP16|FP16|
+|`0b0010`|`BFP8a`|A per-datum format with a 5-bit exponent: E5M7 (early conversion with `Read_raw = true`) or E5M6 (with `Read_raw = false`)|BFP8a|
+|`0b0011`|`BFP4a`|Not valid|BFP4a|
+|`0b0100`|`TF32`|TF32|TF32|
+|`0b0101`|`BF16`|BF16|BF16|
+|`0b0110`|`BFP8`|A per-datum format with an 8-bit exponent: BF16 (early conversion with `Read_raw = true`) or E8M6 (with `Read_raw = false`)|BFP8|
+|`0b0111`|`BFP4`|Not valid|BFP4|
+|`0b1000`|`INT32`|INT32|INT32|
+|`0b1001`|`INT16`|INT16|INT16|
+|`0b1010`|`FP8`|FP8 (e5m2)|FP8 (e5m2; e4m3 on Blackhole with `Pac_LF8_4b_exp = true`)|
+|`0b1011`|`BFP2a`|Not valid|BFP2a|
+|`0b1110`|`INT8`|INT8, or UINT8 with `Read_unsigned = true`|INT8 or UINT8 (the late conversion passes the 8 bits through)|
+|`0b1111`|`BFP2`|Not valid|BFP2|
 
-(†) Only actually _means_ BFP in `LateToFormat`. Elsewhere it usually represents a type with the same exponent and mantissa width as the BFP format, but with the exponent being per-datum rather than one common exponent per 16 datums. In the case of BFP8, this gives a type almost identical to BF16.
-
-(‡) Only valid in `LateToFormat`, not valid in `IntermediateFormat` or `LateFromFormat`.
+`0b1100` and `0b1101` have no name. The BFP formats are only actually BFP in `LateToFormat`, where each group of 16 datums gets one shared exponent; in the other two fields, `BFP8a` and `BFP8` name a type with the exponent width of the BFP format but one exponent per datum, which in the case of `BFP8` gives a type almost identical to BF16.
