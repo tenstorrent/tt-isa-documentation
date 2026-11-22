@@ -1,7 +1,7 @@
 # Blackhole
 
 Each Blackhole ASIC contains:
-* [140x Tensix tile](TensixTile/README.md), also known as worker tiles or compute tiles. Depending on the particular product, either 120 or 140 will be available, with the others fused off.
+* [140x Tensix tile](TensixTile/README.md), also known as worker tiles or compute tiles. Depending on the particular product, 120 or more will be available, with the others fused off or disabled by board firmware: current firmware for p100, p150 and p300 boards leaves 120 enabled. Tiles are always enabled or disabled a whole column (10 tiles) at a time.
 * 24x DRAM tile, collectively exposing 32 GiB of GDDR6 (each 4 GiB is exposed identically on 3 tiles). Depending on the particular product, either 28 or 32 GiB will be available, with the remainder fused off.
 * [4x L2CPU tile](L2CPUTile/README.md), each one containing a coherent cluster of four SiFive x280 CPUs (for an aggregate total of sixteen CPU cores). Each individual core has private L1 data cache (32 KiB), private L1 instruction cache (32 KiB), and private L2 cache (128 KiB). Each cluster has a shared L3 cache (2 MiB).
 * [14x Ethernet tile](EthernetTile/README.md), each one with bidirectional 400 GbE connectivity. Depending on the particular product, either 0 or 12 will be available, with the others fused off. A pair of Ethernet tiles is connected to each QSFP-DD port, and then these bidirectional 800 GbE ports are intended for connecting multiple ASICs together using QSFP-DD cables. On p150 boards, there are four QSFP-DD ports, meaning that 8 Ethernet tiles are connected; the remaining 4 Ethernet tiles are not connected to anything - they can still be used for their RISCVs and their L1, but they cannot be used to transmit or receive Ethernet packets.
@@ -13,11 +13,13 @@ The [NoCs](NoC/README.md) connect the various tiles to form a 2D torus. The 2D t
 
 ![](../Diagrams/Out/NoC_BH_Layout.svg)
 
+The diagram shows the full ASIC. On a board with 120 Tensix tiles, two of the 14 Tensix columns are disabled; which two differs from chip to chip. The grid itself doesn't change: the disabled tiles keep their NoC coordinates, and with [coordinate translation](NoC/Coordinates.md#coordinate-translation) enabled, the disabled columns are moved to the end of the translated Tensix range.
+
 Tile counts for various product families are:
 
 ||p100|p150|Full ASIC|
 |---|--:|--:|--:|
-|**Tensix tile**|120|140|140|
+|**Tensix tile**|120|120|140|
 |**DRAM tile**|21|24|24|
 |**L2CPU tile**|(†) 4|4|4|
 |**Ethernet tile**|0|12|14|

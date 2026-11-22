@@ -31,7 +31,7 @@ Whereas [Wormhole](../../WormholeB0/NoC/Coordinates.md#coordinate-translation) h
 |0&nbsp;to&nbsp;16|1|→|Row containing mostly Ethernet tiles (X translation not applied when `Y = 1`)|
 |1&nbsp;to&nbsp;7|2&nbsp;to&nbsp;11|→|70x Tensix tile|
 |10&nbsp;to&nbsp;14|2&nbsp;to&nbsp;11|→|50x Tensix tile|
-|15&nbsp;to&nbsp;16|2&nbsp;to&nbsp;11|→|20x Tensix tile (fused off in p100, present in p150)|
+|15&nbsp;to&nbsp;16|2&nbsp;to&nbsp;11|→|20x Tensix tile (disabled on boards with 120 Tensix tiles, such as p100 and p150)|
 |17|12&nbsp;to&nbsp;14|→|3x DRAM tile, same 4 GiB exposed on each|
 |17|15&nbsp;to&nbsp;17|→|3x DRAM tile, same 4 GiB exposed on each|
 |17|18&nbsp;to&nbsp;20|→|3x DRAM tile, same 4 GiB exposed on each|
