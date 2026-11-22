@@ -332,6 +332,10 @@ void Store8(uint32_t Addr, uint8_t Value) {
 }
 ```
 
+## Debug reads of `Dst`
+
+`Dst` can also be read by RISCV cores through the debug array registers (`RISCV_DEBUG_REG_DBG_ARRAY_RD_EN`, `RISCV_DEBUG_REG_DBG_ARRAY_RD_CMD` and `RISCV_DEBUG_REG_DBG_ARRAY_RD_DATA`), which are not otherwise described here. Such a read borrows packer 0's `Dst` read port, and due to a hardware bug it leaves packer 0 busy, even though the read itself returns the right data: a later [`STALLWAIT`](STALLWAIT.md) or other wait on the packers never finishes, and packer 0's next [`PACR`](PACR.md) either never finishes or packs the wrong data. This happens even if no `PACR` has run since reset. A [soft reset of packer 0](../SoftReset.md#packer-soft-reset) after the reads makes its next `PACR` work correctly again, so software should do that after reading `Dst` this way.
+
 ## Pseudocode helpers
 
 The following pseudocode routines are shared across the various units that access `Dst`.

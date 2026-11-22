@@ -107,6 +107,14 @@ Unpacks to `Dst` and Matrix Unit (FPU) instructions share one write path into `D
 
 Reads have a similar limit: each half of `Dst` reads one row per cycle for the packers, the Vector Unit (SFPU) and the Matrix Unit (FPU) together. If two of them read the same half of `Dst` in the same cycle, both get the row that the higher-priority reader asked for (packers first, then the Vector Unit, then the Matrix Unit), even when they asked for different rows, so the other reader's data is wrong; this is `UndefinedBehavior`. A thread hits this when it issues a Matrix Unit (FPU) instruction which reads `Dst` (e.g. [`MVMUL`](MVMUL.md), or [`ELWADD`](ELWADD.md) accumulating) or an [`SFPLOAD`](SFPLOAD.md) after a [`PACR`](PACR.md), while the packers are still reading that half of `Dst`, whichever rows each one reads (e.g. a `PACR` of rows 0 through 63, then anywhere from one to fifteen `NOP`s, then an `ELWADD` accumulating onto rows 128 through 135: some or all of those rows end up accumulated onto the values of rows the packers were reading, and an `SFPLOAD` from row 128 in the same place loads a packed row's values). As with reusing rows that a `PACR` reads, wait for the packers first (above), or work in the other half of `Dst`. A Matrix Unit (FPU) instruction and an `SFPLOAD` from the same thread never read `Dst` in the same cycle; from two different threads they can.
 
+## Debug reads of `Dst`
+
+`Dst` can also be read by RISCV cores through the debug array registers (`RISCV_DEBUG_REG_DBG_ARRAY_RD_EN`, `RISCV_DEBUG_REG_DBG_ARRAY_RD_CMD` and `RISCV_DEBUG_REG_DBG_ARRAY_RD_DATA`), which are not otherwise described here. Such a read borrows packer 0's `Dst` read port, and due to a hardware bug it disturbs packer 0, even though the read itself returns the right data:
+* Packer 0 is left busy: a later [`STALLWAIT`](STALLWAIT.md) or other wait on the packers never finishes, and neither does packer 0's next [`PACR`](PACR.md). This happens even if no `PACR` has run since reset.
+* If packer 0 has run a `PACR` since reset, the read also makes packer 0 write 256 bytes of other data into L1 at its current output address, which after a `PACR` with `Last` set is the start of the tile it just packed. Reading a single row is enough.
+
+A [soft reset of packer 0](../SoftReset.md#packer-soft-reset) after the reads makes its next `PACR` work again, but doesn't undo the write to L1. Software should therefore soft reset packer 0 after reading `Dst` this way, and should not read `Dst` this way after a `PACR` whose output it still needs (or should repeat that `PACR` afterwards).
+
 ## Pseudocode helpers
 
 The following pseudocode routines are shared across the various units that access `Dst`.
