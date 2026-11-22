@@ -51,3 +51,9 @@ if (Reset) {
   }
 }
 ```
+
+## Ordering after an `UNPACR` that gives the same bank
+
+`CLEARDVALID` does not wait for anything: it acts on `MatrixUnit.SrcABank` / `MatrixUnit.SrcBBank` as soon as the Matrix Unit (FPU) executes it, whoever owns that bank. On Blackhole, if the issuing thread has just given that bank to the Matrix Unit (FPU) with an [`UNPACR`](UNPACR_Regular.md) with `FlipSrc` or with [`UNPACR_NOP`](UNPACR_NOP.md), `CLEARDVALID` can execute before the Unpacker has finished and given the bank over. The bank is then still the Unpackers', so `CLEARDVALID` leaves it as it is but still moves `MatrixUnit.SrcABank` / `MatrixUnit.SrcBBank` past it, and when the hand-over then lands the bank belongs to the Matrix Unit (FPU) out of turn: from then on the Matrix Unit (FPU) and the Unpackers use the two banks out of step, and later Matrix Unit (FPU) instructions can read stale data. The flip bits of [`SETRWC`](SETRWC.md) behave the same way.
+
+To order them, put a [`STALLWAIT`](../../../BlackholeA0/TensixTile/TensixCoprocessor/STALLWAIT.md) between the two whose block mask includes B6 (Matrix Unit instructions) and whose condition mask includes the Unpacker that gives the bank (C1 for `SrcA`, C2 for `SrcB`), or a Matrix Unit (FPU) instruction that reads the bank, such as [`MOVA2D`](MOVA2D.md) or [`MOVB2D`](MOVB2D.md), which waits until the bank has been given to it.
