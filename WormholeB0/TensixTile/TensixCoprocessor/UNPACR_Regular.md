@@ -582,6 +582,9 @@ if (WhichUnpacker == 0) {
 if (TTArchitecture == Wormhole) {
   CurrentUnpacker.WriteThread = CurrentThread; // See SrcASrcB.md
 }
+if (TTArchitecture == Blackhole) {
+  CurrentUnpacker.LastOutDataFormat = OutDataFormat; // See SrcASrcB.md
+}
 if (FlipSrc) {
   if (WhichUnpacker == 0 && Unpackers[0].WroteDst) {
     UndefinedBehavior(); // Hardware bug; see Unpackers[0].WroteDst in SrcASrcB.md

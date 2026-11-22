@@ -60,6 +60,20 @@ uint4_t ImpliedSrcBFmt[2]; // Indexed by SrcB bank.
 
 Matrix Unit (FPU) instructions read the implied format in place of the configured format when the corresponding `ThreadConfig.DISABLE_IMPLIED_SRCA_FMT_Base` (for `SrcA`) or `ThreadConfig.DISABLE_IMPLIED_SRCB_FMT_Base` (for `SrcB`) bit is `false`. This mechanism does not exist on Wormhole; the configured format is always used there.
 
+Each unpacker also remembers the output data format of the most recent [`UNPACR`](UNPACR_Regular.md) it executed, whether that `UNPACR` wrote `SrcA`, `SrcB` or `Dst`, and whether or not it gave a bank to the Matrix Unit:
+```c
+uint4_t Unpackers[0]::LastOutDataFormat = FP32;
+uint4_t Unpackers[1]::LastOutDataFormat = FP32;
+```
+
+A bank's implied format is written when the bank is given to the Matrix Unit (FPU):
+* By `UNPACR` with `FlipSrc`: that `UNPACR`'s output data format.
+* By an [`UNPACR_NOP`](UNPACR_NOP.md) that clears the bank and gives it: the unpacker's configured output data format at that `UNPACR_NOP`.
+* By the `UNPACR_NOP` flavor that only gives the bank (clear-to-one with clear-to-one format 3): `LastOutDataFormat` of that unpacker.
+* By [`SETDVALID`](SETDVALID.md) (`UnsupportedFunctionality` on Blackhole): an `UnpredictableValue`. In practice it is `LastOutDataFormat` of that unpacker, as for the `UNPACR_NOP` flavor above, but `SETDVALID` does not wait for an `UNPACR` already sent to the unpacker to finish, and if one is still running the bank can get the format of the `UNPACR` before it.
+
+So the format given with a bank by `SETDVALID` or the give-only `UNPACR_NOP` comes from whichever `UNPACR` that unpacker ran last, not from the bank's own data: a later change to the configured formats, an `UNPACR_NOP` that clears the bank, or an earlier `UNPACR` to the same bank doesn't affect it. [`CLEARDVALID`](CLEARDVALID.md) with its reset bit sets every bank's implied format to `FP32` and leaves `LastOutDataFormat` alone.
+
 ## Data types
 
 Each datum in `SrcA` or `SrcB` is up to 19 bits wide, holding one of:
