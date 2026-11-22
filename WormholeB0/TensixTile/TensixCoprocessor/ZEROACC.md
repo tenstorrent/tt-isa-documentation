@@ -41,6 +41,8 @@ On Blackhole, `AddrMod` is a `u3` rather than a `u2`, `UseDst32b` is no longer p
 
 ## Functional model
 
+On Blackhole, `Revert` with the 16-row mode and `UseDst32b` set (and `DEST_ACCESS_CFG_zeroacc_absolute_tile_mode` clear) marks the face's rows as defined instead of undefined. Software can use it after an unpack of 32-bit data to `Dst`, to set valid bits that the unpack's own update may have lost to a `ZEROACC` in the same cycle (see [`Dst.md` in the Blackhole tree](../../../BlackholeA0/TensixTile/TensixCoprocessor/Dst.md)). Every other use of `Revert` on Blackhole is `NonContractualBehavior`.
+
 On Blackhole, the 16-row mode's `Imm10` is relative to the half of `Dst` that the instruction addresses, unless `DEST_ACCESS_CFG_zeroacc_absolute_tile_mode` is set. Hardware picks the half using the row that the one-row mode would clear, i.e. `Imm10` plus `DEST_TARGET_REG_CFG_MATH_Offset` plus the `Dst` RWC plus `DEST_REGW_BASE_Base`, with `Imm10` added in as a row number even though this mode treats it as a face number; the upper half is rows 512 and up, or rows 256 and up with `UseDst32b`. Software double-buffering `Dst` normally keeps the base of the current half in `DEST_TARGET_REG_CFG_MATH_Offset`, so `Imm10` should then be the face number within that half. Note that the sum can reach the upper half even when `DEST_TARGET_REG_CFG_MATH_Offset` is in the lower half (e.g. `DEST_TARGET_REG_CFG_MATH_Offset == 496` and `Imm10 == 20`), and that an `Imm10` which already includes the half (e.g. 32 or more for the upper half of a 16-bit `Dst`) is out of bounds once the half is added again. On Wormhole, `Imm10` is always absolute.
 
 ```c
@@ -48,11 +50,14 @@ if (TTArchitecture == Blackhole && Mode >= 4) {
   UndefinedBehavior();
 }
 if (Revert) {
-  if (TTArchitecture == Blackhole) {
+  if (TTArchitecture == Blackhole && Mode == ZEROACC_MODE_16_ROWS && UseDst32b && !Config.DEST_ACCESS_CFG_zeroacc_absolute_tile_mode) {
+    // In the below, the assignments of DstRowValid set it to true instead of to false, so those rows
+    // again read as what they hold (UnpredictableValue if never written since reset). Revert has no
+    // other effect.
+  } else if (TTArchitecture == Blackhole) {
     NonContractualBehavior {
-      // Current silicon behavior (not architecturally guaranteed): in the below, the assignments of
-      // DstRowValid set it to true instead of to false, so those rows again read as what they hold
-      // (UnpredictableValue if never written since reset). Revert has no other effect.
+      // Current silicon behavior (not architecturally guaranteed): as above, the assignments of
+      // DstRowValid set it to true instead of to false, and Revert has no other effect.
     }
   } else {
     UndefinedBehavior();
