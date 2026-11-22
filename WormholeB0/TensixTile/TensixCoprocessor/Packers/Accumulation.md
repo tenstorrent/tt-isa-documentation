@@ -8,6 +8,16 @@ The output format (`Out_data_format`) selects the addition: FP32 datums are adde
 
 On Blackhole, each configuration context has its own `Pack_L1_Acc` (word 3 of `THCON_SEC0_REG1`, `THCON_SEC0_REG8`, `THCON_SEC1_REG1` or `THCON_SEC1_REG8`), and a `PACR` uses the one of the context it reads; on Wormhole, each packer has its own.
 
+## Accumulating into the same 16 bytes again
+
+On Wormhole, L1 performs a packer's accumulate as a read followed a few cycles later by a write of the sum, and doesn't hold back other requests for the same 16 bytes in between (unless bit 5 of `RISCV_DEBUG_REG_DBG_FEATURE_DISABLE` is set). So if a packer write reaches a 16-byte L1 word while an earlier accumulate into that word is still in progress, one of the two is lost: a second accumulate adds its datums to the old value, so the earlier accumulate's datums disappear, and a plain write is overwritten by the earlier accumulate's sum.
+
+With one packer, this happens when a `PACR` writes a word that the end of that packer's previous `PACR` also wrote. For example, back-to-back `PACR`s with `Last` set, each packing one row of 16 BF16 datums (two 16-byte words) to the same address, lose every other accumulation, and a `PACR` without `Pack_L1_Acc` right behind them can be overwritten by the last one's sum. If the previous `PACR` wrote at least four 16-byte words, or a [`STALLWAIT`](../STALLWAIT.md) for the packers separates the two `PACR`s, the earlier accumulate has finished. With several packers, two packers writing the same words at the same time lose accumulations however many words each writes, and a `STALLWAIT` can't separate them within one `PACR`.
+
+A whole tile's `PACR`s write each word once, so packing one tile after another into the same L1 address with accumulation is safe unless each packer writes fewer than four 16-byte words per tile (as with tiles of one or two rows).
+
+On Blackhole, a later request for the same 16 bytes waits until the accumulate has written its sum, so accumulates into the same words can follow each other freely.
+
 ## Functional model
 
 For the floating-point output formats, the addition is:
