@@ -24,11 +24,11 @@ TT_UNPACR_NOP(/* u1 */ WhichUnpacker,
 if (Mode != 1) {
   UnsupportedFunctionality(); // 0 and 3 free buffer space in the NoC overlay, 2 is a delay between unpacks; no known usage
 }
-if (StreamId != 0 || MsgClrCnt != 0 || ClrTo1FmtCtrl != 0) {
-  UnsupportedFunctionality(); // Only meaningful with other modes, or with clearing to one; no known usage
+if (StreamId != 0 || MsgClrCnt != 0) {
+  UnsupportedFunctionality(); // Only meaningful with other modes; no known usage
 }
-if (ClearValue >= 2) {
-  UnsupportedFunctionality(); // 2 clears to one, 3 to a value held in a register; no known usage
+if (ClearValue >= 2 || ClrTo1FmtCtrl != 0) {
+  UnsupportedFunctionality(); // 2 clears to one, 3 to a value held in a register; see below
 }
 if (WhichUnpacker == 1 && ClearValue == 1) {
   UnsupportedFunctionality(); // Clearing SrcB to negative infinity; no known usage
@@ -61,15 +61,43 @@ if (SetDvalid) {
   if (WhichUnpacker == 0 && ThreadConfig[CurrentThread].SRCA_SET_Base != 0) {
     UnsupportedFunctionality(); // No known usage
   }
-  // As UNPACR with FlipSrc set: the bank goes to the Matrix Unit, with the unpacker's output format as its implied format.
+  // As UNPACR with FlipSrc set: the bank goes to the Matrix Unit, with the unpacker's output format as its implied format,
+  // except that a BFP4 or BFP2 input format (BFP4, BFP4a, BFP2, BFP2a) is recorded instead.
   // Unlike FlipSrc, it leaves Unpackers[WhichUnpacker].SrcRow[CurrentThread] as it is.
   Src[UnpackBank].AllowedClient = SrcClient::MatrixUnit;
-  (WhichUnpacker ? ImpliedSrcBFmt : ImpliedSrcAFmt)[UnpackBank] = ConfigState.THCON_SEC[WhichUnpacker].REG2_Out_data_format;
+  uint4_t InFmt = ConfigState.THCON_SEC[WhichUnpacker].REG0_TileDescriptor.InDataFormat;
+  (WhichUnpacker ? ImpliedSrcBFmt : ImpliedSrcAFmt)[UnpackBank] = (InFmt & 3) == 3 ? InFmt : ConfigState.THCON_SEC[WhichUnpacker].REG2_Out_data_format;
   Unpackers[WhichUnpacker].SrcBank ^= 1;
 }
 ```
 
 The clear covers the whole bank, whatever the unpacker's X counter range (`SETADCXX`): it doesn't narrow to the span the next `UNPACR` reads.
+
+## Clearing to one or to a register value
+
+`ClearValue` values of 2 and 3, and a nonzero `ClrTo1FmtCtrl`, are `UnsupportedFunctionality`, but the hardware's behavior is as follows. The value is written in one of four formats, picked by `ClearFmt`:
+
+```c
+uint4_t InFmt = ConfigState.THCON_SEC[WhichUnpacker].REG0_TileDescriptor.InDataFormat;
+uint4_t ClearFmt = (InFmt & 3) == 3 ? InFmt : ConfigState.THCON_SEC[WhichUnpacker].REG2_Out_data_format; // As the implied format above
+bool Unsigned = WhichUnpacker == 0 ? ConfigState.ALU_FORMAT_SPEC_REG0_SrcAUnsigned : ConfigState.ALU_FORMAT_SPEC_REG0_SrcBUnsigned;
+uint32_t Reg = WhichUnpacker == 0 ? ConfigState.UNP0_NOP_REG_CLR_VAL : ConfigState.UNP1_NOP_REG_CLR_VAL;
+
+uint19_t ClearVal;
+if (ClearFmt == INT8) {
+  ClearVal = ClearValue == 2 ? WriteSrcInt8(1, Unsigned) : WriteSrcInt8(Reg & 0xff, Unsigned);
+} else if (ClearFmt == FP16 || ClearFmt == BFP8a || ClearFmt == BFP4a || ClearFmt == BFP2a || ClearFmt == FP8) {
+  ClearVal = WriteSrcFP16(ClearValue == 2 ? 0x3c00 : Reg & 0xffff);
+} else if (ClearFmt == TF32 && ClearValue == 3) {
+  ClearVal = WriteSrcTF32(Reg & 0x7ffff);
+} else {
+  ClearVal = WriteSrcBF16(ClearValue == 2 ? 0x3f80 : Reg & 0xffff);
+}
+```
+
+`WriteSrcTF32`, `WriteSrcFP16` and `WriteSrcBF16` are as in [`UNPACR`](../../../WormholeB0/TensixTile/TensixCoprocessor/UNPACR_Regular.md); `WriteSrcInt8` stores sign and magnitude (or, when `Unsigned`, an 8-bit magnitude) in the low mantissa bits, with exponent 16 when the magnitude is nonzero and 0 otherwise. `Reg` and `Unsigned` are read when the clear happens, after its wait; the formats when the unpacker accepts the instruction.
+
+`ClrTo1FmtCtrl` has no effect on the value; the value 3 together with `ClearValue` 2 turns the instruction into something other than a clear, not described here. `ClearValue` 2 and 3 on unpacker 0 also leave the hazard described under "Clearing both banks" armed.
 
 ## Clearing both banks
 
