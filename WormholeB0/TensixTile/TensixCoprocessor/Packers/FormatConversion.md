@@ -90,7 +90,7 @@ The late format conversion takes one of the supported intermediate formats, and 
 <tr><th>To INT8<br/>or UINT8</th><td colspan="2">No</td><td>No</td><td>No</td><td>Identity or bitcast</td></tr>
 </table>
 
-Where rounding happens in BFP conversions, it can either be deterministic round-to-nearest with ties away from zero, or stochastic (though due to a hardware bug, stochastic rounding has a slight bias towards increasing the magnitude rather than being 50:50, and can even sometimes increase the magnitude of values which do not require rounding). Stochastic rounding (any of the `ALU_ROUNDING_MODE_*_srnd_en` fields set) is `UnsupportedFunctionality`.
+Where rounding happens in BFP conversions, it can either be deterministic round-to-nearest with ties away from zero, or stochastic (though due to a hardware bug, stochastic rounding has a slight bias towards increasing the magnitude rather than being 50:50, and can even sometimes increase the magnitude of values which do not require rounding). Stochastic rounding (any of the `ALU_ROUNDING_MODE_*_srnd_en` fields set) is `UnsupportedFunctionality`. On Blackhole, stochastic rounding in this conversion (`ALU_ROUNDING_MODE_Packer_srnd_en`) can also turn a datum into zero: where deterministic rounding clamps a magnitude of 128 to 127 (see `Mag == 128` below), stochastic rounding can instead carry out of the magnitude, so a datum whose exponent equals the shared exponent and whose mantissa is `0x7E` or `0x7F` can become +0.
 
 With deterministic rounding, each group of 16 datums is converted from BF16 to BFP8, and then possibly truncated to BFP4 or BFP2, using the following logic:
 
