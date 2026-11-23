@@ -241,6 +241,9 @@ EarlyConversion SelectEarlyConversion() {
         if (Read_raw) return {FP16, Truncation to TF32 then exponent narrowing};
         else return {FP16, Rounding to TF32 then exponent narrowing};
       }
+      // On Wormhole, Round_10b_mant has no effect here, and the exponent is not narrowed: the datum keeps only the low
+      // five bits of its 8-bit exponent field, so this does not give FP16 values. Keep the datum as FP32 instead (or
+      // round it to TF32), and let the late conversion narrow it.
       return NotDescribed;
     case INT16: return {INT16, Top 16 bits}; // Opaque data: no conversion, rounding or saturation
     case INT8: return {Read_unsigned ? UINT8 : INT8, PackInt8}; // PackInt8 is below
@@ -286,7 +289,7 @@ EarlyConversion SelectEarlyConversion() {
 }
 ```
 
-If the late conversion is from BF16 to FP16, `Round_10b_mant` should be `false` wherever `IntermediateFormat = BF16`.
+On Wormhole, if the late conversion is from BF16 to FP16, `Round_10b_mant` should be `true` wherever `IntermediateFormat = BF16` and `Read_32b_data = true`: the early conversion then rounds each FP32 datum to ten mantissa bits and passes the three below BF16's seven to the late conversion beside the datum, which uses all ten, so the FP16 result is the datum rounded to nearest (ties away from zero) before the exponent is narrowed. With `Round_10b_mant = false`, the FP16 result has only BF16's seven mantissa bits, the rest zero. The late conversions to other formats ignore the three extra bits, so with `Round_10b_mant = true` they see each datum rounded to ten mantissa bits then truncated to seven. From BF16 datums in `Dst` (`Read_32b_data = false`) there is nothing below the seventh bit, and `Round_10b_mant` changes nothing. Elsewhere, if the late conversion is from BF16 to FP16, `Round_10b_mant` should be `false` wherever `IntermediateFormat = BF16`.
 
 For `IntermediateFormat = INT8` with `Read_32b_data = true`, each 32-bit datum `x` becomes:
 
