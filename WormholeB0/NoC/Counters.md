@@ -39,6 +39,8 @@ Each NIU contains an array of counters, which software can use to monitor the st
 
 Various counters are incremented (or occasionally decremented) at various points in the lifetime of a NoC request, with this varying based on the type of request. See below sections for details.
 
+The counters described below as incremented "by the number of data flits" count the 32-byte-aligned blocks spanned by the packet's data at its destination: a packet of `n` bytes destined for address `a` (its `NOC_RET_ADDR`, for both reads and writes) has `ceil(((a % 32) + n) / 32.)` data flits, so a 64-byte packet has 2 or 3 data flits depending on `a`.
+
 > [!WARNING]
 > If software initiates an NIU request [by writing to `NOC_CMD_CTRL`](MemoryMap.md#noc_cmd_ctrl) and then immediately reads from an NIU counter, [RISCV memory ordering](../TensixTile/BabyRISCV/MemoryOrdering.md) rules should be consulted to ensure that the read and the write are not reordered. To ensure correct ordering in this particular scenario, it suffices to read back from `NOC_CMD_CTRL` before performing the first counter read.
 
@@ -105,6 +107,7 @@ At the initiating NIU, as the virtual channel number for the first hop from the 
 * Revert the relevant `NOC_CMD_CTRL` back to `0`.
 
 At each `NOC_TARG_ADDR` NIU, as the request arrives at the NIU:
+* Increment `NIU_SLV_REQ_ACCEPTED`.
 * If `NOC_CMD_RESP_MARKED` is set, increment `NIU_SLV_NONPOSTED_WR_REQ_STARTED` and `NIU_SLV_NONPOSTED_WR_REQ_RECEIVED` and `NIU_SLV_NONPOSTED_WR_DATA_WORD_RECEIVED`. Otherwise increment `NIU_SLV_POSTED_WR_REQ_STARTED` and `NIU_SLV_POSTED_WR_REQ_RECEIVED` and `NIU_SLV_POSTED_WR_DATA_WORD_RECEIVED`.
 
 **Remainder only if `NOC_CMD_RESP_MARKED` is set:**
@@ -134,6 +137,7 @@ At the initiating NIU, after the data reads from L1 or register space are comple
 * Decrement `NIU_MST_WRITE_REQS_OUTGOING_ID(NOC_PACKET_TRANSACTION_ID)` by one.
 
 At each `NOC_RET_ADDR` NIU, as the request arrives at the NIU:
+* Increment `NIU_SLV_REQ_ACCEPTED`.
 * If `NOC_CMD_RESP_MARKED` is set, increment `NIU_SLV_NONPOSTED_WR_REQ_STARTED`. Otherwise increment `NIU_SLV_POSTED_WR_REQ_STARTED`.
 
 At each `NOC_RET_ADDR` NIU, as each data flit arrives at the NIU:
