@@ -39,6 +39,9 @@ Each hardware IRQ has a different way of clearing it, which will involve softwar
 > [!CAUTION]
 > Due to a hardware bug, the ECC scrubber's row counter wraps after row 4095 rather than after row 3071, the last populated row, so the scrubber also reads rows 3072 to 4095, which have no memory behind them, and reports false single-bit and double-bit errors from them on every Tensix tile. Row `r` is the 512 bytes of L1 at addresses `r * 512` to `r * 512 + 511`, so rows 3072 to 4095 are addresses `0x180000` to `0x1FFFFF`, and a NoC read of those addresses reports the same false errors. A handler for hardware IRQ 3 should therefore ignore errors whose row is 3072 or above.
 
+> [!CAUTION]
+> Due to a hardware bug, after a cold boot an L1 error can be logged at the wrong location. Each row is 32 words of 16 bytes, one per bank, and some error flags of the read-modify-write path have no reset, so after power-on some of them are set. While a bank's flag is set, an error is logged at that bank's most recent access instead of where it happened: usually a word being written, in a populated row. A false error from rows 3072 to 4095 then looks like an error in a populated row, which the check above can't recognise. Chip resets and warm reboots leave the flags as they are. Only an error on the read-modify-write path clears them, for example a partial write into a word of row 3072 or above, or the ECC scrubber reaching row 3072. Software can clear them before enabling hardware IRQ 3 by storing 4 bytes into each of the 32 words of row 3072 (addresses `0x180000` to `0x1801F0`, in steps of 16 bytes). An aligned 16-byte write doesn't clear them, because it doesn't read the word first.
+
 ## Memory Map
 
 |Name|Address|Software access|Purpose|
