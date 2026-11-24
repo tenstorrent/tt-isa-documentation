@@ -39,6 +39,9 @@ Each hardware IRQ has a different way of clearing it, which will involve softwar
 > [!CAUTION]
 > Due to a hardware bug, the ECC scrubber's row counter wraps after row 4095 rather than after row 3071, the last populated row, so the scrubber also reads rows 3072 to 4095, which have no memory behind them, and reports false single-bit and double-bit errors from them on every Tensix tile. Row `r` is the 512 bytes of L1 at addresses `r * 512` to `r * 512 + 511`, so rows 3072 to 4095 are addresses `0x180000` to `0x1FFFFF`, and a NoC read of those addresses reports the same false errors. A handler for hardware IRQ 3 should therefore ignore errors whose row is 3072 or above.
 
+> [!CAUTION]
+> By default, an L1 error raises hardware IRQ 3 and is counted only if it is in a different 16-byte word from the last error logged. So when only double-bit errors raise IRQ 3, a double-bit error in a word that already logged a single-bit error raises nothing and isn't counted, and the corruption goes unreported. Setting bit 20 of `ECC_CTRL` (`0xFFB121D0`) makes every enabled L1 error raise IRQ 3, wherever it is; it doesn't enable single-bit or double-bit errors by itself. The same bit also enables the NoC NIU error interrupts, which still need the NIU to enable those errors.
+
 ## Memory Map
 
 |Name|Address|Software access|Purpose|
