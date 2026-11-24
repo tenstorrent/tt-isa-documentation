@@ -91,8 +91,8 @@ if (Move8Rows) {
 } else {
   if ((TTArchitecture == Blackhole) && (AddrMod & 1)) {
     // On Blackhole, the low bit of AddrMod also selects a four-row mode: in practice the move
-    // copies the aligned group of four rows of SrcA to the aligned group of four rows of Dst
-    // (and AddrMod still advances the RWCs).
+    // copies the aligned group of four rows of SrcA to the aligned group of four rows of Dst,
+    // setting the DstRowValid of exactly those four rows (and AddrMod still advances the RWCs).
     UnsupportedFunctionality();
   }
   NumRows = 1;
@@ -142,7 +142,7 @@ for (; NumRows; --NumRows, ++DstRow, ++SrcRow) {
 ApplyAddrMod(AddrMod);
 ```
 
-On Wormhole, the rows whose `DstRowValid` an eight-row `MOVA2D` sets to `true` are rows 4 through 7 of the aligned block of eight rows that it writes, and rows 0 through 3 too only if bit 2 of `DstRow` is clear before it is aligned down. With bit 2 set, rows 0 through 3 are written but keep their old `DstRowValid`, so a row that was undefined still reads as undefined (see [`ZEROACC`](ZEROACC.md)). This is `NonContractualBehavior`; software should keep bit 2 of `DstRow` clear for eight-row moves.
+On Wormhole and Blackhole, the rows whose `DstRowValid` an eight-row `MOVA2D` sets to `true` are rows 4 through 7 of the aligned block of eight rows that it writes, and rows 0 through 3 too only if bit 2 of `DstRow` is clear before it is aligned down. With bit 2 set, rows 0 through 3 are written but keep their old `DstRowValid`, so a row that was undefined still reads as undefined (see [`ZEROACC`](ZEROACC.md)). This is `NonContractualBehavior`; software should keep bit 2 of `DstRow` clear for eight-row moves.
 
 On Blackhole, a `MOVA2D` with `UseDst32bLo` set while neither `ALU_ACC_CTRL_Fp32_enabled` nor `ALU_ACC_CTRL_INT8_math_enabled` is set, and `UseDst32b` is `false`, writes the low 16 bits of each `Dst32b` row as the functional model shows, but the `DstRowValid` bit it sets for each row is the one for a `Dst16b` access to that row, `DstRowValid[Adj16(Row)]`, rather than `DstRowValid[Adj32NoSwizzle(Row)]` (both as described in [`Dst.md` in the Blackhole tree](../../../BlackholeA0/TensixTile/TensixCoprocessor/Dst.md)). So the `Dst32b` row keeps its old valid bit, and the valid bit of some other row is set instead. This is `NonContractualBehavior`; to write the low halves of `Dst32b` rows, software should set `ALU_ACC_CTRL_INT8_math_enabled` (which, unlike `ALU_ACC_CTRL_Fp32_enabled`, does not turn the move into a TF32 move).
 
