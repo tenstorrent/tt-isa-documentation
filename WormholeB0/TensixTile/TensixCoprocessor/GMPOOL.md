@@ -12,20 +12,22 @@ The supported data type combinations are:
 
 (†) For integer data in `Dst`, only the sign bit and the low 19 bits of magnitude are used for `max` input, and the magnitude is truncated to just 13 bits for `max` output.
 
-(‡) Exponent of zero causes scaling by zero, and non-zero exponent causes scaling by one (i.e. no scaling). Non-zero datums always have a non-zero exponent.
+(‡) Exponent of zero causes scaling by zero. With `ALU_ACC_CTRL_Fp32_enabled` clear, non-zero exponent causes scaling by one (i.e. no scaling). Non-zero datums always have a non-zero exponent.
 
-There is also _partial_ support for `argmax`: within each column of `SrcA`, the _index_ of the largest value within the _first eight rows_ is tracked. Depending on the data type in use, this index can be returned as well as the largest value from all 16 rows, or instead of the largest value. A non-linear transform is applied to the index value, which software needs to reverse if it wants the original index value. In any event, the index value is only returned when `Dst` is accessed in 32-bit mode, with the index in the low bits (for FP16 or BF16 data, the largest value is simultaneously returned in the high 16 bits). The supported data type combinations for `argmax` are therefore:
+An integer `max` needs `ALU_ACC_CTRL_Fp32_enabled` clear. With it set, `SrcA` datums are ranked as if they were BF16: their exponent (16 for integer "8") plus the exponent from `SrcB`, then the high seven bits of their magnitude. With integer "8" data in `SrcB`, every non-zero `SrcA` datum then ranks above any `Dst` integer whose magnitude is less than 2<sup>15</sup>, and when a `SrcA` datum is the maximum, the low three bits of its magnitude are cleared in the result.
+
+On Wormhole, there is also _partial_ support for `argmax` (Blackhole ignores `ArgMax`, behaving as if it were false): within each column of `SrcA`, the _index_ of the largest value within the _first eight rows_ is tracked. Depending on the data type in use, this index can be returned as well as the largest value from all 16 rows, or instead of the largest value. A non-linear transform is applied to the index value, which software needs to reverse if it wants the original index value. When several of those rows (or `Dst`) hold the largest value, which one's index is returned depends on their sign and position, as given in the functional model. In any event, the index value is only returned when `Dst` is accessed in 32-bit mode, with the index in the low bits (for FP16 or BF16 data, the largest value is simultaneously returned in the high bits). The supported data type combinations for `argmax` are therefore:
 
 |[`Dst` data type](Dst.md#data-types)|[`SrcA` data type](SrcASrcB.md#data-types)|[`SrcB` data type](SrcASrcB.md#data-types) (exponent only, will be transposed)|
 |---|---|---|
 |1x16 row of integer "32" (index only)|8x16 matrix of TF32|1x8 half-row of TF32|
-|1x16 row of BF16 and integer "16" pairs|(16 or 8 †)x16 matrix of BF16|1x16 row of BF16|
+|1x16 row of TF32 with the index in its low 12 bits|(16 or 8 †)x16 matrix of BF16|1x16 row of BF16|
 |1x16 row of FP16 and integer "16" pairs|(16 or 8 †)x16 matrix of FP16|1x16 row of FP16|
 |1x16 row of integer "32" (index only)|8x16 matrix of integer "8"|1x8 half-row of any type (‡)|
 
 (†) 16x16 input matrix used for the BF16 or FP16 `max` part of the output, but only the top half of that (i.e. 8x16) used for the index part of the output.
 
-(‡) Exponent of zero causes scaling by zero, and non-zero exponent causes scaling by one (i.e. no scaling). Non-zero datums always have a non-zero exponent.
+(‡) As for the `max` part; see the note on integer data above.
 
 **Backend execution unit:** [Matrix Unit (FPU)](MatrixUnit.md)
 
@@ -64,6 +66,10 @@ Once dispatched to the Matrix Unit (FPU):
 uint1_t StateID = ThreadConfig[CurrentThread].CFG_STATE_ID_StateID;
 auto& ConfigState = Config[StateID];
 
+if (TTArchitecture == Blackhole) {
+  ArgMax = false; // Blackhole ignores ArgMax.
+}
+
 // Determine the data formats.
 // Note: Blackhole implied format behavior for SrcB not fully characterized
 uint4_t SrcAStyle, DstStyle;
@@ -82,18 +88,15 @@ if (ThreadConfig[CurrentThread].FP16A_FORCE_Enable) {
   DstStyle = FP16;
   UseDst32b = false;
 } else if (ConfigState.ALU_ACC_CTRL_INT8_math_enabled) {
-  SrcAStyle = INT8;
+  // With Fp32_enabled, integer "8" datums are ranked as if they were BF16.
+  SrcAStyle = ConfigState.ALU_ACC_CTRL_Fp32_enabled ? BF16 : INT8;
   DstStyle = INT32;
   UseDst32b = true;
 } else {
   UseDst32b = ConfigState.ALU_ACC_CTRL_Fp32_enabled;
   if (SrcAFmt in {FP32, BF16, BFP8, BFP4, BFP2, INT32, INT16}) {
     SrcAStyle = BF16;
-    if (ArgMax && UseDst32b) {
-      DstStyle = BF16; // BF16 in high bits, with index returned in low bits.
-    } else {
-      DstStyle = UseDst32b ? TF32 : BF16;
-    }
+    DstStyle = UseDst32b ? TF32 : BF16; // With ArgMax, the index is returned in the low bits.
   } else if (SrcAFmt in {FP16, FP8, BFP8a, BFP4a, BFP2a, INT8}) {
     SrcAStyle = FP16;
     if (ArgMax && UseDst32b) {
@@ -103,13 +106,10 @@ if (ThreadConfig[CurrentThread].FP16A_FORCE_Enable) {
     }
   } else /* SrcAFmt == TF32 */ {
     SrcAStyle = TF32;
-    if (ArgMax) {
-      DstStyle = INT32;
-    } else {
-      DstStyle = UseDst32b ? TF32 : BF16;
-    }
+    DstStyle = UseDst32b ? TF32 : BF16; // With ArgMax, only the index is returned.
   }
 }
+bool IndexOnly = (DstStyle == INT32 || SrcAStyle == TF32);
 
 struct Datum {
   uint1_t Sign;
@@ -126,44 +126,60 @@ DstRow &= 0x3fc;
 
 // Iterate over SrcA columns.
 for (unsigned j = 0; j < 16; ++j) {
-  // Read value from Dst, use it as initial value of Max / MaxIndex.
+  // Read value from Dst.
   uint32_t DstVal;
   if (UseDst32b) {
     DstVal = Dst32b[DstRow][j];
   } else {
     DstVal = Dst16b[DstRow][j] << 16;
   }
-  Datum Max = ReadDst(DstVal, DstStyle);
-  if (!ArgMax && DstStyle != INT32 && ((DstVal >> 16) & (DstStyle == FP16 ? 0x1f : 0xff)) == 0) {
-    // A Dst datum whose exponent field is zero competes as +0.
-    Max.Sign = 0;
-    Max.Exponent = 0;
-    Max.MagOrMan = 0;
+  Datum DstMax = ReadDst(DstVal, DstStyle);
+  uint8_t DstIndex = DstVal & 0xff;
+  if (DstStyle != INT32 && ((DstVal >> 16) & (DstStyle == FP16 ? 0x1f : 0xff)) == 0) {
+    // A Dst datum whose exponent field is zero competes as +0, and its index as 0.
+    DstMax.Sign = 0;
+    DstMax.Exponent = 0;
+    DstMax.MagOrMan = 0;
+    DstIndex = 0;
   }
-  uint8_t MaxIndex = DstVal & 0xff;
   uint32_t IndexPhase = (DstVal + 0x100) & 0xf00;
-  // Iterate over SrcA rows (and SrcB columns), updating Max / MaxIndex.
-  for (unsigned i_ = 0; i_ < 16; ++i_) {
-    unsigned i = (i_ < 8) ? (i_ ^ 4) : i_; // Tweak the visitation order (only makes a difference for resolving ties in ArgMax)
+  // Read SrcA rows (scaled by SrcB columns).
+  Datum x[16];
+  for (unsigned i = 0; i < 16; ++i) {
     uint19_t SrcAVal = TruncateSrc(SrcA[MatrixUnit.SrcABank][SrcARow + i][j], SrcAFmt);
     uint19_t SrcBVal = TruncateSrc(SrcB[MatrixUnit.SrcBBank][SrcBRow    ][i], SrcBFmt);
-    Datum x = ReadAndScaleSrc(SrcAVal, SrcAStyle, SrcBVal);
+    x[i] = ReadAndScaleSrc(SrcAVal, SrcAStyle, SrcBVal);
     if (SrcAStyle == FP16 && DstStyle == TF32) {
       // With a 32-bit Dst, an FP16-style SrcA keeps only the top seven bits of its mantissa.
-      x.MagOrMan &= 0x3f8;
+      x[i].MagOrMan &= 0x3f8;
     }
-    if (AsComparable(x) >= AsComparable(Max)) {
-      Max = x;
-      static const uint8_t NONLINEAR_I_TRANSFORM[] = {0, 3, 6, 1, 4, 7, 2, 5};
-      if (i < sizeof(NONLINEAR_I_TRANSFORM)) {
-        MaxIndex = (IndexPhase >> 4) + NONLINEAR_I_TRANSFORM[i];
-      }
+  }
+  // Determine Max.
+  Datum Max = DstMax;
+  for (unsigned i = 0; i < 16; ++i) {
+    if (AsComparable(x[i]) > AsComparable(Max)) {
+      Max = x[i];
     }
+  }
+  // Determine MaxIndex (only used if ArgMax) from Dst and the first eight SrcA rows, by a tree of pairwise compares.
+  static const uint8_t NONLINEAR_I_TRANSFORM[] = {0, 3, 6, 1, 4, 7, 2, 5};
+  unsigned Best[2];
+  for (unsigned h = 0; h < 2; ++h) {
+    unsigned a = KeepFirst(x[h * 4 + 0], x[h * 4 + 1]) ? h * 4 + 0 : h * 4 + 1;
+    unsigned b = KeepFirst(x[h * 4 + 2], x[h * 4 + 3]) ? h * 4 + 2 : h * 4 + 3;
+    Best[h] = KeepFirst(x[a], x[b]) ? a : b;
+  }
+  unsigned i = KeepFirst(x[Best[1]], x[Best[0]]) ? Best[1] : Best[0];
+  uint8_t MaxIndex;
+  if (KeepFirst(DstMax, x[i])) {
+    MaxIndex = DstIndex;
+  } else {
+    MaxIndex = (IndexPhase >> 4) + NONLINEAR_I_TRANSFORM[i];
   }
   // Write result back to Dst.
   if (ArgMax) {
     uint32_t IndexResult = IndexPhase | MaxIndex;
-    if (DstStyle == INT32) {
+    if (IndexOnly) {
       DstVal = IndexResult;
     } else {
       DstVal = WriteDst(Max, DstStyle) | IndexResult;
@@ -312,6 +328,13 @@ Datum ReadAndScaleSrc(uint19_t SrcAVal, uint4_t SrcAStyle, uint19_t SrcBVal) {
 }
 
 int32_t AsComparable(Datum x) {
-  return (x.Sign ? -1 : 1) * (int32_t)((x.Exponent << 10) + x.MagOrMan);
+  // Sign-magnitude order, with -0 below +0.
+  int32_t Mag = (x.Exponent << 10) + x.MagOrMan;
+  return x.Sign ? ~Mag : Mag;
+}
+
+bool KeepFirst(Datum a, Datum b) {
+  // Whether a pairwise max keeps its first operand: when it is greater, or when it is equal and negative.
+  return AsComparable(a) > AsComparable(b) || (AsComparable(a) == AsComparable(b) && a.Sign);
 }
 ```
