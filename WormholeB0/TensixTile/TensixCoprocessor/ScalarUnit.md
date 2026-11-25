@@ -38,6 +38,8 @@ The `[3]` is always indexed as `[CurrentThread]`, i.e. each Tensix thread has 64
 
 RISCV B has the entire `GPRs` array mapped into its address space, starting at address `REGFILE_BASE`. Meanwhile, each RISCV T<sub>i</sub> has the `GPRs[i]` sub-array mapped into its address space, again starting at address `REGFILE_BASE`.
 
+For RISCV B, `GPRs[t][g]` is at address `REGFILE_BASE + 0x100 * t + 4 * g`. An access at `REGFILE_BASE + 0x300` through `REGFILE_BASE + 0x3FF` (no thread) is `UndefinedBehavior`: it never completes, so the RISCV B core hangs. Bits 11:10 of the offset are ignored, so `REGFILE_BASE + 0x400` through `REGFILE_BASE + 0xFFF` access the same GPRs as the offset with those bits clear (and the same `UndefinedBehavior` for a thread of 3); this aliasing is `NonContractualBehavior`.
+
 If a RISCV core writes to a Tensix GPR immediately prior to pushing a Tensix instruction which consumes that GPR, there is _usually_ enough latency in the instruction path for the GPR write to complete before the instruction starts executing. However, to guarantee race-free operation, one of the following approaches is recommended:
 * Push a pair of [`SETDMAREG`](SETDMAREG_Immediate.md) instructions (each writing 16 bits) instead of writing 32 bits directly to `GPRs`.
 * Push a [`STALLWAIT`](STALLWAIT.md) instruction after writing to `GPRs` and before pushing the instruction of interest, where the `STALLWAIT` specifies condition C13 and specifies a block mask which will cause the instruction of interest to wait for that condition.
