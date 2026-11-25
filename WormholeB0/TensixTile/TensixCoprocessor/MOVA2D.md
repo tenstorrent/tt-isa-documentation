@@ -114,10 +114,16 @@ for (; NumRows; --NumRows, ++DstRow, ++SrcRow) {
     SrcAVal = TruncateSrc(SrcAVal, SrcAFmt);
     uint16_t Val16b = Use8bExponent ? RemoveLowMantissa(SrcAVal) : RemoveHighExponent(SrcAVal);
     if (UseDst32b) {
-      if (UseDst32bLo) {
-        UndefinedBehavior(); // Write data will be corrupted on Blackhole (HW erratum TEN-4245); Wormhole behavior is unlikely to be useful
-      }
       uint16_t LowMantissa = ((SrcAVal >> 8) & 7) << 13; // The bits removed by RemoveLowMantissa.
+      if (UseDst32bLo) {
+        if (TTArchitecture == Blackhole) {
+          // HW erratum TEN-4245: the low 16 bits also get Val16b (see below).
+          NonContractualBehavior();
+          LowMantissa |= Val16b;
+        } else {
+          UndefinedBehavior(); // Wormhole behavior is unlikely to be useful
+        }
+      }
       // Dst holds TF32 as Sign,HiMan(7b),Exp(8b),LoMan(3b),Zeros(13b)
       // This is compatible with Dst FP32, where Zeros extends LoMan.
       Dst32b[DstRow][Column] = (uint32_t(Val16b) << 16) | LowMantissa;
@@ -145,6 +151,8 @@ ApplyAddrMod(AddrMod);
 On Wormhole and Blackhole, the rows whose `DstRowValid` an eight-row `MOVA2D` sets to `true` are rows 4 through 7 of the aligned block of eight rows that it writes, and rows 0 through 3 too only if bit 2 of `DstRow` is clear before it is aligned down. With bit 2 set, rows 0 through 3 are written but keep their old `DstRowValid`, so a row that was undefined still reads as undefined (see [`ZEROACC`](ZEROACC.md)). This is `NonContractualBehavior`; software should keep bit 2 of `DstRow` clear for eight-row moves.
 
 On Blackhole, a `MOVA2D` with `UseDst32bLo` set while neither `ALU_ACC_CTRL_Fp32_enabled` nor `ALU_ACC_CTRL_INT8_math_enabled` is set, and `UseDst32b` is `false`, writes the low 16 bits of each `Dst32b` row as the functional model shows, but the `DstRowValid` bit it sets for each row is the one for a `Dst16b` access to that row, `DstRowValid[Adj16(Row)]`, rather than `DstRowValid[Adj32NoSwizzle(Row)]` (both as described in [`Dst.md` in the Blackhole tree](../../../BlackholeA0/TensixTile/TensixCoprocessor/Dst.md)). So the `Dst32b` row keeps its old valid bit, and the valid bit of some other row is set instead. This is `NonContractualBehavior`; to write the low halves of `Dst32b` rows, software should set `ALU_ACC_CTRL_INT8_math_enabled` (which, unlike `ALU_ACC_CTRL_Fp32_enabled`, does not turn the move into a TF32 move).
+
+On Blackhole, a `MOVA2D` with `UseDst32bLo` set that moves by TF32 (`UseDst32b` is `true`, as it always is while `ALU_ACC_CTRL_Fp32_enabled` is set) writes the whole `Dst32b` datum, as the same move without `UseDst32bLo` would, except that its low 16 bits are the OR of the bits that move would write there and `Val16b` (HW erratum TEN-4245); it sets the same `DstRowValid` bits as that move. So the high 16 bits get `Val16b` too, and a datum whose low mantissa bits are not all zero gets them ORed into the top of `Val16b` in the low half. This is `NonContractualBehavior`; to write only the low halves of `Dst32b` rows, software should set `ALU_ACC_CTRL_INT8_math_enabled` in place of `ALU_ACC_CTRL_Fp32_enabled` (see above).
 
 On Wormhole likewise, a `MOVA2D` with `UseDst32bLo` set while neither `ALU_ACC_CTRL_Fp32_enabled` nor `ALU_ACC_CTRL_INT8_math_enabled` is set, and `UseDst32b` is `false`, writes the low 16 bits of each `Dst32b` row as the functional model shows, but sets the `DstRowValid` bits that the same move writing `Dst16b` rows would set (`DstRowValid[Row]`, rather than `DstRowValid[Adj32(Row)]`; see [`Dst`](Dst.md)). So the `Dst32b` rows keep their old valid bits, and the valid bits of other rows are set instead. This is `NonContractualBehavior`; to write the low halves of `Dst32b` rows on Wormhole, software should set `ALU_ACC_CTRL_Fp32_enabled` or `ALU_ACC_CTRL_INT8_math_enabled`.
 
