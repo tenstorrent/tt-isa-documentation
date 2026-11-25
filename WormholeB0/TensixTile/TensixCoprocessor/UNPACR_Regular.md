@@ -267,6 +267,23 @@ if (WhichUnpacker == 0) {
     }
   }
 }
+if ((TTArchitecture == Blackhole) && !UnpackToDst) {
+  // Some pairs that FormatConversion calls UndefinedBehavior run on Blackhole as if they were legal:
+  if (InDataFormat == TF32 && OutDataFormat in {TF32, BF16, FP16}) {
+    NonContractualBehavior {
+      InDataFormat = FP32;
+    }
+  } else if ((OutDataFormat == TF32 && InDataFormat in {BF16, BFP8, BFP4, BFP2})
+          || (OutDataFormat == BFP8 && InDataFormat in {BFP4, BFP2})
+          || (WhichUnpacker == 1 && OutDataFormat == BF16 && InDataFormat in {BFP4, BFP2})
+          || (WhichUnpacker == 1 && OutDataFormat == FP16 && InDataFormat in {BFP4a, BFP2a})) {
+    NonContractualBehavior {
+      // Everything that depends on OutDataFormat follows InDataFormat instead: the datums, the units of OutAddr,
+      // and the format recorded for the bank.
+      OutDataFormat = InDataFormat;
+    }
+  }
+}
 
 auto& ADC_Out = ADCs[CurrentThread].Unpacker[WhichUnpacker].Channel[1];
 unsigned OutAddr = ConfigState.UNP[WhichUnpacker].ADDR_BASE_REG_1_Base
@@ -710,7 +727,8 @@ uint32_t FormatConversion(uint4_t InDataFormat, uint4_t OutDataFormat, uint32_t 
         return DstEncodeFP32(DatumBits);
       } else {
         // Otherwise, TF32 is not valid as InDataFormat (but software can instead
-        // specify InDataFormat == FP32 and OutDataFormat == TF32).
+        // specify InDataFormat == FP32 and OutDataFormat == TF32). Blackhole treats
+        // it as FP32 before getting here; see above.
         UndefinedBehavior();
       }
     }

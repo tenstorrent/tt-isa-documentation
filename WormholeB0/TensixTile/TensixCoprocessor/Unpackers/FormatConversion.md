@@ -65,6 +65,8 @@ The below table shows the same, but for when unpacking to [`Dst`](../Dst.md):
 >
 > (‡) Additional `ALU_FORMAT_SPEC_REG0_SrcAUnsigned` or `ALU_FORMAT_SPEC_REG0_SrcBUnsigned` configuration required to specify type. Unlike other configuration registers which influence the behavior of unpack instructions, these `Src?Unsigned` configuration registers need to be held constant for the entire duration of the unpack operation.
 
+On Blackhole, a few pairs outside the first table run into `SrcA` or `SrcB` as if `OutDataFormat` were `InDataFormat`, or for `InDataFormat` TF32 as if it were FP32; this is not architecturally guaranteed, and the exact list is in [`UNPACR`'s functional model](../UNPACR_Regular.md#functional-model).
+
 The exact location of `InDataFormat` and `OutDataFormat` varies based on how the [`UNPACR`](../UNPACR_Regular.md) instruction was configured and invoked. Full details can be found within [`UNPACR`'s functional model](../UNPACR_Regular.md#functional-model); the abridged summary is:
 
 ||Unpacking to `SrcA` or `Dst` (`i < 8`)|Unpacking to `SrcB` (`i < 2`)|
