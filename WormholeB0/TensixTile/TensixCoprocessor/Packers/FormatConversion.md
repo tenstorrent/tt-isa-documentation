@@ -8,7 +8,7 @@ If fetching datums from `Dst` (as is usually the case), the early format convers
 
 ||From FP32 (e8m23)|From BF16 (e8m7)|From FP16 (e5m10)|From INT32 (e0m31)|From INT16 (e0m15)|
 |:-:|---|---|---|---|---|
-|**To FP32 (e8m23)**|Identity|No (keep as BF16 then use late conversion, or go via TF32; on Blackhole, an FP32 intermediate is `UnsupportedFunctionality`)|No (keep as FP16 then use late conversion)|Bitcast|No|
+|**To FP32 (e8m23)**|Identity|No (keep as BF16 then use late conversion, or go via TF32; an FP32 intermediate is `UnsupportedFunctionality`)|No (keep as FP16 then use late conversion)|Bitcast|No|
 |**To TF32 (e8m10)**|Rounding|Rounding (though more efficient to keep as BF16 then use late conversion)|No (keep as FP16 then use late conversion)|Bitcast to FP32 then rounding|No|
 |**To BF16 (e8m7)**|Rounding or truncation|Rounding or identity|No (keep as FP16 then use late conversion)|Bitcast of top 16 bits|No|
 |**To E8M6**|Rounding|Rounding|No|No|No|
@@ -256,11 +256,9 @@ EarlyConversion SelectEarlyConversion() {
       return NotDescribed;
     case FP32: // From BF16
       if (!Read_raw && Round_10b_mant) return {TF32, Rounding};
-      if (TTArchitecture == Blackhole) {
-        // Each BF16 datum lands in the high 16 bits, but the low 16 bits are not zero; they come from other data in Dst.
-        // To get FP32, keep the datum as BF16 instead, and let the late conversion widen it.
-        UnsupportedFunctionality();
-      }
+      // Each BF16 datum lands in the high 16 bits, but the low 16 bits are not zero; they come from other data in Dst.
+      // To get FP32, keep the datum as BF16 instead, and let the late conversion widen it.
+      UnsupportedFunctionality();
       return NotDescribed;
     case BF16: // From BF16
       if (Read_raw) return {BF16, Identity};
